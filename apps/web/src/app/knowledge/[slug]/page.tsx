@@ -64,7 +64,7 @@ export default async function KnowledgeReadingPage(props: { params: Promise<{ sl
               </div>
             </header>
 
-            <ArticleToc />
+            <ArticleToc variant="inline" />
             <ArticleContent />
 
             <footer className="mt-12 border-t border-[var(--border-strong)] pt-5">
@@ -80,7 +80,7 @@ export default async function KnowledgeReadingPage(props: { params: Promise<{ sl
             </footer>
           </article>
 
-          <ArticleToc />
+          <ArticleToc variant="aside" />
         </div>
       </div>
     </WorkspaceShell>
