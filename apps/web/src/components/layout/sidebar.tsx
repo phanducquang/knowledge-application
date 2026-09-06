@@ -30,15 +30,18 @@ export function Sidebar({ onNavigate, onClose }: SidebarProps) {
         <a href="#" onClick={onNavigate} className="min-w-0 text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
           Knowledge
         </a>
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              className="min-h-8 px-1 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+              aria-label="Close navigation"
+              className="inline-flex h-8 w-8 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
-              Close
+              <svg viewBox="0 0 16 16" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M4 4l8 8M12 4l-8 8" />
+              </svg>
             </button>
           )}
         </div>
