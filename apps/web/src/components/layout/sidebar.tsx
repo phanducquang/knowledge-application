@@ -29,7 +29,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         <a href="#" onClick={onNavigate} className="text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
           Knowledge
         </a>
-        <span className="font-mono text-[10px] font-medium tracking-[0.08em] text-[var(--accent)]">KA—01</span>
+        <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto" aria-label="Knowledge navigation">
