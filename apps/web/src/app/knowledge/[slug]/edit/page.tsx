@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleSettings } from "@/components/knowledge/article-settings";
-import { EditorToolbar } from "@/components/knowledge/editor-toolbar";
+import { KnowledgeMarkdownEditor } from "@/components/knowledge/knowledge-markdown-editor";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { mockReferenceArticle } from "@/data/mock-knowledge";
 
@@ -119,20 +119,15 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
             />
 
             <section className="mt-7" aria-labelledby="content-label">
-              <p id="content-label" className={fieldLabelClassName}>
-                Content
-              </p>
+              <div className="flex items-end justify-between gap-4">
+                <p id="content-label" className={fieldLabelClassName}>
+                  Content
+                </p>
+                <p className="text-[11px] text-[var(--text-subtle)]">Markdown · type / for blocks</p>
+              </div>
+
               <div className="mt-2 border border-[var(--border)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
-                <EditorToolbar />
-                <label className="block" htmlFor="knowledge-content">
-                  <span className="sr-only">Markdown content</span>
-                  <textarea
-                    id="knowledge-content"
-                    defaultValue={mockMarkdown}
-                    spellCheck={false}
-                    className="min-h-[760px] w-full resize-y border-0 bg-transparent px-4 py-4 font-mono text-[14px] leading-7 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
-                  />
-                </label>
+                <KnowledgeMarkdownEditor initialMarkdown={mockMarkdown} />
               </div>
             </section>
           </main>
