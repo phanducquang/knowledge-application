@@ -28,7 +28,7 @@ function VisibilityControl({
     <div>
       <p className={propertyLabelClassName}>Visibility</p>
       <div
-        className="mt-2 flex w-full border-b border-[var(--border)]"
+        className="mt-1.5 flex w-full border-b border-[var(--border)]"
         role="radiogroup"
         aria-label="Visibility"
       >
@@ -42,7 +42,7 @@ function VisibilityControl({
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(option)}
-              className={`relative min-w-0 flex-1 whitespace-nowrap px-1 pb-2 pt-1 text-center text-[12px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1.5 pt-1 text-center text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
                 selected
                   ? "text-[var(--accent-strong)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text)]"
@@ -51,7 +51,7 @@ function VisibilityControl({
               {option}
               <span
                 aria-hidden="true"
-                className={`absolute inset-x-1 -bottom-px h-0.5 transition-colors ${
+                className={`absolute inset-x-1 -bottom-px h-px transition-colors ${
                   selected ? "bg-[var(--accent)]" : "bg-transparent"
                 }`}
               />
@@ -151,10 +151,10 @@ function CollectionCombobox({
             setQuery("");
           }
         }}
-        className="mt-2 inline-flex min-h-9 max-w-full items-center gap-2 border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         <span className="truncate">{value}</span>
-        <span aria-hidden="true" className="text-[10px] text-[var(--text-subtle)]">
+        <span aria-hidden="true" className="text-[9px] text-[var(--text-subtle)]">
           ▾
         </span>
       </button>
@@ -183,11 +183,11 @@ function CollectionCombobox({
                   }
                 }}
                 placeholder="Search collections..."
-                className="h-9 w-full border border-[var(--border)] bg-[var(--background)] px-2.5 text-[12px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
+                className="h-8 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[11px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
               />
             </label>
 
-            <div className="mt-2 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
+            <div className="mt-1.5 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
               {filteredCollections.map((collection) => {
                 const selected = collection === value;
 
@@ -198,13 +198,13 @@ function CollectionCombobox({
                     role="option"
                     aria-selected={selected}
                     onClick={() => selectCollection(collection)}
-                    className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[12px] transition-colors hover:bg-[var(--row-hover)] ${
+                    className={`flex min-h-7 w-full items-center justify-between gap-3 px-2 text-left text-[11px] transition-colors hover:bg-[var(--row-hover)] ${
                       selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
                     }`}
                   >
                     <span>{collection}</span>
                     {selected && (
-                      <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
+                      <span aria-hidden="true" className="text-[10px] text-[var(--accent)]">
                         ✓
                       </span>
                     )}
@@ -213,7 +213,7 @@ function CollectionCombobox({
               })}
 
               {filteredCollections.length === 0 && (
-                <p className="px-2 py-2 text-[11px] text-[var(--text-subtle)]">No matching collection.</p>
+                <p className="px-2 py-2 text-[10px] text-[var(--text-subtle)]">No matching collection.</p>
               )}
             </div>
           </div>
@@ -221,7 +221,7 @@ function CollectionCombobox({
           <button
             type="button"
             onClick={handleCreateAction}
-            className="w-full border-t border-[var(--border)] px-4 py-2.5 text-left text-[12px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[11px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
           >
             {canCreate ? `+ Create “${normalizedDraft}”` : "+ New collection"}
           </button>
@@ -252,18 +252,18 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
       <p className={propertyLabelClassName}>Tags</p>
 
       {tags.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Selected tags">
+        <div className="mt-1.5 flex flex-wrap gap-1" aria-label="Selected tags">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex min-h-7 items-center gap-1.5 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-2 text-[12px] text-[var(--text)]"
+              className="inline-flex min-h-6 items-center gap-1 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-1.5 text-[11px] text-[var(--text)]"
             >
               #{tag}
               <button
                 type="button"
                 aria-label={`Remove ${tag} tag`}
                 onClick={() => setTags((current) => current.filter((item) => item !== tag))}
-                className="-mr-0.5 inline-flex h-5 w-5 items-center justify-center text-[14px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
+                className="-mr-0.5 inline-flex h-4 w-4 items-center justify-center text-[13px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
               >
                 ×
               </button>
@@ -272,7 +272,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
         </div>
       )}
 
-      <div className="mt-2 border-b border-[var(--border-strong)] transition-colors focus-within:border-[var(--accent)]">
+      <div className="mt-1.5 border-b border-[var(--border-strong)] transition-colors focus-within:border-[var(--accent)]">
         <input
           type="text"
           value={draft}
@@ -289,7 +289,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
           }}
           onBlur={addTag}
           placeholder="Add tag and press Enter"
-          className="h-9 w-full bg-transparent px-0 text-[12px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          className="h-8 w-full bg-transparent px-0 text-[11px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
         />
       </div>
     </div>
@@ -308,7 +308,7 @@ export function ArticleSettings({
   const suffix = compact ? "mobile" : "desktop";
 
   const content = (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <VisibilityControl value={visibility} onChange={setVisibility} />
 
       <CollectionCombobox
@@ -321,7 +321,7 @@ export function ArticleSettings({
 
       <div>
         <p className={propertyLabelClassName}>Updated</p>
-        <p className="mt-2 text-[12px] tabular-nums text-[var(--text-muted)]">{updatedAt}</p>
+        <p className="mt-1.5 text-[11px] tabular-nums text-[var(--text-muted)]">{updatedAt}</p>
       </div>
     </div>
   );
@@ -329,8 +329,8 @@ export function ArticleSettings({
   if (compact) {
     return (
       <details className="mb-6 border-y border-[var(--border)] py-3 xl:hidden">
-        <summary className="cursor-pointer text-[13px] font-medium text-[var(--text-muted)]">Article settings</summary>
-        <div className="mt-5">{content}</div>
+        <summary className="cursor-pointer text-[12px] font-medium text-[var(--text-muted)]">Article settings</summary>
+        <div className="mt-4">{content}</div>
       </details>
     );
   }
