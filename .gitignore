@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Environment/secrets
+.env
+.env.*
+!.env.example
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+coverage/
+
+# Java / Gradle
+.gradle/
+build/
+target/
+
+# Logs
+*.log
+logs/
+
+# Local infrastructure data
+.data/
+data/
