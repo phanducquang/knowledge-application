@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArticleSettings } from "@/components/knowledge/article-settings";
 import { EditorToolbar } from "@/components/knowledge/editor-toolbar";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { mockReferenceArticle } from "@/data/mock-knowledge";
@@ -45,78 +46,8 @@ handler.search(query)
 4. One final recovery step maps the error into \`timeout\` or \`error\` status.
 `;
 
-const propertyLabelClassName =
+const fieldLabelClassName =
   "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]";
-
-const propertyControlClassName =
-  "mt-1.5 h-9 w-full border-0 border-b border-[var(--border-strong)] bg-transparent px-0 text-[13px] font-medium text-[var(--text)] outline-none transition-colors hover:border-[var(--accent-muted)] focus:border-[var(--accent)] focus:ring-0";
-
-function ArticleSettings({ compact = false }: { compact?: boolean }) {
-  const content = (
-    <div className="space-y-5">
-      <label className="block" htmlFor={compact ? "visibility-mobile" : "visibility-desktop"}>
-        <span className={propertyLabelClassName}>Visibility</span>
-        <select
-          id={compact ? "visibility-mobile" : "visibility-desktop"}
-          defaultValue={mockReferenceArticle.visibility}
-          className={propertyControlClassName}
-        >
-          <option>Private</option>
-          <option>Unlisted</option>
-          <option>Public</option>
-        </select>
-      </label>
-
-      <label className="block" htmlFor={compact ? "collection-mobile" : "collection-desktop"}>
-        <span className={propertyLabelClassName}>Collection</span>
-        <select
-          id={compact ? "collection-mobile" : "collection-desktop"}
-          defaultValue={mockReferenceArticle.collection}
-          className={propertyControlClassName}
-        >
-          <option>Backend</option>
-          <option>Database</option>
-          <option>DevOps</option>
-        </select>
-      </label>
-
-      <label className="block" htmlFor={compact ? "tags-mobile" : "tags-desktop"}>
-        <span className={propertyLabelClassName}>Tags</span>
-        <input
-          id={compact ? "tags-mobile" : "tags-desktop"}
-          type="text"
-          defaultValue={mockReferenceArticle.tags.join(", ")}
-          className={propertyControlClassName}
-        />
-        <span className="mt-1.5 block text-[10px] leading-4 text-[var(--text-subtle)]">Separate tags with commas.</span>
-      </label>
-
-      <div>
-        <p className={propertyLabelClassName}>Updated</p>
-        <p className="mt-2 text-[12px] tabular-nums text-[var(--text-muted)]">{mockReferenceArticle.updatedAt}</p>
-        <p className="mt-1 text-[10px] leading-4 text-[var(--text-subtle)]">Managed automatically.</p>
-      </div>
-    </div>
-  );
-
-  if (compact) {
-    return (
-      <details className="mb-6 border-y border-[var(--border)] py-3 xl:hidden">
-        <summary className="cursor-pointer text-[13px] font-medium text-[var(--text-muted)]">Article settings</summary>
-        <div className="mt-4">{content}</div>
-      </details>
-    );
-  }
-
-  return (
-    <aside className="hidden xl:block" aria-label="Article settings">
-      <div className="sticky top-8 border-l border-[var(--border)] pl-5">
-        <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Article settings</p>
-        {content}
-      </div>
-    </aside>
-  );
-}
 
 export default async function KnowledgeEditorPage(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params;
@@ -155,52 +86,67 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
 
         <div className="xl:grid xl:grid-cols-[minmax(0,760px)_180px] xl:gap-16">
           <main className="min-w-0">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
               {mockReferenceArticle.collection} / Editing
             </p>
 
             <label className="block" htmlFor="knowledge-title">
-              <span className="sr-only">Knowledge title</span>
+              <span className={fieldLabelClassName}>Title</span>
               <input
                 id="knowledge-title"
                 type="text"
                 defaultValue={mockReferenceArticle.title}
-                className="w-full border-0 bg-transparent p-0 text-[30px] font-semibold leading-[1.12] tracking-[-0.025em] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)] focus-visible:outline-none sm:text-[32px]"
+                className="mt-2 w-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] sm:text-[30px]"
               />
             </label>
 
-            <label className="mt-4 block" htmlFor="knowledge-summary">
-              <span className="sr-only">Knowledge summary</span>
+            <label className="mt-5 block" htmlFor="knowledge-summary">
+              <span className={fieldLabelClassName}>Summary</span>
               <textarea
                 id="knowledge-summary"
-                rows={2}
+                rows={3}
                 defaultValue={mockReferenceArticle.lead}
-                className="w-full resize-none border-0 bg-transparent p-0 text-[15px] leading-7 text-[var(--text-muted)] outline-none placeholder:text-[var(--text-subtle)] sm:text-[16px]"
+                className="mt-2 w-full resize-y border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[15px] leading-7 text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
               />
             </label>
 
-            <ArticleSettings compact />
+            <ArticleSettings
+              compact
+              initialVisibility={mockReferenceArticle.visibility}
+              initialCollection={mockReferenceArticle.collection}
+              initialTags={mockReferenceArticle.tags}
+              updatedAt={mockReferenceArticle.updatedAt}
+            />
 
-            <div className="mt-7">
-              <EditorToolbar />
-            </div>
+            <section className="mt-7" aria-labelledby="content-label">
+              <p id="content-label" className={fieldLabelClassName}>
+                Content
+              </p>
+              <div className="mt-2 border border-[var(--border)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
+                <EditorToolbar />
+                <label className="block" htmlFor="knowledge-content">
+                  <span className="sr-only">Markdown content</span>
+                  <textarea
+                    id="knowledge-content"
+                    defaultValue={mockMarkdown}
+                    spellCheck={false}
+                    className="min-h-[760px] w-full resize-y border-0 bg-transparent px-4 py-4 font-mono text-[14px] leading-7 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+                  />
+                </label>
+              </div>
+            </section>
 
-            <label className="block" htmlFor="knowledge-content">
-              <span className="sr-only">Markdown content</span>
-              <textarea
-                id="knowledge-content"
-                defaultValue={mockMarkdown}
-                spellCheck={false}
-                className="min-h-[760px] w-full resize-y border-0 bg-transparent py-6 font-mono text-[14px] leading-7 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
-              />
-            </label>
-
-            <div className="border-t border-[var(--border)] pt-4 text-[11px] text-[var(--text-subtle)]">
+            <div className="mt-5 border-t border-[var(--border)] pt-4 text-[11px] text-[var(--text-subtle)]">
               Reference screen only — title, summary, content and article settings are editable visual controls; autosave and persistence are placeholders until behavior is implemented.
             </div>
           </main>
 
-          <ArticleSettings />
+          <ArticleSettings
+            initialVisibility={mockReferenceArticle.visibility}
+            initialCollection={mockReferenceArticle.collection}
+            initialTags={mockReferenceArticle.tags}
+            updatedAt={mockReferenceArticle.updatedAt}
+          />
         </div>
       </div>
     </WorkspaceShell>
