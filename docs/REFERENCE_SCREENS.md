@@ -23,6 +23,7 @@ Approved decisions:
 - desktop uses the persistent sidebar as the global navigation; there is no fixed global top navbar
 - each screen may have its own page header inside the content area for context, title, search and page-specific actions
 - mobile uses a minimal top application bar to open the navigation drawer and expose an essential primary action
+- the mobile navigation drawer uses an icon-only close action with an accessible label; it belongs in the sidebar header layout rather than floating over header content
 - knowledge entries use an editorial list with dividers rather than a card grid
 - the warm-neutral + petrol/teal palette and the 60/25/15 Technical Editorial Workspace direction are approved foundations
 
@@ -85,11 +86,14 @@ Current reference direction:
 - keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
 - show save state as quiet status feedback rather than a dominant control
 - desktop article properties use a narrow property rail without an extra `Article settings` heading; mobile keeps `Article settings` only as the label for the expandable properties section
+- property typography must stay visibly subordinate to the authoring surface: labels remain around 10px uppercase micro-labels, while most property values, visibility options, tags, search results and helper actions sit around 11px; collection trigger text may use approximately 12px for readability
 - `Visibility` uses one visible three-option radio group because the option set is small and fixed; visually it should read as lightweight text tabs with a subtle selected indicator, not three boxed buttons
 - the visibility control must remain stable for longer labels such as `Unlisted`; selection must not change control dimensions or cause wrapping/layout shift
 - `Collection` uses a compact searchable combobox because collections are extensible; the popover supports search, existing selection, and creating a new collection
+- the collection popover closes when interaction moves outside its trigger/popover boundary
 - the collection popover always exposes a creation entry: it shows `+ New collection` before a draft name exists, then changes to `+ Create “<name>”` when the typed value does not match an existing collection
 - `Tags` use semantic chips: typing a tag and pressing Enter creates a chip; each chip exposes an `×` removal action; duplicate tags should not be created
+- existing tag chips and the new-tag input are visually separate; do not place both inside one surrounding input border
 - tag chips are an intentional semantic exception to the general rule against decorative pills; they represent discrete editable values, use restrained radius, and must not become a colorful badge system
 - `Updated` is presented as quiet read-only metadata without redundant explanatory copy
 - editable property values use the same neutral text hierarchy; accent is reserved for selected/focus/interaction states rather than making one property appear more important than another
