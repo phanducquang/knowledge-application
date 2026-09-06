@@ -32,7 +32,7 @@ Later screens must treat the Knowledge List shell, sidebar, density, palette and
 
 ## 2. Knowledge Reading Page
 
-**Status: In progress — reference screen #2.**
+**Status: Approved reference screen — September 6, 2026.**
 
 Purpose:
 
@@ -44,16 +44,22 @@ Purpose:
 - establish public/private reading DNA
 - establish page-specific reading actions without introducing a global top navbar
 
-Current decisions under review:
+Approved decisions:
 
-- page-specific navigation/actions such as `← All notes`, `Edit`, and `Share` belong to the navigation/action hierarchy, not metadata
-- these actions use approximately 14px on mobile and 13px on larger screens, with comfortable minimum hit areas
-- article metadata such as visibility, updated date, and read time remains around 12px so the hierarchy stays visibly distinct
-- the action row remains page-local and must not evolve into a duplicated global top navigation bar
+- article content targets approximately 760px maximum reading width
+- desktop table of contents may remain sticky because it directly supports long-form navigation
+- the page-local action row `← All notes / Edit / Share` is not sticky and must not become a duplicated global navbar
+- navigation/actions use approximately 14px on mobile and 13px on larger screens with comfortable minimum hit areas
+- article metadata such as visibility, updated date and read time remains around 12px
+- mobile uses an inline expandable table of contents instead of a persistent right rail
+- code blocks, tables, lists and blockquotes remain flat editorial elements with borders rather than card containers
+- the article footer uses the explicit label `Collection & tags` rather than editorial wording such as `Filed under`
 
-This is one of the two most important reference screens together with Knowledge List.
+This screen and Knowledge List are the primary approved visual references for subsequent authoring/search work.
 
 ## 3. Knowledge Editor
+
+**Status: In progress — reference screen #3.**
 
 Purpose:
 
@@ -62,6 +68,15 @@ Purpose:
 - establish compact formatting controls
 - establish save/autosave feedback
 - establish editor/mobile behavior
+
+Current reference direction:
+
+- reuse the Reading Page content width and title hierarchy so writing and reading feel like the same document system
+- keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
+- show save state as quiet status feedback rather than a dominant control
+- desktop document settings use a narrow metadata rail; mobile settings collapse into an expandable section
+- page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
+- the current editor is visual/reference-only: formatting buttons, autosave status and persistence are placeholders until behavior is implemented
 
 The editor should feel quiet and content-first.
 
