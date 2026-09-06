@@ -44,6 +44,13 @@ Purpose:
 - establish public/private reading DNA
 - establish page-specific reading actions without introducing a global top navbar
 
+Current decisions under review:
+
+- page-specific navigation/actions such as `← All notes`, `Edit`, and `Share` belong to the navigation/action hierarchy, not metadata
+- these actions use approximately 14px on mobile and 13px on larger screens, with comfortable minimum hit areas
+- article metadata such as visibility, updated date, and read time remains around 12px so the hierarchy stays visibly distinct
+- the action row remains page-local and must not evolve into a duplicated global top navigation bar
+
 This is one of the two most important reference screens together with Knowledge List.
 
 ## 3. Knowledge Editor
