@@ -14,7 +14,7 @@ Approved shell rule:
 - mobile: minimal top application bar + navigation drawer + page content
 - page-specific context/actions belong in the page header inside the content area
 
-The Knowledge Editor is the current reference screen under review. It must inherit the approved list/reading primitives and may add only editor-specific patterns such as compact formatting controls, save-state feedback and article settings.
+The Knowledge Editor is the current reference screen under review. It must inherit the approved list/reading primitives and may add editor-specific patterns such as formatting controls, save-state feedback, article settings and richer Markdown-authoring interactions.
 
 Editor responsibility:
 
@@ -22,5 +22,8 @@ Editor responsibility:
 - system-managed fields such as updated timestamps remain read-only
 - slug is not a routine editor field; sharing/link-token mechanics belong to the Share flow
 - editable article-setting values use one neutral hierarchy; accent indicates interaction/focus rather than arbitrary importance between fields
+- the general product rule to avoid becoming a Notion clone does **not** prohibit proven block-editor interaction patterns inside the Markdown Content editor; slash commands, block handles, drag/drop, floating/contextual toolbars and similar authoring affordances are allowed when they materially improve writing efficiency
+- this exception is scoped to the Content authoring surface only; it must not spread Notion-style layout, navigation, cards or visual language into the rest of the workspace
+- preserve Markdown as the canonical content format even when the editor presents WYSIWYG/block-style interactions
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
