@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 interface SidebarProps {
+  currentPath?: string;
   onNavigate?: () => void;
   onClose?: () => void;
 }
@@ -6,10 +9,20 @@ interface SidebarProps {
 const collections = ["Backend", "Database", "DevOps"];
 const states = ["Private", "Shared", "Drafts"];
 
-function NavLink({ children, active = false, onNavigate }: { children: React.ReactNode; active?: boolean; onNavigate?: () => void }) {
+function NavLink({
+  children,
+  href = "#",
+  active = false,
+  onNavigate,
+}: {
+  children: React.ReactNode;
+  href?: string;
+  active?: boolean;
+  onNavigate?: () => void;
+}) {
   return (
-    <a
-      href="#"
+    <Link
+      href={href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={`block border-l-2 py-1.5 pl-3 pr-2 text-[14px] leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
@@ -19,17 +32,17 @@ function NavLink({ children, active = false, onNavigate }: { children: React.Rea
       }`}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 
-export function Sidebar({ onNavigate, onClose }: SidebarProps) {
+export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps) {
   return (
     <aside className="flex h-full flex-col bg-[var(--sidebar)] px-4 py-5">
       <div className="mb-6 flex items-center justify-between gap-4 px-2">
-        <a href="#" onClick={onNavigate} className="min-w-0 text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
+        <Link href="/" onClick={onNavigate} className="min-w-0 text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
           Knowledge
-        </a>
+        </Link>
         <div className="flex shrink-0 items-center gap-2">
           <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
           {onClose && (
@@ -49,7 +62,8 @@ export function Sidebar({ onNavigate, onClose }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto" aria-label="Knowledge navigation">
         <div className="space-y-1">
-          <NavLink active onNavigate={onNavigate}>All notes</NavLink>
+          <NavLink href="/" active={currentPath === "/"} onNavigate={onNavigate}>All notes</NavLink>
+          <NavLink href="/search" active={currentPath.startsWith("/search")} onNavigate={onNavigate}>Search</NavLink>
         </div>
 
         <div className="mt-7">
@@ -62,9 +76,9 @@ export function Sidebar({ onNavigate, onClose }: SidebarProps) {
         </div>
 
         <div className="mt-7">
-          <a href="#" onClick={onNavigate} className="block px-3 py-1.5 text-[13px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)]">
+          <Link href="#" onClick={onNavigate} className="block px-3 py-1.5 text-[13px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)]">
             Tags
-          </a>
+          </Link>
         </div>
 
         <div className="mt-7 border-t border-[var(--border)] pt-4">
