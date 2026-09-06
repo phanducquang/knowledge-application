@@ -2,7 +2,62 @@
 
 This document defines the visual language of Knowledge Application. AI coding agents and human contributors must read it before making UI changes.
 
-## 1. Product character
+## 1. Official visual direction
+
+The official design language is **Technical Editorial Workspace** with the following intentional composition:
+
+- **60% Editorial Technical**
+- **25% Linear-style productivity**
+- **15% Swiss typography / International Typographic Style**
+
+These percentages describe influence, not separate themes. The product must feel like one coherent system.
+
+### 60% Editorial Technical
+
+This is the foundation.
+
+Use it for:
+
+- content hierarchy
+- readable knowledge lists and articles
+- generous but controlled whitespace
+- strong title/body relationships
+- dividers instead of floating cards
+- calm long-form reading
+- technical documentation patterns
+
+The content itself remains the primary visual element.
+
+### 25% Linear-style productivity
+
+Use this influence for interaction and daily-use efficiency:
+
+- compact application chrome
+- narrow navigation
+- high scanning speed
+- subtle hover/selected states
+- information density suitable for professional daily use
+- keyboard/search-oriented interaction when functionality is implemented
+- restrained motion
+- responsive behavior that removes unnecessary chrome
+
+Do not copy Linear visually. Borrow the discipline and interaction density.
+
+### 15% Swiss typography
+
+Use this influence selectively to give the product a distinct visual identity:
+
+- disciplined grid and alignment
+- strong typography rather than decoration
+- small uppercase labels
+- deliberate tracking
+- numeric/index elements where they carry real information
+- asymmetric alignment when it improves hierarchy
+- restrained, high-contrast use of the accent color
+
+Do not turn the application into a poster or magazine layout. Swiss influence should sharpen the workspace, not reduce usability.
+
+## 2. Product character
 
 This is a personal technical knowledge workspace used primarily for daily software-development notes and reference material.
 
@@ -10,8 +65,8 @@ The interface should feel like:
 
 - a well-designed technical publication
 - a developer notebook
-- a quiet professional writing tool
-- an editorial knowledge workspace
+- a precise productivity tool
+- a quiet editorial knowledge workspace
 
 It must not feel like:
 
@@ -21,9 +76,7 @@ It must not feel like:
 - a Notion clone
 - a marketing website
 
-The content itself is the primary visual element.
-
-## 2. Core visual principles
+## 3. Core visual principles
 
 Prefer:
 
@@ -39,7 +92,66 @@ Prefer:
 
 When choosing between a decorative solution and a typographic solution, choose the typographic solution.
 
-## 3. Anti-patterns
+## 4. Color philosophy
+
+The product is **not a black-and-white interface**, but it is intentionally color-restrained.
+
+Pure monochrome can become visually flat in a knowledge workspace, while a highly colorful interface competes with technical content and quickly resembles generic SaaS UI. The preferred solution is a warm neutral foundation with one recognizable product accent and a very small semantic color layer.
+
+Target visual distribution:
+
+- **85–90% warm neutrals** for backgrounds, text, dividers and surfaces
+- **8–12% primary accent** for interaction, selection and identity
+- **0–3% semantic colors** for actual state/meaning
+
+### Light palette
+
+| Token | Value | Purpose |
+| --- | --- | --- |
+| Background | `#F7F5F0` | Warm paper-like application background |
+| Surface | `#FCFBF7` | Inputs and elevated-but-flat working surfaces |
+| Surface muted | `#F1F0EA` | Quiet secondary surface |
+| Sidebar | `#EFEEE8` | Navigation separation without a hard panel look |
+| Text | `#1D211E` | Primary ink |
+| Text muted | `#606861` | Secondary copy |
+| Text subtle | `#858C85` | Metadata and tertiary labels |
+| Border | `#D9D8D0` | Normal divider |
+| Border strong | `#C5C7BF` | Controls and stronger separation |
+| Accent | `#2F6863` | Deep petrol/teal product accent |
+| Accent strong | `#24534F` | High-emphasis accent text |
+| Accent muted | `#557E79` | Low-emphasis metadata/tags |
+| Accent soft | `#DDEAE6` | Selected and focused background tint |
+| Row hover | `#F1F5F2` | Subtle productivity-style hover feedback |
+
+The deep petrol/teal accent is selected because it feels technical and calm without falling into the common purple/bright-blue AI-startup palette.
+
+### Semantic colors
+
+Semantic colors must communicate actual meaning, never decoration:
+
+- success/public: muted green
+- warning/unlisted/attention: muted amber
+- destructive/error: muted red
+
+Do not assign different colors to collections or cards merely to make the interface lively.
+
+### Color usage rules
+
+Use the primary accent for:
+
+- active navigation indicator
+- primary action
+- links and link hover
+- focus state
+- selection
+- meaningful editorial index/count
+- collection or metadata emphasis when useful for scanning
+
+Keep ordinary tags low-saturation. Avoid rainbow tags.
+
+Use semantic colors only when a state really has semantic meaning, such as `Public`, `Unlisted`, validation errors, success or destructive actions.
+
+## 5. Anti-patterns
 
 Do not use by default:
 
@@ -51,11 +163,12 @@ Do not use by default:
 - KPI/dashboard cards
 - excessive shadows
 - excessive border radius
-- purple/blue AI-startup visual language
+- purple/bright-blue AI-startup visual language
 - giant marketing headings
 - floating containers without semantic purpose
 - icons beside every label
 - unnecessary badges and pills
+- rainbow tag systems
 
 Avoid excessive use of Tailwind patterns such as:
 
@@ -67,7 +180,7 @@ Avoid excessive use of Tailwind patterns such as:
 
 A component must not become a card merely because it contains multiple pieces of information.
 
-## 4. Layout
+## 6. Layout
 
 ### Desktop workspace
 
@@ -98,18 +211,18 @@ Design mobile behavior intentionally rather than shrinking the desktop layout.
 - primary actions remain reachable
 - unnecessary chrome is reduced
 
-## 5. Typography
+## 7. Typography
 
 Typography should create most of the hierarchy.
 
 Preferred direction:
 
-- Interface/content sans: Geist or the established project sans-serif
-- Code: JetBrains Mono or the established project monospace
+- interface/content sans: Geist or the established project sans-serif
+- code: Geist Mono, JetBrains Mono, or the established project monospace
 
 Approximate hierarchy:
 
-- article title: 30–34px, medium/semibold
+- article/page title: 30–34px, medium/semibold
 - H1: 24–28px
 - H2: 19–22px
 - H3: 16–18px
@@ -118,9 +231,11 @@ Approximate hierarchy:
 - metadata: 12–13px
 - code: 13–14px
 
+Swiss influence may use small uppercase labels with moderate tracking and numeric/tabular data where meaningful. Do not uppercase body copy or ordinary navigation merely for style.
+
 Do not use bold weight everywhere.
 
-## 6. Spacing
+## 8. Spacing
 
 Use a deliberate spacing scale primarily based on:
 
@@ -130,12 +245,15 @@ Use a deliberate spacing scale primarily based on:
 
 Avoid arbitrary spacing unless alignment requires it.
 
-## 7. Borders, radius and shadows
+Editorial whitespace must not become marketing-page emptiness. Daily-use density still matters.
+
+## 9. Borders, radius and shadows
 
 ### Borders
 
 - subtle 1px neutral borders
 - prefer dividers between list items over fully boxed items
+- accent-colored borders are reserved for selection/focus or meaningful emphasis
 
 ### Radius
 
@@ -153,29 +271,7 @@ Use shadows only for truly layered UI such as:
 - popovers
 - dialogs
 
-## 8. Color
-
-Use a predominantly neutral palette.
-
-Color communicates:
-
-- interaction
-- selection
-- state
-- meaning
-
-Color should not be added simply to make a page look more lively.
-
-Use one main accent color for things such as:
-
-- links
-- primary actions
-- selected states
-- focus states
-
-Avoid assigning unrelated decorative colors to sections/cards.
-
-## 9. Knowledge lists
+## 10. Knowledge lists
 
 Knowledge lists should usually be editorial lists separated by dividers, not grids of floating cards.
 
@@ -184,11 +280,14 @@ A list item may contain:
 - title
 - concise description
 - collection/tags
+- visibility
 - updated date
 
 Scanning speed matters more than visual decoration.
 
-## 10. Sidebar
+Linear-style influence may appear as a very subtle full-row hover background, but the item must still read as a list row rather than a card.
+
+## 11. Sidebar
 
 Sidebar should resemble a notebook/document navigator rather than an admin dashboard.
 
@@ -213,9 +312,9 @@ Drafts
 New note
 ```
 
-Active states should be subtle. Avoid oversized pill navigation.
+Active states should use a thin accent indicator and a soft accent tint. Avoid oversized pill navigation.
 
-## 11. Editor
+## 12. Editor
 
 The writing surface is the focus.
 
@@ -226,7 +325,7 @@ The writing surface is the focus.
 
 Avoid a giant toolbar containing every possible feature.
 
-## 12. Public reading page
+## 13. Public reading page
 
 Public knowledge pages should look like technical editorial pages, not marketing landing pages.
 
@@ -240,7 +339,7 @@ Avoid:
 
 Public and private experiences should share typography, spacing, colors and component DNA.
 
-## 13. Reusable primitives
+## 14. Reusable primitives
 
 Prefer a small set of reusable primitives such as:
 
@@ -255,7 +354,13 @@ Prefer a small set of reusable primitives such as:
 
 Do not create a generic `Card` abstraction unless there is a semantic contained-surface use case that actually needs it.
 
-## 14. AI-generated UI review rule
+## 15. Dark mode
+
+Dark mode is not yet an approved reference theme. Do not automatically invert the light palette or independently invent a dark palette.
+
+When dark mode is implemented, it must preserve the same warm-neutral hierarchy, restrained accent usage and readability goals, and it should be reviewed as a separate reference state.
+
+## 16. AI-generated UI review rule
 
 After implementing a UI, explicitly review it for generic AI-generated SaaS patterns.
 
@@ -265,8 +370,11 @@ Ask:
 - Is radius being used excessively?
 - Are icons decorative rather than informative?
 - Is there unnecessary color?
+- Is the interface so monochrome that hierarchy/identity feels flat?
+- Is accent color being used for meaning rather than decoration?
 - Is spacing oversized like a marketing page?
 - Is typography strong enough to carry hierarchy without decoration?
 - Does mobile feel intentionally designed?
+- Does the result still reflect the 60/25/15 design direction?
 
 Remove generic patterns before considering the UI complete.
