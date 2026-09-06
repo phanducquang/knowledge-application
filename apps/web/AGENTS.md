@@ -6,15 +6,16 @@ Before any UI change, read these repository-level documents in order:
 2. `../../docs/REFERENCE_SCREENS.md`
 3. `../../docs/AI_CODING_GUIDELINES.md`
 
-The Knowledge List and Knowledge Reading Page are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius and responsive behavior rather than inventing a new visual system.
+The Knowledge List, Knowledge Reading Page and Knowledge Editor are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances and authoring patterns rather than inventing a new visual system.
 
 Approved shell rule:
 
 - desktop: persistent sidebar + page content, no global fixed top navbar
 - mobile: minimal top application bar + navigation drawer + page content
 - page-specific context/actions belong in the page header inside the content area
+- route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
 
-The Knowledge Editor is the current reference screen under review. It must inherit the approved list/reading primitives and may add editor-specific patterns such as formatting controls, save-state feedback, article settings and richer Markdown-authoring interactions.
+The Search screen is the current reference screen under review. It must inherit the approved list/result hierarchy and remain information-dense, keyboard-friendly and flat rather than becoming a search dashboard or card grid.
 
 Editor responsibility:
 
@@ -29,5 +30,13 @@ Editor responsibility:
 - preserve Markdown as the canonical content format even when Crepe presents WYSIWYG/block-style interactions
 - Crepe `ImageBlock` remains disabled until object-storage upload/persistence is implemented; Crepe AI remains disabled until the AI phase has a real provider and product flow
 - theme Crepe through its CSS variables and scoped `.knowledge-markdown-editor` overrides so it uses the established warm-neutral + petrol/teal visual system rather than introducing a second product theme
+
+Search responsibility:
+
+- `/search` is the reference Search route and accepts an initial `q` query parameter
+- search results reuse the approved Knowledge List row treatment rather than introducing search-specific cards
+- keyboard navigation must remain first-class: the search field can move focus into results and result links support moving up/down and returning to the search field
+- empty, searching and no-match states should stay quiet and useful rather than becoming illustrated or promotional empty states
+- the current implementation searches mock client data only; production search should follow the architecture decision to use PostgreSQL Full Text Search for MVP rather than treating client-side filtering as final backend behavior
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
