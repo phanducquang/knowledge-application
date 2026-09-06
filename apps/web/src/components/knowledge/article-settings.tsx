@@ -151,7 +151,7 @@ function CollectionCombobox({
             setQuery("");
           }
         }}
-        className="mt-1.5 inline-flex min-h-7 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2 text-[11px] font-medium leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        className="mt-1.5 inline-flex min-h-7 max-w-full items-center gap-1 border border-[var(--border-strong)] bg-[var(--surface)] px-1.5 text-[10px] font-normal leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-2 sm:text-[11px] xl:min-h-6 xl:px-1.5 xl:text-[10px]"
       >
         <span className="truncate">{value}</span>
         <span aria-hidden="true" className="text-[8px] text-[var(--text-subtle)]">
@@ -183,7 +183,7 @@ function CollectionCombobox({
                   }
                 }}
                 placeholder="Search collections..."
-                className="h-8 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[11px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
+                className="h-8 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[10px] font-normal leading-4 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] xl:h-7 xl:text-[9px]"
               />
             </label>
 
@@ -198,13 +198,13 @@ function CollectionCombobox({
                     role="option"
                     aria-selected={selected}
                     onClick={() => selectCollection(collection)}
-                    className={`flex min-h-7 w-full items-center justify-between gap-3 px-2 text-left text-[11px] transition-colors hover:bg-[var(--row-hover)] ${
+                    className={`flex min-h-7 w-full items-center justify-between gap-3 px-2 text-left text-[10px] transition-colors hover:bg-[var(--row-hover)] xl:min-h-6 xl:text-[9px] ${
                       selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
                     }`}
                   >
                     <span>{collection}</span>
                     {selected && (
-                      <span aria-hidden="true" className="text-[10px] text-[var(--accent)]">
+                      <span aria-hidden="true" className="text-[9px] text-[var(--accent)]">
                         ✓
                       </span>
                     )}
@@ -213,7 +213,7 @@ function CollectionCombobox({
               })}
 
               {filteredCollections.length === 0 && (
-                <p className="px-2 py-2 text-[10px] text-[var(--text-subtle)]">No matching collection.</p>
+                <p className="px-2 py-2 text-[9px] text-[var(--text-subtle)]">No matching collection.</p>
               )}
             </div>
           </div>
@@ -221,7 +221,7 @@ function CollectionCombobox({
           <button
             type="button"
             onClick={handleCreateAction}
-            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[11px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[10px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] xl:py-1.5 xl:text-[9px]"
           >
             {canCreate ? `+ Create “${normalizedDraft}”` : "+ New collection"}
           </button>
