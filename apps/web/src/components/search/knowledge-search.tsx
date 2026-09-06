@@ -10,6 +10,8 @@ interface KnowledgeSearchProps {
   initialQuery?: string;
 }
 
+const suggestedQueries = ["Spring Boot", "Redis", "Elasticsearch", "Nginx"];
+
 function scoreItem(item: KnowledgeListItemData, query: string) {
   const normalizedQuery = query.toLowerCase();
   const title = item.title.toLowerCase();
@@ -133,13 +135,14 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
     }
   };
 
+  const applySuggestion = (value: string) => {
+    setQuery(value);
+    inputRef.current?.focus();
+  };
+
   return (
     <div>
-      <form
-        role="search"
-        onSubmit={(event) => event.preventDefault()}
-        className="max-w-[720px]"
-      >
+      <form role="search" onSubmit={(event) => event.preventDefault()} className="max-w-[720px]">
         <label className="block" htmlFor="knowledge-search-page">
           <span className="sr-only">Search knowledge</span>
           <input
@@ -173,54 +176,108 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
         </div>
       </form>
 
-      <section className="mt-9" aria-labelledby="search-results-heading" aria-busy={searching}>
-        <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
-          <h2 id="search-results-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
-            Search results
-          </h2>
-          <span className="text-[12px] tabular-nums text-[var(--text-subtle)]" aria-live="polite">
-            {searching
-              ? "Searching…"
-              : hasQuery
-                ? `${results.length} ${results.length === 1 ? "note" : "notes"}`
-                : `${items.length} notes available`}
-          </span>
-        </div>
+      {!hasQuery && (
+        <section className="flex min-h-[340px] items-center justify-center py-12 text-center" aria-label="Search guidance">
+          <div className="max-w-[520px]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+              Search knowledge
+            </p>
+            <h2 className="mt-3 text-[22px] font-medium tracking-[-0.025em] text-[var(--text)] sm:text-[24px]">
+              Find the note you need.
+            </h2>
+            <p className="mx-auto mt-3 max-w-[460px] text-[14px] leading-6 text-[var(--text-muted)]">
+              Search across note titles, summaries, collections, and tags. Start with a technology, topic, or phrase you remember.
+            </p>
 
-        {!hasQuery && (
-          <div className="border-b border-[var(--border)] py-8 sm:py-10">
-            <p className="text-[15px] font-medium text-[var(--text)]">Search your technical knowledge.</p>
-            <p className="mt-2 max-w-xl text-[13px] leading-6 text-[var(--text-muted)]">
-              Start with a technology, topic, collection, or phrase from a note. Try Spring Boot, Redis, Elasticsearch, or Nginx.
+            <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Suggested searches">
+              {suggestedQueries.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => applySuggestion(suggestion)}
+                  className="border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+
+            <p className="mt-7 text-[11px] tabular-nums text-[var(--text-subtle)]">{items.length} notes available</p>
+          </div>
+        </section>
+      )}
+
+      {hasQuery && searching && (
+        <section
+          className="flex min-h-[300px] items-center justify-center py-12 text-center"
+          aria-label="Searching"
+          aria-live="polite"
+        >
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Searching</p>
+            <p className="mt-3 text-[16px] text-[var(--text-muted)]">
+              Looking for <span className="font-medium text-[var(--text)]">“{query.trim()}”</span>…
             </p>
           </div>
-        )}
+        </section>
+      )}
 
-        {hasQuery && searching && (
-          <div className="border-b border-[var(--border)] py-8 text-[13px] text-[var(--text-muted)]">
-            Searching for <span className="font-medium text-[var(--text)]">“{query.trim()}”</span>…
-          </div>
-        )}
-
-        {hasQuery && !searching && results.length === 0 && (
-          <div className="border-b border-[var(--border)] py-8 sm:py-10">
-            <p className="text-[15px] font-medium text-[var(--text)]">
-              No notes found for “{committedQuery}”.
+      {hasQuery && !searching && results.length === 0 && (
+        <section className="flex min-h-[340px] items-center justify-center py-12 text-center" aria-label="No search results">
+          <div className="max-w-[520px]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">No matches</p>
+            <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
+              Nothing found for “{committedQuery}”.
+            </h2>
+            <p className="mx-auto mt-3 max-w-[450px] text-[14px] leading-6 text-[var(--text-muted)]">
+              Try a shorter phrase, a collection name, or a tag. You can also start again with one of the common technical topics below.
             </p>
-            <p className="mt-2 text-[13px] leading-6 text-[var(--text-muted)]">
-              Try fewer words, a collection name, or one of the tags attached to the note.
-            </p>
-          </div>
-        )}
 
-        {hasQuery && !searching && results.length > 0 && (
+            <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Alternative searches">
+              {suggestedQueries.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => applySuggestion(suggestion)}
+                  className="border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                inputRef.current?.focus();
+              }}
+              className="mt-7 text-[12px] text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+            >
+              Clear search
+            </button>
+          </div>
+        </section>
+      )}
+
+      {hasQuery && !searching && results.length > 0 && (
+        <section className="mt-9" aria-labelledby="search-results-heading">
+          <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
+            <h2 id="search-results-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
+              Search results
+            </h2>
+            <span className="text-[12px] tabular-nums text-[var(--text-subtle)]" aria-live="polite">
+              {results.length} {results.length === 1 ? "note" : "notes"}
+            </span>
+          </div>
+
           <div ref={resultsRef} onKeyDown={handleResultsKeyDown}>
             {results.map((item) => (
               <KnowledgeListItem key={item.id} item={item} />
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }
