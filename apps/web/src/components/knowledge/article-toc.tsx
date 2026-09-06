@@ -21,22 +21,28 @@ function TocLinks() {
   );
 }
 
-export function ArticleToc() {
-  return (
-    <>
+interface ArticleTocProps {
+  variant: "inline" | "aside";
+}
+
+export function ArticleToc({ variant }: ArticleTocProps) {
+  if (variant === "inline") {
+    return (
       <details className="mb-8 border-y border-[var(--border)] py-3 xl:hidden">
         <summary className="cursor-pointer text-[12px] font-medium text-[var(--text-muted)]">On this page</summary>
         <div className="mt-3">
           <TocLinks />
         </div>
       </details>
+    );
+  }
 
-      <aside className="hidden xl:block" aria-label="Table of contents">
-        <div className="sticky top-8">
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">On this page</p>
-          <TocLinks />
-        </div>
-      </aside>
-    </>
+  return (
+    <aside className="hidden xl:block" aria-label="Table of contents">
+      <div className="sticky top-8">
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">On this page</p>
+        <TocLinks />
+      </div>
+    </aside>
   );
 }
