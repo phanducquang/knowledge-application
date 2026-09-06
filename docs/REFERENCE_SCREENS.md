@@ -63,22 +63,32 @@ This screen and Knowledge List are the primary approved visual references for su
 
 Purpose:
 
-- establish writing surface
-- establish title editing
+- establish the complete authoring surface for a Knowledge item, not only the Markdown body
+- establish title and summary editing
+- establish content editing
+- establish editable visibility, collection and tags
 - establish compact formatting controls
 - establish save/autosave feedback
 - establish editor/mobile behavior
 
 Current reference direction:
 
-- reuse the Reading Page content width and title hierarchy so writing and reading feel like the same document system
+- the editor is responsible for editing the user-controlled Knowledge fields: `title`, `summary`, `content`, `visibility`, `collection`, and `tags`
+- system-managed metadata such as `updatedAt` is displayed as read-only and must not look editable
+- slug should normally be generated from the title when the article is created and remain stable afterward; it is not a normal editor field
+- public/unlisted link mechanics and share-token management belong to the Share flow rather than the main writing surface
+- the editor title is intentionally more compact than the Reading Page title: approximately 30px on mobile and 32px on larger screens, so it feels like an editable working document rather than a publication headline
+- summary remains visually secondary at approximately 15–16px
+- reuse the Reading Page content width so writing and reading feel like the same document system
 - keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
 - show save state as quiet status feedback rather than a dominant control
-- desktop document settings use a narrow metadata rail; mobile settings collapse into an expandable section
+- desktop article settings use a narrow property rail; mobile settings collapse into an expandable section
+- editable property values use the same neutral text hierarchy; accent is reserved for focus/interaction rather than making `Collection` look more important than `Visibility`
+- semantic color may be used when a state needs to communicate actual meaning, but editable form values should not rely on color alone
 - page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
-- the current editor is visual/reference-only: formatting buttons, autosave status and persistence are placeholders until behavior is implemented
+- the current editor is visual/reference-only: formatting buttons, autosave behavior and persistence are placeholders until functionality is implemented
 
-The editor should feel quiet and content-first.
+The editor should feel quiet, complete and content-first: a user should be able to understand that all meaningful article data can be maintained from this screen without turning it into an admin form.
 
 ## 4. Search
 
