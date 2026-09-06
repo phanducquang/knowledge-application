@@ -42,7 +42,7 @@ function VisibilityControl({
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(option)}
-              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1 pt-0.5 text-center text-[11px] font-medium leading-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1 pt-0.5 text-center text-[12px] font-medium leading-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
                 selected
                   ? "text-[var(--accent-strong)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text)]"
@@ -151,7 +151,7 @@ function CollectionCombobox({
             setQuery("");
           }
         }}
-        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[11px] font-normal leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-[12px] xl:min-h-7 xl:px-2.5 xl:py-1 xl:text-[11px]"
+        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[12px] font-normal leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-[13px] xl:min-h-7 xl:px-2.5 xl:py-1 xl:text-[12px]"
       >
         <span className="truncate">{value}</span>
         <span aria-hidden="true" className="text-[9px] text-[var(--text-subtle)]">
@@ -183,7 +183,7 @@ function CollectionCombobox({
                   }
                 }}
                 placeholder="Search collections..."
-                className="h-7 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[10px] font-normal leading-4 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] xl:h-7 xl:text-[10px]"
+                className="h-7 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[11px] font-normal leading-4 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] xl:h-7 xl:text-[11px]"
               />
             </label>
 
@@ -198,7 +198,7 @@ function CollectionCombobox({
                     role="option"
                     aria-selected={selected}
                     onClick={() => selectCollection(collection)}
-                    className={`flex min-h-7 w-full items-center justify-between gap-3 px-2 text-left text-[10px] transition-colors hover:bg-[var(--row-hover)] xl:min-h-6 xl:text-[10px] ${
+                    className={`flex min-h-7 w-full items-center justify-between gap-3 px-2 text-left text-[11px] transition-colors hover:bg-[var(--row-hover)] xl:min-h-6 xl:text-[11px] ${
                       selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
                     }`}
                   >
@@ -221,7 +221,7 @@ function CollectionCombobox({
           <button
             type="button"
             onClick={handleCreateAction}
-            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[10px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] xl:py-1.5 xl:text-[10px]"
+            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[11px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] xl:py-1.5 xl:text-[11px]"
           >
             {canCreate ? `+ Create “${normalizedDraft}”` : "+ New collection"}
           </button>
@@ -256,7 +256,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex min-h-6 items-center gap-1 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-1.5 text-[11px] text-[var(--text)]"
+              className="inline-flex min-h-6 items-center gap-1 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-1.5 text-[12px] text-[var(--text)]"
             >
               #{tag}
               <button
@@ -289,7 +289,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
           }}
           onBlur={addTag}
           placeholder="Add tag and press Enter"
-          className="h-7 w-full bg-transparent px-0 text-[11px] leading-4 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          className="h-7 w-full bg-transparent px-0 text-[12px] leading-4 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
         />
       </div>
     </div>
@@ -321,7 +321,7 @@ export function ArticleSettings({
 
       <div>
         <p className={propertyLabelClassName}>Updated</p>
-        <p className="mt-1.5 text-[11px] tabular-nums text-[var(--text-muted)]">{updatedAt}</p>
+        <p className="mt-1.5 text-[12px] tabular-nums text-[var(--text-muted)]">{updatedAt}</p>
       </div>
     </div>
   );
