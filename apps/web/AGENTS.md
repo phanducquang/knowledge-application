@@ -14,6 +14,13 @@ Approved shell rule:
 - mobile: minimal top application bar + navigation drawer + page content
 - page-specific context/actions belong in the page header inside the content area
 
-The Knowledge Editor is the current reference screen under review. It must inherit the approved list/reading primitives and may add only editor-specific patterns such as compact formatting controls, save-state feedback and document settings.
+The Knowledge Editor is the current reference screen under review. It must inherit the approved list/reading primitives and may add only editor-specific patterns such as compact formatting controls, save-state feedback and article settings.
+
+Editor responsibility:
+
+- user-editable Knowledge fields belong in the editor: title, summary, Markdown content, visibility, collection and tags
+- system-managed fields such as updated timestamps remain read-only
+- slug is not a routine editor field; sharing/link-token mechanics belong to the Share flow
+- editable article-setting values use one neutral hierarchy; accent indicates interaction/focus rather than arbitrary importance between fields
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
