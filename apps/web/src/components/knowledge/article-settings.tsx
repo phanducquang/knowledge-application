@@ -42,7 +42,7 @@ function VisibilityControl({
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(option)}
-              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1.5 pt-1 text-center text-[11px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1 pt-0.5 text-center text-[10px] font-medium leading-4 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
                 selected
                   ? "text-[var(--accent-strong)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text)]"
@@ -151,10 +151,10 @@ function CollectionCombobox({
             setQuery("");
           }
         }}
-        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 text-[12px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        className="mt-1.5 inline-flex min-h-7 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2 text-[11px] font-medium leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         <span className="truncate">{value}</span>
-        <span aria-hidden="true" className="text-[9px] text-[var(--text-subtle)]">
+        <span aria-hidden="true" className="text-[8px] text-[var(--text-subtle)]">
           ▾
         </span>
       </button>
@@ -289,7 +289,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
           }}
           onBlur={addTag}
           placeholder="Add tag and press Enter"
-          className="h-8 w-full bg-transparent px-0 text-[11px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          className="h-7 w-full bg-transparent px-0 text-[10px] leading-4 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
         />
       </div>
     </div>
