@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 
 interface WorkspaceShellProps {
@@ -8,6 +9,7 @@ interface WorkspaceShellProps {
 }
 
 export function WorkspaceShell({ children }: WorkspaceShellProps) {
+  const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -20,7 +22,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-[236px] lg:border-r lg:border-[var(--border)]">
-        <Sidebar />
+        <Sidebar currentPath={pathname} />
       </div>
 
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-5 lg:hidden">
@@ -47,6 +49,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
           />
           <div id="mobile-navigation" className="relative h-full w-[min(82vw,300px)] border-r border-[var(--border)]">
             <Sidebar
+              currentPath={pathname}
               onNavigate={() => setMobileNavOpen(false)}
               onClose={() => setMobileNavOpen(false)}
             />
