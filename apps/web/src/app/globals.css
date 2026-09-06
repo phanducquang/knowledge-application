@@ -56,6 +56,60 @@ samp {
   font-family: var(--font-geist-mono), monospace;
 }
 
+.knowledge-markdown-editor {
+  min-height: 760px;
+  background: var(--surface);
+}
+
+.knowledge-markdown-editor .milkdown {
+  --crepe-base-font-size: 15px;
+  --crepe-color-background: var(--surface);
+  --crepe-color-surface: var(--surface);
+  --crepe-color-surface-low: var(--surface-muted);
+  --crepe-color-on-background: var(--text);
+  --crepe-color-on-surface: var(--text);
+  --crepe-color-on-surface-variant: var(--text-muted);
+  --crepe-color-primary: var(--accent);
+  --crepe-color-secondary: var(--accent-soft);
+  --crepe-color-on-secondary: var(--accent-strong);
+  --crepe-color-outline: var(--border-strong);
+  --crepe-color-inverse: var(--text);
+  --crepe-color-on-inverse: var(--accent-contrast);
+  --crepe-color-inline-code: var(--accent-strong);
+  --crepe-color-error: var(--danger);
+  --crepe-color-hover: var(--row-hover);
+  --crepe-color-selected: var(--accent-soft);
+  --crepe-color-inline-area: var(--surface-muted);
+  --crepe-font-title: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --crepe-font-default: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --crepe-font-code: var(--font-geist-mono), monospace;
+  --crepe-shadow-1: 0 1px 2px rgb(29 33 30 / 10%);
+  --crepe-shadow-2: 0 4px 12px rgb(29 33 30 / 12%);
+  min-height: 760px;
+  background: var(--surface);
+}
+
+.knowledge-markdown-editor .milkdown .editor {
+  min-height: 720px;
+  padding: 24px 32px 64px;
+}
+
+.knowledge-markdown-editor .milkdown .editor:focus {
+  outline: none;
+}
+
+@media (max-width: 639px) {
+  .knowledge-markdown-editor,
+  .knowledge-markdown-editor .milkdown {
+    min-height: 620px;
+  }
+
+  .knowledge-markdown-editor .milkdown .editor {
+    min-height: 580px;
+    padding: 20px 16px 48px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
