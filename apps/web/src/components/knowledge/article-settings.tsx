@@ -151,7 +151,7 @@ function CollectionCombobox({
             setQuery("");
           }
         }}
-        className="mt-1.5 inline-flex min-h-7 max-w-full items-center gap-1 border border-[var(--border-strong)] bg-[var(--surface)] px-1.5 text-[10px] font-normal leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-2 sm:text-[11px] xl:min-h-6 xl:px-1.5 xl:text-[10px]"
+        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[10px] font-normal leading-4 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-[11px] xl:min-h-7 xl:px-2.5 xl:py-1 xl:text-[10px]"
       >
         <span className="truncate">{value}</span>
         <span aria-hidden="true" className="text-[8px] text-[var(--text-subtle)]">
@@ -183,7 +183,7 @@ function CollectionCombobox({
                   }
                 }}
                 placeholder="Search collections..."
-                className="h-8 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[10px] font-normal leading-4 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] xl:h-7 xl:text-[9px]"
+                className="h-7 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[9px] font-normal leading-4 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] xl:h-6 xl:text-[8px]"
               />
             </label>
 
