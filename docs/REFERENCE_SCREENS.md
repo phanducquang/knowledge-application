@@ -137,8 +137,12 @@ Current reference direction:
 - results reuse `KnowledgeListItem` and therefore keep the approved editorial rows, metadata hierarchy, dividers and subtle hover/focus treatment rather than introducing search-result cards
 - keyboard navigation is first-class: Arrow Down from the search field moves into the result links, Arrow Up/Down moves between result links, Enter follows the focused result, and Escape returns focus to the search field
 - result rows use `focus-within` feedback so keyboard navigation receives the same quiet row emphasis as pointer hover
-- the page exposes quiet states for an empty query, searching, no matches and matched results; do not introduce illustrated or promotional empty states
-- the empty-query state explains searchable fields and gives representative technical terms rather than showing every note by default
+- Search has distinct visual modes rather than representing every state as a result list: idle, searching, no matches, and matched results are separate workspace states
+- the `Search results` heading, result count divider and editorial result rows render only when there are actual matched results
+- the idle state uses a centered, open workspace treatment with concise guidance, representative search suggestions and the available-note count; it must not resemble a list row or a bordered result container
+- the no-match state uses the same independent workspace-state grammar, clearly names the unsuccessful query and exposes lightweight alternative searches plus a clear-search action
+- searching uses a quiet centered progress state rather than temporarily rendering a result-list shell with no results
+- these idle/searching/no-match states remain content-first and flat; do not turn them into large cards, illustrated SaaS empty states or promotional panels
 - the query is reflected in the browser URL without creating a new history entry for each keystroke
 - the current search implementation uses mock/client-side data only; production MVP search must still follow the architecture decision to use PostgreSQL Full Text Search, and client filtering must not become the final backend search architecture
 
