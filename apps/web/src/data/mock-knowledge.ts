@@ -1,4 +1,4 @@
-import type { KnowledgeListItemData } from "@/types/knowledge";
+import type { KnowledgeArticleData, KnowledgeListItemData } from "@/types/knowledge";
 
 export const mockKnowledgeItems: KnowledgeListItemData[] = [
   {
@@ -11,6 +11,7 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     visibility: "Private",
     updatedAt: "Sep 6",
     updatedAtIso: "2026-09-06",
+    href: "/knowledge/spring-webclient-timeout",
   },
   {
     id: "redis-conditional-auto-configuration",
@@ -57,3 +58,10 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     updatedAtIso: "2026-08-17",
   },
 ];
+
+export const mockReferenceArticle: KnowledgeArticleData = {
+  ...mockKnowledgeItems[0],
+  lead:
+    "A practical note on where to enforce timeouts in a Reactor chain, how errors propagate, and how to preserve enough context for observability without duplicating recovery logic.",
+  readTime: "6 min read",
+};

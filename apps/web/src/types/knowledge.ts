@@ -9,4 +9,10 @@ export interface KnowledgeListItemData {
   visibility: KnowledgeVisibility;
   updatedAt: string;
   updatedAtIso: string;
+  href?: string;
+}
+
+export interface KnowledgeArticleData extends KnowledgeListItemData {
+  lead: string;
+  readTime: string;
 }
