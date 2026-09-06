@@ -56,11 +56,11 @@ Approved decisions:
 - code blocks, tables, lists and blockquotes remain flat editorial elements with borders rather than card containers
 - the article footer uses the explicit label `Collection & tags` rather than editorial wording such as `Filed under`
 
-This screen and Knowledge List are the primary approved visual references for subsequent authoring/search work.
+This screen and Knowledge List are primary approved visual references for subsequent authoring/search work.
 
 ## 3. Knowledge Editor
 
-**Status: In progress — reference screen #3.**
+**Status: Approved reference screen — September 6, 2026.**
 
 Purpose:
 
@@ -68,11 +68,11 @@ Purpose:
 - establish title and summary editing
 - establish content editing
 - establish editable visibility, collection and tags
-- establish compact formatting controls
-- establish save/autosave feedback
+- establish Markdown authoring interactions
+- establish save/autosave feedback placement
 - establish editor/mobile behavior
 
-Current reference direction:
+Approved decisions:
 
 - the editor is responsible for editing the user-controlled Knowledge fields: `title`, `summary`, `content`, `visibility`, `collection`, and `tags`
 - system-managed metadata such as `updatedAt` is displayed as read-only and must not look editable
@@ -86,8 +86,8 @@ Current reference direction:
 - the Markdown Content editor uses **Milkdown + Crepe** rather than a hand-built textarea toolbar
 - Crepe `TopBar` is enabled so common structure/format/list/insert/block commands remain available while writing; the floating selection toolbar also remains enabled
 - Crepe block editing remains enabled, including slash commands, block handles and drag/drop; these interactions are explicitly allowed inside Content even when they resemble familiar Notion-style authoring patterns
-- Crepe CodeMirror, list, link and table features remain available for technical writing; code blocks should be treated as a first-class authoring primitive
-- the top-bar heading selector currently exposes Text, H2, H3 and H4 because the Knowledge title is the document-level title outside the Markdown body
+- Crepe CodeMirror, list, link and table features remain available for technical writing; code blocks are a first-class authoring primitive
+- the top-bar heading selector exposes Text, H2, H3 and H4 because the Knowledge title is the document-level title outside the Markdown body
 - Crepe `ImageBlock` remains disabled until image upload/object-storage persistence is implemented, so the UI must not advertise an upload action that cannot be saved reliably
 - Crepe AI remains disabled until the AI phase has a configured provider and an approved product flow
 - Markdown remains the canonical content value; Crepe's `markdownUpdated` event updates the current Markdown representation even though the visible authoring surface is WYSIWYG/block-oriented
@@ -97,8 +97,8 @@ Current reference direction:
 - show save state as quiet status feedback rather than a dominant control
 - desktop article properties use a narrow property rail without an extra `Article settings` heading; mobile keeps `Article settings` only as the label for the expandable properties section
 - property typography must stay visibly subordinate to the authoring surface: labels remain around 10px uppercase micro-labels, while values and controls may use a larger readable scale as long as they remain secondary to title/summary/content
-- `Visibility` uses one visible three-option radio group because the option set is small and fixed; visually it should read as lightweight text tabs with a subtle selected indicator, not three boxed buttons
-- the visibility control must remain stable for longer labels such as `Unlisted`; selection must not change control dimensions or cause wrapping/layout shift
+- `Visibility` uses one visible three-option radio group because the option set is small and fixed; visually it reads as lightweight text tabs with a subtle selected indicator, not three boxed buttons
+- the visibility control remains stable for longer labels such as `Unlisted`; selection must not change control dimensions or cause wrapping/layout shift
 - `Collection` uses a compact searchable combobox because collections are extensible; the popover supports search, existing selection, and creating a new collection
 - the collection popover closes when interaction moves outside its trigger/popover boundary
 - the collection popover always exposes a creation entry: it shows `+ New collection` before a draft name exists, then changes to `+ Create “<name>”` when the typed value does not match an existing collection
@@ -109,12 +109,14 @@ Current reference direction:
 - editable property values use the same neutral text hierarchy; accent is reserved for selected/focus/interaction states rather than making one property appear more important than another
 - semantic color may be used when a state needs to communicate actual meaning, but editable form values should not rely on color alone
 - page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
-- implementation/reference disclaimers should not be displayed inside the user-facing editor UI; development status belongs in project documentation instead
-- autosave and backend persistence remain implementation work before the Editor reference screen is approved; the Markdown authoring engine itself is now integrated
+- implementation/reference disclaimers are not displayed inside the user-facing editor UI; development status belongs in project documentation instead
+- autosave and backend persistence remain product implementation work, but they do not block the approved Editor reference UI unless they later require a meaningful interaction change
 
-The editor should feel quiet, complete and content-first: a user should be able to understand that all meaningful article data can be maintained from this screen without turning it into an admin form.
+The approved editor is quiet, complete and content-first: a user can understand that all meaningful article data can be maintained from this screen without turning it into an admin form.
 
 ## 4. Search
+
+**Status: In progress — reference screen #4.**
 
 Purpose:
 
@@ -122,8 +124,25 @@ Purpose:
 - establish keyboard navigation
 - establish result hierarchy
 - establish empty/loading states
+- establish how search connects to the approved Knowledge List shell
 
-Search results should remain information-dense and consistent with Knowledge List.
+Current reference direction:
+
+- Search lives at `/search` and accepts an initial `q` query parameter so searches can be reached directly from the Knowledge List search field
+- the Knowledge List search field submits to `/search?q=...` rather than pretending to be an inactive local field
+- the Search page reuses the approved workspace shell, 1080px content frame, page-title hierarchy and warm-neutral + petrol/teal visual system
+- Search is exposed as a route-aware primary sidebar destination alongside All notes; the sidebar must not leave All notes visually selected while Search is active
+- the search field is the dominant interaction on the page but remains a flat bordered control, not a floating command-card treatment
+- the current prototype searches title, description/summary, collection and tags; relevance prioritizes title matches, then collection/tag matches, then description matches
+- results reuse `KnowledgeListItem` and therefore keep the approved editorial rows, metadata hierarchy, dividers and subtle hover/focus treatment rather than introducing search-result cards
+- keyboard navigation is first-class: Arrow Down from the search field moves into the result links, Arrow Up/Down moves between result links, Enter follows the focused result, and Escape returns focus to the search field
+- result rows use `focus-within` feedback so keyboard navigation receives the same quiet row emphasis as pointer hover
+- the page exposes quiet states for an empty query, searching, no matches and matched results; do not introduce illustrated or promotional empty states
+- the empty-query state explains searchable fields and gives representative technical terms rather than showing every note by default
+- the query is reflected in the browser URL without creating a new history entry for each keystroke
+- the current search implementation uses mock/client-side data only; production MVP search must still follow the architecture decision to use PostgreSQL Full Text Search, and client filtering must not become the final backend search architecture
+
+Search results should remain information-dense and consistent with Knowledge List. Do not add result cards, category dashboards or decorative filter panels unless a later search requirement clearly needs them.
 
 ## 5. Share Dialog
 
