@@ -142,7 +142,11 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
 
   return (
     <div>
-      <form role="search" onSubmit={(event) => event.preventDefault()} className="max-w-[720px]">
+      <form
+        role="search"
+        onSubmit={(event) => event.preventDefault()}
+        className="mx-auto w-full max-w-[980px]"
+      >
         <label className="block" htmlFor="knowledge-search-page">
           <span className="sr-only">Search knowledge</span>
           <input
@@ -166,7 +170,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
             autoComplete="off"
             enterKeyHint="search"
             placeholder="Search notes, tags, or collections"
-            className="h-11 w-full border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[15px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--accent-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+            className="h-12 w-full border border-[var(--border-strong)] bg-[var(--surface)] px-4 text-[16px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--accent-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
           />
         </label>
 
@@ -177,7 +181,10 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
       </form>
 
       {!hasQuery && (
-        <section className="flex min-h-[340px] items-center justify-center py-12 text-center" aria-label="Search guidance">
+        <section
+          className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
+          aria-label="Search guidance"
+        >
           <div className="max-w-[520px]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
               Search knowledge
@@ -209,7 +216,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
 
       {hasQuery && searching && (
         <section
-          className="flex min-h-[300px] items-center justify-center py-12 text-center"
+          className="mx-auto flex min-h-[300px] max-w-[980px] items-center justify-center py-12 text-center"
           aria-label="Searching"
           aria-live="polite"
         >
@@ -223,7 +230,10 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
       )}
 
       {hasQuery && !searching && results.length === 0 && (
-        <section className="flex min-h-[340px] items-center justify-center py-12 text-center" aria-label="No search results">
+        <section
+          className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
+          aria-label="No search results"
+        >
           <div className="max-w-[520px]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">No matches</p>
             <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
@@ -261,7 +271,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
       )}
 
       {hasQuery && !searching && results.length > 0 && (
-        <section className="mt-9" aria-labelledby="search-results-heading">
+        <section className="mx-auto mt-9 w-full max-w-[980px]" aria-labelledby="search-results-heading">
           <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
             <h2 id="search-results-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
               Search results
