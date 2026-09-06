@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { KnowledgeVisibility } from "@/types/knowledge";
 
 interface ArticleSettingsProps {
@@ -11,68 +11,176 @@ interface ArticleSettingsProps {
   updatedAt: string;
 }
 
-interface SettingPickerProps {
-  id: string;
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (value: string) => void;
-}
-
 const propertyLabelClassName =
   "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]";
 
-function SettingPicker({ id, label, value, options, onChange }: SettingPickerProps) {
+const visibilityOptions: KnowledgeVisibility[] = ["Private", "Unlisted", "Public"];
+const initialCollections = ["Backend", "Database", "DevOps"];
+
+function VisibilityControl({
+  value,
+  onChange,
+}: {
+  value: KnowledgeVisibility;
+  onChange: (value: KnowledgeVisibility) => void;
+}) {
+  return (
+    <div>
+      <p className={propertyLabelClassName}>Visibility</p>
+      <div
+        className="mt-2 grid grid-cols-3 gap-1 border border-[var(--border)] bg-[var(--surface-muted)] p-1"
+        role="radiogroup"
+        aria-label="Visibility"
+      >
+        {visibilityOptions.map((option) => {
+          const selected = option === value;
+
+          return (
+            <button
+              key={option}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              onClick={() => onChange(option)}
+              className={`min-h-8 px-2 text-[12px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)] ${
+                selected
+                  ? "border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--accent-strong)]"
+                  : "border border-transparent text-[var(--text-muted)] hover:bg-[var(--row-hover)] hover:text-[var(--text)]"
+              }`}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CollectionCombobox({
+  id,
+  value,
+  onChange,
+}: {
+  id: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [collections, setCollections] = useState(initialCollections);
+
+  const filteredCollections = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return collections;
+    }
+
+    return collections.filter((collection) => collection.toLowerCase().includes(normalizedQuery));
+  }, [collections, query]);
+
+  const normalizedDraft = query.trim();
+  const canCreate =
+    normalizedDraft.length > 0 &&
+    !collections.some((collection) => collection.toLowerCase() === normalizedDraft.toLowerCase());
+
+  const selectCollection = (collection: string) => {
+    onChange(collection);
+    setQuery("");
+    setOpen(false);
+  };
+
+  const createCollection = () => {
+    if (!canCreate) {
+      return;
+    }
+
+    setCollections((current) => [...current, normalizedDraft]);
+    selectCollection(normalizedDraft);
+  };
 
   return (
     <div className="relative">
-      <p className={propertyLabelClassName}>{label}</p>
+      <p className={propertyLabelClassName}>Collection</p>
       <button
         id={id}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="mt-1.5 flex min-h-9 w-full items-center justify-between gap-3 border-b border-[var(--border-strong)] text-left text-[13px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:border-[var(--accent)] focus-visible:outline-none"
+        className="mt-2 inline-flex min-h-9 max-w-full items-center gap-2 border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
-        <span>{value}</span>
-        <span aria-hidden="true" className="text-[11px] text-[var(--text-subtle)]">
+        <span className="truncate">{value}</span>
+        <span aria-hidden="true" className="text-[10px] text-[var(--text-subtle)]">
           ▾
         </span>
       </button>
 
       {open && (
-        <div
-          role="listbox"
-          aria-labelledby={id}
-          className="absolute left-0 right-0 z-20 mt-1 border border-[var(--border-strong)] bg-[var(--surface)] p-1 shadow-sm"
-        >
-          {options.map((option) => {
-            const selected = option === value;
-            return (
-              <button
-                key={option}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                onClick={() => {
-                  onChange(option);
+        <div className="absolute left-0 z-20 mt-1 w-[min(280px,calc(100vw-48px))] border border-[var(--border-strong)] bg-[var(--surface)] p-2 shadow-sm">
+          <label className="block" htmlFor={`${id}-search`}>
+            <span className="sr-only">Search collections</span>
+            <input
+              id={`${id}-search`}
+              type="text"
+              autoFocus
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
                   setOpen(false);
-                }}
-                className={`flex min-h-8 w-full items-center justify-between px-2 text-left text-[13px] transition-colors hover:bg-[var(--row-hover)] ${
-                  selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
-                }`}
-              >
-                <span>{option}</span>
-                {selected && (
-                  <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
-                    ✓
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                  setQuery("");
+                }
+
+                if (event.key === "Enter" && canCreate) {
+                  event.preventDefault();
+                  createCollection();
+                }
+              }}
+              placeholder="Search collections..."
+              className="h-9 w-full border border-[var(--border)] bg-[var(--background)] px-2.5 text-[12px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
+            />
+          </label>
+
+          <div className="mt-2 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
+            {filteredCollections.map((collection) => {
+              const selected = collection === value;
+
+              return (
+                <button
+                  key={collection}
+                  type="button"
+                  role="option"
+                  aria-selected={selected}
+                  onClick={() => selectCollection(collection)}
+                  className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[12px] transition-colors hover:bg-[var(--row-hover)] ${
+                    selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
+                  }`}
+                >
+                  <span>{collection}</span>
+                  {selected && (
+                    <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+
+            {filteredCollections.length === 0 && !canCreate && (
+              <p className="px-2 py-2 text-[11px] text-[var(--text-subtle)]">No matching collection.</p>
+            )}
+          </div>
+
+          {canCreate && (
+            <button
+              type="button"
+              onClick={createCollection}
+              className="mt-2 w-full border-t border-[var(--border)] px-2 pt-2 text-left text-[12px] font-medium text-[var(--accent-strong)] transition-colors hover:text-[var(--accent)]"
+            >
+              + Create “{normalizedDraft}”
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -98,7 +206,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
   return (
     <div>
       <p className={propertyLabelClassName}>Tags</p>
-      <div className="mt-2 flex min-h-10 flex-wrap items-center gap-1.5 border-b border-[var(--border-strong)] pb-2 transition-colors focus-within:border-[var(--accent)]">
+      <div className="mt-2 flex min-h-10 flex-wrap items-center gap-1.5 border border-[var(--border)] bg-[var(--surface)] p-2 transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
         {tags.map((tag) => (
           <span
             key={tag}
@@ -130,11 +238,10 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
             }
           }}
           onBlur={addTag}
-          placeholder={tags.length === 0 ? "Add tag and press Enter" : "Add tag"}
-          className="min-h-7 min-w-[110px] flex-1 bg-transparent px-1 text-[12px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          placeholder="Add tag..."
+          className="min-h-7 min-w-[100px] flex-1 bg-transparent px-1 text-[12px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
         />
       </div>
-      <p className="mt-1.5 text-[10px] leading-4 text-[var(--text-subtle)]">Press Enter to add a tag.</p>
     </div>
   );
 }
@@ -151,20 +258,12 @@ export function ArticleSettings({
   const suffix = compact ? "mobile" : "desktop";
 
   const content = (
-    <div className="space-y-5">
-      <SettingPicker
-        id={`visibility-${suffix}`}
-        label="Visibility"
-        value={visibility}
-        options={["Private", "Unlisted", "Public"]}
-        onChange={(value) => setVisibility(value as KnowledgeVisibility)}
-      />
+    <div className="space-y-6">
+      <VisibilityControl value={visibility} onChange={setVisibility} />
 
-      <SettingPicker
+      <CollectionCombobox
         id={`collection-${suffix}`}
-        label="Collection"
         value={collection}
-        options={["Backend", "Database", "DevOps"]}
         onChange={setCollection}
       />
 
@@ -181,17 +280,14 @@ export function ArticleSettings({
     return (
       <details className="mb-6 border-y border-[var(--border)] py-3 xl:hidden">
         <summary className="cursor-pointer text-[13px] font-medium text-[var(--text-muted)]">Article settings</summary>
-        <div className="mt-4">{content}</div>
+        <div className="mt-5">{content}</div>
       </details>
     );
   }
 
   return (
     <aside className="hidden xl:block" aria-label="Article settings">
-      <div className="sticky top-8 border-l border-[var(--border)] pl-5">
-        <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Article settings</p>
-        {content}
-      </div>
+      <div className="sticky top-8 border-l border-[var(--border)] pl-5">{content}</div>
     </aside>
   );
 }
