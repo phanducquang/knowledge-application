@@ -46,16 +46,10 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
             onClick={() => setMobileNavOpen(false)}
           />
           <div id="mobile-navigation" className="relative h-full w-[min(82vw,300px)] border-r border-[var(--border)]">
-            <div className="absolute right-3 top-3 z-10">
-              <button
-                type="button"
-                onClick={() => setMobileNavOpen(false)}
-                className="px-2 py-1 text-[12px] text-[var(--text-muted)] hover:text-[var(--text)]"
-              >
-                Close
-              </button>
-            </div>
-            <Sidebar onNavigate={() => setMobileNavOpen(false)} />
+            <Sidebar
+              onNavigate={() => setMobileNavOpen(false)}
+              onClose={() => setMobileNavOpen(false)}
+            />
           </div>
         </div>
       )}
