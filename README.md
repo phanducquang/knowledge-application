@@ -31,7 +31,11 @@ The web and API applications remain independently buildable and deployable even 
 - Content format: Markdown
 - Deployment: Docker + Nginx
 
-No application logic has been implemented yet.
+## Current implementation status
+
+- `apps/web`: initialized with Next.js, TypeScript, App Router, Tailwind CSS and the first Knowledge List reference screen using mock data.
+- `apps/api`: reserved for Spring Boot; not initialized yet.
+- No authentication, persistence, backend integration or production business logic has been implemented yet.
 
 ## Core product direction
 
