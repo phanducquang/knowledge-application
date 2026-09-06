@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { KnowledgeVisibility } from "@/types/knowledge";
 
 interface ArticleSettingsProps {
@@ -75,7 +75,29 @@ function CollectionCombobox({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [collections, setCollections] = useState(initialCollections);
+  const rootRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) {
+        return;
+      }
+
+      if (rootRef.current && !rootRef.current.contains(target)) {
+        setOpen(false);
+        setQuery("");
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
 
   const filteredCollections = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -116,14 +138,19 @@ function CollectionCombobox({
   };
 
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <p className={propertyLabelClassName}>Collection</p>
       <button
         id={id}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          setOpen((current) => !current);
+          if (open) {
+            setQuery("");
+          }
+        }}
         className="mt-2 inline-flex min-h-9 max-w-full items-center gap-2 border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[13px] font-medium text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
       >
         <span className="truncate">{value}</span>
@@ -223,23 +250,29 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
   return (
     <div>
       <p className={propertyLabelClassName}>Tags</p>
-      <div className="mt-2 flex min-h-10 flex-wrap items-center gap-1.5 border border-[var(--border)] bg-[var(--surface)] p-2 transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex min-h-7 items-center gap-1.5 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-2 text-[12px] text-[var(--text)]"
-          >
-            #{tag}
-            <button
-              type="button"
-              aria-label={`Remove ${tag} tag`}
-              onClick={() => setTags((current) => current.filter((item) => item !== tag))}
-              className="-mr-0.5 inline-flex h-5 w-5 items-center justify-center text-[14px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
+
+      {tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Selected tags">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex min-h-7 items-center gap-1.5 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-2 text-[12px] text-[var(--text)]"
             >
-              ×
-            </button>
-          </span>
-        ))}
+              #{tag}
+              <button
+                type="button"
+                aria-label={`Remove ${tag} tag`}
+                onClick={() => setTags((current) => current.filter((item) => item !== tag))}
+                className="-mr-0.5 inline-flex h-5 w-5 items-center justify-center text-[14px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-2 border-b border-[var(--border-strong)] transition-colors focus-within:border-[var(--accent)]">
         <input
           type="text"
           value={draft}
@@ -255,8 +288,8 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
             }
           }}
           onBlur={addTag}
-          placeholder="Add tag..."
-          className="min-h-7 min-w-[100px] flex-1 bg-transparent px-1 text-[12px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          placeholder="Add tag and press Enter"
+          className="h-9 w-full bg-transparent px-0 text-[12px] text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
         />
       </div>
     </div>
