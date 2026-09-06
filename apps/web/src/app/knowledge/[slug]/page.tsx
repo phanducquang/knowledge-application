@@ -24,12 +24,12 @@ export default async function KnowledgeReadingPage(props: { params: Promise<{ sl
             ← All notes
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              type="button"
+            <Link
+              href={`/knowledge/${slug}/edit`}
               className="inline-flex min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
             >
               Edit
-            </button>
+            </Link>
             <button
               type="button"
               className="inline-flex min-h-9 items-center border border-[var(--accent-muted)] px-3 text-[14px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
@@ -71,7 +71,7 @@ export default async function KnowledgeReadingPage(props: { params: Promise<{ sl
             <ArticleContent />
 
             <footer className="mt-12 border-t border-[var(--border-strong)] pt-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Filed under</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Collection &amp; tags</p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
                 <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-strong)]">
                   {mockReferenceArticle.collection}
