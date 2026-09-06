@@ -85,8 +85,10 @@ Current reference direction:
 - keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
 - show save state as quiet status feedback rather than a dominant control
 - desktop article properties use a narrow property rail without an extra `Article settings` heading; mobile keeps `Article settings` only as the label for the expandable properties section
-- `Visibility` uses a three-option segmented/radio control because the option set is small and fixed; all available states should be visible without opening a menu
+- `Visibility` uses one visible three-option radio group because the option set is small and fixed; visually it should read as lightweight text tabs with a subtle selected indicator, not three boxed buttons
+- the visibility control must remain stable for longer labels such as `Unlisted`; selection must not change control dimensions or cause wrapping/layout shift
 - `Collection` uses a compact searchable combobox because collections are extensible; the popover supports search, existing selection, and creating a new collection
+- the collection popover always exposes a creation entry: it shows `+ New collection` before a draft name exists, then changes to `+ Create “<name>”` when the typed value does not match an existing collection
 - `Tags` use semantic chips: typing a tag and pressing Enter creates a chip; each chip exposes an `×` removal action; duplicate tags should not be created
 - tag chips are an intentional semantic exception to the general rule against decorative pills; they represent discrete editable values, use restrained radius, and must not become a colorful badge system
 - `Updated` is presented as quiet read-only metadata without redundant explanatory copy
