@@ -19,17 +19,20 @@ export default async function KnowledgeReadingPage(props: { params: Promise<{ sl
         <div className="mb-7 flex items-center justify-between gap-6 border-b border-[var(--border)] pb-4">
           <Link
             href="/"
-            className="text-[12px] font-medium text-[var(--text-muted)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline"
+            className="inline-flex min-h-9 items-center text-[14px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
           >
             ← All notes
           </Link>
-          <div className="flex items-center gap-4 text-[12px]">
-            <button type="button" className="text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)]">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="inline-flex min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
+            >
               Edit
             </button>
             <button
               type="button"
-              className="border border-[var(--accent-muted)] px-3 py-1.5 font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--accent-soft)]"
+              className="inline-flex min-h-9 items-center border border-[var(--accent-muted)] px-3 text-[14px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
             >
               Share
             </button>
