@@ -135,10 +135,6 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
                 </label>
               </div>
             </section>
-
-            <div className="mt-5 border-t border-[var(--border)] pt-4 text-[11px] text-[var(--text-subtle)]">
-              Reference screen only — title, summary, content and article settings are editable visual controls; autosave and persistence are placeholders until behavior is implemented.
-            </div>
           </main>
 
           <ArticleSettings
