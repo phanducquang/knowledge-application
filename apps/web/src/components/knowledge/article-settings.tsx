@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { KnowledgeVisibility } from "@/types/knowledge";
 
 interface ArticleSettingsProps {
@@ -28,7 +28,7 @@ function VisibilityControl({
     <div>
       <p className={propertyLabelClassName}>Visibility</p>
       <div
-        className="mt-2 grid grid-cols-3 gap-1 border border-[var(--border)] bg-[var(--surface-muted)] p-1"
+        className="mt-2 flex w-full border-b border-[var(--border)]"
         role="radiogroup"
         aria-label="Visibility"
       >
@@ -42,13 +42,19 @@ function VisibilityControl({
               role="radio"
               aria-checked={selected}
               onClick={() => onChange(option)}
-              className={`min-h-8 px-2 text-[12px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)] ${
+              className={`relative min-w-0 flex-1 whitespace-nowrap px-1 pb-2 pt-1 text-center text-[12px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
                 selected
-                  ? "border border-[var(--border-strong)] bg-[var(--surface)] text-[var(--accent-strong)]"
-                  : "border border-transparent text-[var(--text-muted)] hover:bg-[var(--row-hover)] hover:text-[var(--text)]"
+                  ? "text-[var(--accent-strong)]"
+                  : "text-[var(--text-muted)] hover:text-[var(--text)]"
               }`}
             >
               {option}
+              <span
+                aria-hidden="true"
+                className={`absolute inset-x-1 -bottom-px h-0.5 transition-colors ${
+                  selected ? "bg-[var(--accent)]" : "bg-transparent"
+                }`}
+              />
             </button>
           );
         })}
@@ -69,6 +75,7 @@ function CollectionCombobox({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [collections, setCollections] = useState(initialCollections);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredCollections = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -99,6 +106,15 @@ function CollectionCombobox({
     selectCollection(normalizedDraft);
   };
 
+  const handleCreateAction = () => {
+    if (canCreate) {
+      createCollection();
+      return;
+    }
+
+    searchInputRef.current?.focus();
+  };
+
   return (
     <div className="relative">
       <p className={propertyLabelClassName}>Collection</p>
@@ -117,70 +133,71 @@ function CollectionCombobox({
       </button>
 
       {open && (
-        <div className="absolute left-0 z-20 mt-1 w-[min(280px,calc(100vw-48px))] border border-[var(--border-strong)] bg-[var(--surface)] p-2 shadow-sm">
-          <label className="block" htmlFor={`${id}-search`}>
-            <span className="sr-only">Search collections</span>
-            <input
-              id={`${id}-search`}
-              type="text"
-              autoFocus
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") {
-                  setOpen(false);
-                  setQuery("");
-                }
+        <div className="absolute left-0 z-20 mt-1 w-[min(280px,calc(100vw-48px))] border border-[var(--border-strong)] bg-[var(--surface)] shadow-sm">
+          <div className="p-2">
+            <label className="block" htmlFor={`${id}-search`}>
+              <span className="sr-only">Search collections</span>
+              <input
+                ref={searchInputRef}
+                id={`${id}-search`}
+                type="text"
+                autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setOpen(false);
+                    setQuery("");
+                  }
 
-                if (event.key === "Enter" && canCreate) {
-                  event.preventDefault();
-                  createCollection();
-                }
-              }}
-              placeholder="Search collections..."
-              className="h-9 w-full border border-[var(--border)] bg-[var(--background)] px-2.5 text-[12px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
-            />
-          </label>
+                  if (event.key === "Enter" && canCreate) {
+                    event.preventDefault();
+                    createCollection();
+                  }
+                }}
+                placeholder="Search collections..."
+                className="h-9 w-full border border-[var(--border)] bg-[var(--background)] px-2.5 text-[12px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
+              />
+            </label>
 
-          <div className="mt-2 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
-            {filteredCollections.map((collection) => {
-              const selected = collection === value;
+            <div className="mt-2 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
+              {filteredCollections.map((collection) => {
+                const selected = collection === value;
 
-              return (
-                <button
-                  key={collection}
-                  type="button"
-                  role="option"
-                  aria-selected={selected}
-                  onClick={() => selectCollection(collection)}
-                  className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[12px] transition-colors hover:bg-[var(--row-hover)] ${
-                    selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
-                  }`}
-                >
-                  <span>{collection}</span>
-                  {selected && (
-                    <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
-                      ✓
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={collection}
+                    type="button"
+                    role="option"
+                    aria-selected={selected}
+                    onClick={() => selectCollection(collection)}
+                    className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[12px] transition-colors hover:bg-[var(--row-hover)] ${
+                      selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
+                    }`}
+                  >
+                    <span>{collection}</span>
+                    {selected && (
+                      <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
 
-            {filteredCollections.length === 0 && !canCreate && (
-              <p className="px-2 py-2 text-[11px] text-[var(--text-subtle)]">No matching collection.</p>
-            )}
+              {filteredCollections.length === 0 && (
+                <p className="px-2 py-2 text-[11px] text-[var(--text-subtle)]">No matching collection.</p>
+              )}
+            </div>
           </div>
 
-          {canCreate && (
-            <button
-              type="button"
-              onClick={createCollection}
-              className="mt-2 w-full border-t border-[var(--border)] px-2 pt-2 text-left text-[12px] font-medium text-[var(--accent-strong)] transition-colors hover:text-[var(--accent)]"
-            >
-              + Create “{normalizedDraft}”
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleCreateAction}
+            className="w-full border-t border-[var(--border)] px-4 py-2.5 text-left text-[12px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+          >
+            {canCreate ? `+ Create “${normalizedDraft}”` : "+ New collection"}
+          </button>
         </div>
       )}
     </div>
