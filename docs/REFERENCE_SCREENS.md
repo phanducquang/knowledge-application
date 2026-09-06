@@ -77,13 +77,19 @@ Current reference direction:
 - system-managed metadata such as `updatedAt` is displayed as read-only and must not look editable
 - slug should normally be generated from the title when the article is created and remain stable afterward; it is not a normal editor field
 - public/unlisted link mechanics and share-token management belong to the Share flow rather than the main writing surface
-- the editor title is intentionally more compact than the Reading Page title: approximately 30px on mobile and 32px on larger screens, so it feels like an editable working document rather than a publication headline
-- summary remains visually secondary at approximately 15–16px
+- editable areas must be visually recognizable before focus; users should not have to click or delete text to discover that a field is editable
+- `Title`, `Summary`, and `Content` use explicit micro-labels plus persistent subtle input/editor boundaries; focus strengthens the boundary with the product accent
+- the editor title is intentionally more compact than the Reading Page title: approximately 28px on mobile and 30px on larger screens, so it feels like an editable working document rather than a publication headline
+- summary remains visually secondary at approximately 15px
 - reuse the Reading Page content width so writing and reading feel like the same document system
 - keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
 - show save state as quiet status feedback rather than a dominant control
 - desktop article settings use a narrow property rail; mobile settings collapse into an expandable section
 - editable property values use the same neutral text hierarchy; accent is reserved for focus/interaction rather than making `Collection` look more important than `Visibility`
+- visibility and collection use compact custom choosers rather than visually raw native select controls in the reference UI
+- tags use semantic chips: typing a tag and pressing Enter creates a chip; each chip exposes an `×` removal action; duplicate tags should not be created
+- tag chips are an intentional semantic exception to the general rule against decorative pills; they represent discrete editable values, use restrained radius, and must not become a colorful badge system
+- `Updated` is presented as quiet read-only metadata without redundant explanatory copy such as `Managed automatically.`
 - semantic color may be used when a state needs to communicate actual meaning, but editable form values should not rely on color alone
 - page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
 - the current editor is visual/reference-only: formatting buttons, autosave behavior and persistence are placeholders until functionality is implemented
