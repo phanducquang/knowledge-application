@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import "@milkdown/crepe/theme/common/style.css";
+import "@milkdown/crepe/theme/crepe.css";
 import "./globals.css";
 
 const geistSans = Geist({
