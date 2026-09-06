@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { KnowledgeListItem } from "@/components/knowledge/knowledge-list-item";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 
@@ -64,6 +65,11 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
       return;
     }
 
+    if (trimmedQuery === committedQuery) {
+      setSearching(false);
+      return;
+    }
+
     setSearching(true);
     const timeout = window.setTimeout(() => {
       setCommittedQuery(trimmedQuery);
@@ -71,7 +77,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
     }, 140);
 
     return () => window.clearTimeout(timeout);
-  }, [query]);
+  }, [query, committedQuery]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -96,7 +102,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
     resultLinks()[0]?.focus();
   };
 
-  const handleResultsKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleResultsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!(event.target instanceof HTMLAnchorElement)) {
       return;
     }
