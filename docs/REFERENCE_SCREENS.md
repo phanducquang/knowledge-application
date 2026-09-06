@@ -84,15 +84,17 @@ Current reference direction:
 - reuse the Reading Page content width so writing and reading feel like the same document system
 - keep formatting controls compact and limited to common Markdown operations rather than a large permanent toolbar
 - show save state as quiet status feedback rather than a dominant control
-- desktop article settings use a narrow property rail; mobile settings collapse into an expandable section
-- editable property values use the same neutral text hierarchy; accent is reserved for focus/interaction rather than making `Collection` look more important than `Visibility`
-- visibility and collection use compact custom choosers rather than visually raw native select controls in the reference UI
-- tags use semantic chips: typing a tag and pressing Enter creates a chip; each chip exposes an `×` removal action; duplicate tags should not be created
+- desktop article properties use a narrow property rail without an extra `Article settings` heading; mobile keeps `Article settings` only as the label for the expandable properties section
+- `Visibility` uses a three-option segmented/radio control because the option set is small and fixed; all available states should be visible without opening a menu
+- `Collection` uses a compact searchable combobox because collections are extensible; the popover supports search, existing selection, and creating a new collection
+- `Tags` use semantic chips: typing a tag and pressing Enter creates a chip; each chip exposes an `×` removal action; duplicate tags should not be created
 - tag chips are an intentional semantic exception to the general rule against decorative pills; they represent discrete editable values, use restrained radius, and must not become a colorful badge system
-- `Updated` is presented as quiet read-only metadata without redundant explanatory copy such as `Managed automatically.`
+- `Updated` is presented as quiet read-only metadata without redundant explanatory copy
+- editable property values use the same neutral text hierarchy; accent is reserved for selected/focus/interaction states rather than making one property appear more important than another
 - semantic color may be used when a state needs to communicate actual meaning, but editable form values should not rely on color alone
 - page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
-- the current editor is visual/reference-only: formatting buttons, autosave behavior and persistence are placeholders until functionality is implemented
+- implementation/reference disclaimers should not be displayed inside the user-facing editor UI; development status belongs in project documentation instead
+- formatting buttons, autosave behavior, and persistence remain implementation work after the reference UI is approved
 
 The editor should feel quiet, complete and content-first: a user should be able to understand that all meaningful article data can be maintained from this screen without turning it into an admin form.
 
