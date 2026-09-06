@@ -1,5 +1,6 @@
 interface SidebarProps {
   onNavigate?: () => void;
+  onClose?: () => void;
 }
 
 const collections = ["Backend", "Database", "DevOps"];
@@ -22,14 +23,25 @@ function NavLink({ children, active = false, onNavigate }: { children: React.Rea
   );
 }
 
-export function Sidebar({ onNavigate }: SidebarProps) {
+export function Sidebar({ onNavigate, onClose }: SidebarProps) {
   return (
     <aside className="flex h-full flex-col bg-[var(--sidebar)] px-4 py-5">
       <div className="mb-6 flex items-center justify-between gap-4 px-2">
-        <a href="#" onClick={onNavigate} className="text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
+        <a href="#" onClick={onNavigate} className="min-w-0 text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
           Knowledge
         </a>
-        <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-8 px-1 text-[12px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            >
+              Close
+            </button>
+          )}
+        </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto" aria-label="Knowledge navigation">
