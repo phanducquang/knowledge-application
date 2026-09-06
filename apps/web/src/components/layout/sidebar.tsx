@@ -27,8 +27,8 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={`block border-l-2 py-1.5 pl-3 pr-2 text-[14px] leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
         active
-          ? "border-[var(--accent)] bg-[var(--accent-soft)] font-medium text-[var(--accent-strong)]"
-          : "border-transparent text-[var(--text-muted)] hover:border-[var(--border-strong)] hover:text-[var(--text)]"
+          ? "border-[var(--accent)] bg-[var(--active)] font-medium text-[var(--accent-strong)]"
+          : "border-transparent text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text)]"
       }`}
     >
       {children}
@@ -50,7 +50,7 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps
               type="button"
               onClick={onClose}
               aria-label="Close navigation"
-              className="inline-flex h-8 w-8 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+              className="inline-flex h-8 w-8 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-[var(--nav-hover)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
               <svg viewBox="0 0 16 16" aria-hidden="true" className="h-4 w-4 fill-none stroke-current" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M4 4l8 8M12 4l-8 8" />
@@ -76,7 +76,7 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps
         </div>
 
         <div className="mt-7">
-          <Link href="#" onClick={onNavigate} className="block px-3 py-1.5 text-[13px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)]">
+          <Link href="#" onClick={onNavigate} className="block px-3 py-1.5 text-[13px] font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--nav-hover)] hover:text-[var(--text)]">
             Tags
           </Link>
         </div>
@@ -93,7 +93,7 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps
       <div className="border-t border-[var(--border)] pt-4">
         <button
           type="button"
-          className="w-full border border-[var(--accent-muted)] bg-transparent px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          className="w-full border border-[var(--accent-muted)] bg-transparent px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--nav-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
         >
           + New note
         </button>
