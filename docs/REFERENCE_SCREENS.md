@@ -83,10 +83,17 @@ Current reference direction:
 - the editor title is intentionally more compact than the Reading Page title: approximately 28px on mobile and 30px on larger screens, so it feels like an editable working document rather than a publication headline
 - summary remains visually secondary at approximately 15px
 - reuse the Reading Page content width so writing and reading feel like the same document system
-- keep formatting controls purposeful and efficient; richer Markdown-authoring interactions are allowed when they reduce authoring friction
+- the Markdown Content editor uses **Milkdown + Crepe** rather than a hand-built textarea toolbar
+- Crepe `TopBar` is enabled so common structure/format/list/insert/block commands remain available while writing; the floating selection toolbar also remains enabled
+- Crepe block editing remains enabled, including slash commands, block handles and drag/drop; these interactions are explicitly allowed inside Content even when they resemble familiar Notion-style authoring patterns
+- Crepe CodeMirror, list, link and table features remain available for technical writing; code blocks should be treated as a first-class authoring primitive
+- the top-bar heading selector currently exposes Text, H2, H3 and H4 because the Knowledge title is the document-level title outside the Markdown body
+- Crepe `ImageBlock` remains disabled until image upload/object-storage persistence is implemented, so the UI must not advertise an upload action that cannot be saved reliably
+- Crepe AI remains disabled until the AI phase has a configured provider and an approved product flow
+- Markdown remains the canonical content value; Crepe's `markdownUpdated` event updates the current Markdown representation even though the visible authoring surface is WYSIWYG/block-oriented
+- Crepe is themed through its CSS variables and scoped editor styles to inherit the product's warm-neutral surfaces, petrol/teal accent, Geist typography and Geist Mono code treatment
 - the general product rule to avoid becoming a Notion clone is explicitly relaxed **inside the Markdown Content editor only**; slash commands, block handles, drag/drop, floating/contextual toolbars and similar block-editor interactions are acceptable if they improve writing efficiency
 - the Content-editor exception does not authorize Notion-style workspace layout, navigation, card systems or decorative visual language elsewhere in the product
-- Markdown remains the canonical stored content format even if the authoring UI uses WYSIWYG or block-editor behavior
 - show save state as quiet status feedback rather than a dominant control
 - desktop article properties use a narrow property rail without an extra `Article settings` heading; mobile keeps `Article settings` only as the label for the expandable properties section
 - property typography must stay visibly subordinate to the authoring surface: labels remain around 10px uppercase micro-labels, while values and controls may use a larger readable scale as long as they remain secondary to title/summary/content
@@ -103,7 +110,7 @@ Current reference direction:
 - semantic color may be used when a state needs to communicate actual meaning, but editable form values should not rely on color alone
 - page actions such as `Preview` and `Share` remain page-local and do not introduce a global top navbar
 - implementation/reference disclaimers should not be displayed inside the user-facing editor UI; development status belongs in project documentation instead
-- formatting behavior, autosave behavior, persistence and the final Markdown editor library integration remain implementation work before the Editor reference screen is approved
+- autosave and backend persistence remain implementation work before the Editor reference screen is approved; the Markdown authoring engine itself is now integrated
 
 The editor should feel quiet, complete and content-first: a user should be able to understand that all meaningful article data can be maintained from this screen without turning it into an admin form.
 
