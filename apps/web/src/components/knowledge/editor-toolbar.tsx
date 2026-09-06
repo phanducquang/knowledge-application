@@ -2,7 +2,7 @@ const tools = ["H2", "Bold", "Italic", "Code", "Link", "Quote"];
 
 export function EditorToolbar() {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-y border-[var(--border)] py-2" aria-label="Markdown formatting tools">
+    <div className="flex flex-wrap items-center gap-1 border-b border-[var(--border)] px-2 py-2" aria-label="Markdown formatting tools">
       {tools.map((tool) => (
         <button
           key={tool}
