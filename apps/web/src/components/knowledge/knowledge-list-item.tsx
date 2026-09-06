@@ -20,7 +20,7 @@ function visibilityClass(visibility: string) {
 
 export function KnowledgeListItem({ item }: KnowledgeListItemProps) {
   return (
-    <article className="group -mx-3 border-b border-[var(--border)] px-3 py-5 transition-colors first:pt-0 last:border-b-0 hover:bg-[var(--row-hover)] focus-within:bg-[var(--row-hover)]">
+    <article className="group -mx-3 border-b border-[var(--border)] px-3 py-5 transition-colors last:border-b-0 hover:bg-[var(--row-hover)] focus-within:bg-[var(--row-hover)]">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_100px] md:gap-8">
         <div className="min-w-0">
           <Link
