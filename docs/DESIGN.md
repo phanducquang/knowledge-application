@@ -117,11 +117,13 @@ Target visual distribution:
 | Text subtle | `#858C85` | Metadata and tertiary labels |
 | Border | `#D9D8D0` | Normal divider |
 | Border strong | `#C5C7BF` | Controls and stronger separation |
+| Active surface | `#E7E8E2` | Quiet warm-neutral selected navigation surface |
+| Navigation hover | `#EBEAE4` | Sidebar hover without broad accent tint |
+| Row hover | `#F2F1EC` | Near-neutral list/editor hover feedback |
 | Accent | `#2F6863` | Deep petrol/teal product accent |
 | Accent strong | `#24534F` | High-emphasis accent text |
 | Accent muted | `#557E79` | Low-emphasis metadata/tags |
-| Accent soft | `#DDEAE6` | Selected and focused background tint |
-| Row hover | `#F1F5F2` | Subtle productivity-style hover feedback |
+| Accent soft | `#DDEAE6` | Small-area selection/focus tint, not a default full-row fill |
 
 The deep petrol/teal accent is selected because it feels technical and calm without falling into the common purple/bright-blue AI-startup palette.
 
@@ -139,13 +141,15 @@ Do not assign different colors to collections or cards merely to make the interf
 
 Use the primary accent for:
 
-- active navigation indicator
+- active navigation indicator and active text
 - primary action
 - links and link hover
 - focus state
-- selection
+- compact selection states
 - meaningful editorial index/count
 - collection or metadata emphasis when useful for scanning
+
+Use near-neutral warm surfaces for broad hover/active backgrounds. Do not fill an entire navigation row or result row with the stronger accent tint when a thin indicator, text color, or focus outline already communicates the state.
 
 Keep ordinary tags low-saturation. Avoid rainbow tags.
 
@@ -285,7 +289,7 @@ A list item may contain:
 
 Scanning speed matters more than visual decoration.
 
-Linear-style influence may appear as a very subtle full-row hover background, but the item must still read as a list row rather than a card.
+Linear-style influence may appear as a very subtle full-row hover background, but the hover surface should stay near-neutral/warm rather than becoming an accent-colored panel. Accent may instead appear in the title/link or focus outline.
 
 ## 11. Sidebar
 
@@ -312,7 +316,7 @@ Drafts
 New note
 ```
 
-Active states should use a thin accent indicator and a soft accent tint. Avoid oversized pill navigation.
+Active states use a thin petrol/teal indicator plus active text on a quiet warm-neutral surface. Hover uses a nearby neutral surface. Avoid broad teal fills and oversized pill navigation.
 
 ## 12. Editor
 
