@@ -84,7 +84,7 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
           </div>
         </div>
 
-        <div className="xl:grid xl:grid-cols-[minmax(0,760px)_180px] xl:gap-16">
+        <div className="xl:grid xl:grid-cols-[minmax(0,760px)_240px] xl:gap-12">
           <main className="min-w-0">
             <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
               {mockReferenceArticle.collection} / Editing
