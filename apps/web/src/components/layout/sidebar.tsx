@@ -4,7 +4,7 @@ interface SidebarProps {
   currentPath?: string;
   onNavigate?: () => void;
   onClose?: () => void;
-  onSearch?: () => void;
+  onQuickSearch?: () => void;
 }
 
 const collections = ["Backend", "Database", "DevOps"];
@@ -41,7 +41,21 @@ function NavLink({
   );
 }
 
-export function Sidebar({ currentPath = "/", onNavigate, onClose, onSearch }: SidebarProps) {
+function SearchIcon() {
+  return (
+    <svg
+      viewBox="0 0 18 18"
+      aria-hidden="true"
+      className="h-4 w-4 fill-none stroke-current"
+      strokeWidth="1.5"
+    >
+      <circle cx="7.5" cy="7.5" r="4.75" />
+      <path d="m11 11 4 4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function Sidebar({ currentPath = "/", onNavigate, onClose, onQuickSearch }: SidebarProps) {
   const searchActive = currentPath.startsWith("/search");
 
   return (
@@ -50,8 +64,19 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose, onSearch }: Si
         <Link href="/" onClick={onNavigate} className="min-w-0 text-[15px] font-semibold tracking-[-0.015em] text-[var(--text)]">
           Knowledge
         </Link>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="text-[11px] font-medium text-[var(--accent)]">Private</span>
+        <div className="flex shrink-0 items-center gap-1">
+          {onQuickSearch && (
+            <button
+              type="button"
+              onClick={onQuickSearch}
+              aria-label="Open quick search"
+              title="Quick search (Cmd/Ctrl K)"
+              className="inline-flex h-8 w-8 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-[var(--nav-hover)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            >
+              <SearchIcon />
+            </button>
+          )}
+          <span className="px-1 text-[11px] font-medium text-[var(--accent)]">Private</span>
           {onClose && (
             <button
               type="button"
@@ -70,21 +95,7 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose, onSearch }: Si
       <nav className="flex-1 overflow-y-auto" aria-label="Knowledge navigation">
         <div className="space-y-1">
           <NavLink href="/" active={currentPath === "/"} onNavigate={onNavigate}>All notes</NavLink>
-          {onSearch ? (
-            <button
-              type="button"
-              onClick={onSearch}
-              aria-current={searchActive ? "page" : undefined}
-              className={navItemClass(searchActive)}
-            >
-              <span className="flex items-center justify-between gap-3">
-                <span>Search</span>
-                <span className="text-[10px] font-normal text-[var(--text-subtle)]" aria-hidden="true">⌘K</span>
-              </span>
-            </button>
-          ) : (
-            <NavLink href="/search" active={searchActive} onNavigate={onNavigate}>Search</NavLink>
-          )}
+          <NavLink href="/search" active={searchActive} onNavigate={onNavigate}>Search</NavLink>
         </div>
 
         <div className="mt-7">
