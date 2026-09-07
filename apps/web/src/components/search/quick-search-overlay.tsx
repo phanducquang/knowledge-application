@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { searchKnowledgeItems } from "@/lib/knowledge-search";
 import type { KnowledgeListItemData } from "@/types/knowledge";
@@ -96,20 +97,27 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
     }
   };
 
+  const actionElements = () =>
+    Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>("[data-quick-search-action]") ?? []);
+
   const moveSelection = (direction: 1 | -1) => {
     if (actionCount === 0) {
       return;
     }
 
-    setSelectedIndex((current) => {
-      const next = current + direction;
-      if (next < 0) return actionCount - 1;
-      if (next >= actionCount) return 0;
-      return next;
-    });
+    let nextIndex = selectedIndex + direction;
+    if (nextIndex < 0) nextIndex = actionCount - 1;
+    if (nextIndex >= actionCount) nextIndex = 0;
+
+    setSelectedIndex(nextIndex);
+
+    if (document.activeElement !== inputRef.current) {
+      const nextAction = actionElements()[nextIndex];
+      window.requestAnimationFrame(() => nextAction?.focus());
+    }
   };
 
-  const trapTabFocus = (event: React.KeyboardEvent<HTMLDivElement>) => {
+  const trapTabFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "Tab") {
       return;
     }
@@ -236,6 +244,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                   type="button"
                   role="option"
                   aria-selected={selected}
+                  data-quick-search-action
                   onMouseEnter={() => setSelectedIndex(index)}
                   onFocus={() => setSelectedIndex(index)}
                   onClick={() => openResult(item)}
@@ -273,6 +282,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
             <div className="mt-2 border-t border-[var(--border)] pt-2">
               <button
                 type="button"
+                data-quick-search-action
                 onMouseEnter={() => setSelectedIndex(results.length)}
                 onFocus={() => setSelectedIndex(results.length)}
                 onClick={viewAllResults}
