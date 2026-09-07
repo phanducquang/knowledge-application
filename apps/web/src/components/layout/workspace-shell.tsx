@@ -10,6 +10,20 @@ interface WorkspaceShellProps {
   children: React.ReactNode;
 }
 
+function SearchIcon() {
+  return (
+    <svg
+      viewBox="0 0 18 18"
+      aria-hidden="true"
+      className="h-4 w-4 fill-none stroke-current"
+      strokeWidth="1.5"
+    >
+      <circle cx="7.5" cy="7.5" r="4.75" />
+      <path d="m11 11 4 4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function WorkspaceShell({ children }: WorkspaceShellProps) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -46,21 +60,33 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-[236px] lg:border-r lg:border-[var(--border)]">
-        <Sidebar currentPath={pathname} onSearch={openQuickSearch} />
+        <Sidebar currentPath={pathname} onQuickSearch={openQuickSearch} />
       </div>
 
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-5 lg:hidden">
+      <header className="sticky top-0 z-20 grid h-14 grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--border)] bg-[var(--background)] px-5 lg:hidden">
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
-          className="border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          className="justify-self-start border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-[13px] font-medium text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           aria-expanded={mobileNavOpen}
           aria-controls="mobile-navigation"
         >
           Menu
         </button>
+
         <span className="text-[14px] font-semibold">Knowledge</span>
-        <button type="button" className="text-[13px] font-medium text-[var(--accent)]">New note</button>
+
+        <div className="flex items-center justify-self-end gap-1">
+          <button
+            type="button"
+            onClick={openQuickSearch}
+            aria-label="Open quick search"
+            className="inline-flex h-9 w-9 items-center justify-center text-[var(--text-muted)] transition-colors hover:bg-[var(--nav-hover)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          >
+            <SearchIcon />
+          </button>
+          <button type="button" className="text-[13px] font-medium text-[var(--accent)]">New note</button>
+        </div>
       </header>
 
       {mobileNavOpen && (
@@ -76,7 +102,6 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
               currentPath={pathname}
               onNavigate={() => setMobileNavOpen(false)}
               onClose={() => setMobileNavOpen(false)}
-              onSearch={openQuickSearch}
             />
           </div>
         </div>
