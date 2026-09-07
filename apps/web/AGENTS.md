@@ -6,7 +6,7 @@ Before any UI change, read these repository-level documents in order:
 2. `../../docs/REFERENCE_SCREENS.md`
 3. `../../docs/AI_CODING_GUIDELINES.md`
 
-The Knowledge List, Knowledge Reading Page and Knowledge Editor are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances and authoring patterns rather than inventing a new visual system.
+The Knowledge List, Knowledge Reading Page, Knowledge Editor and Search are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces and result-state treatment rather than inventing a new visual system.
 
 Approved shell rule:
 
@@ -15,7 +15,7 @@ Approved shell rule:
 - page-specific context/actions belong in the page header inside the content area
 - route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
 
-The Search screen is the current reference screen under review. It must inherit the approved list/result hierarchy and remain information-dense, keyboard-friendly and flat rather than becoming a search dashboard or card grid.
+The Share Dialog is the current reference overlay under review. It must inherit the approved workspace palette/control language while introducing only the layering patterns genuinely required by a modal/dialog.
 
 Editor responsibility:
 
@@ -33,10 +33,24 @@ Editor responsibility:
 
 Search responsibility:
 
-- `/search` is the reference Search route and accepts an initial `q` query parameter
+- `/search` is the approved Search route and accepts an initial `q` query parameter
+- the broad centered search surface, distinct idle/searching/no-match states, and editorial result rows are approved reference patterns
 - search results reuse the approved Knowledge List row treatment rather than introducing search-specific cards
-- keyboard navigation must remain first-class: the search field can move focus into results and result links support moving up/down and returning to the search field
-- empty, searching and no-match states should stay quiet and useful rather than becoming illustrated or promotional empty states
+- every result row keeps consistent hover/focus geometry, including the first and last row
+- broad active/hover fills remain warm-neutral and restrained; petrol/teal is concentrated in indicators, active text and focus treatment
+- keyboard navigation remains first-class: the search field can move focus into results and result links support moving up/down and returning to the search field
 - the current implementation searches mock client data only; production search should follow the architecture decision to use PostgreSQL Full Text Search for MVP rather than treating client-side filtering as final backend behavior
+
+Share responsibility:
+
+- Share is a modal/overlay opened from Reading and Editor page-local actions, not a standalone page or sidebar destination
+- expected visibility choices are Private, Unlisted and Public; reuse the established visibility semantics
+- Private has no external link, Unlisted exposes a secret share link/token, and Public exposes the public article URL
+- copy-link belongs inside the Share flow and uses quiet success feedback
+- focus must be trapped while open and restored to the triggering Share action when closed
+- Escape closes the dialog; backdrop dismissal is allowed when no destructive or unsaved operation is in progress
+- a restrained backdrop, shadow and dialog radius are allowed because this is genuinely layered UI
+- do not nest dashboard-style cards inside the dialog and do not introduce a separate visual theme for sharing
+- password-protected sharing is a later enhancement, not part of the initial reference overlay
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
