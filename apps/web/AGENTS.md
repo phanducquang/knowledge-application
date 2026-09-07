@@ -14,6 +14,7 @@ Approved shell rule:
 - mobile: minimal top application bar + navigation drawer + page content
 - page-specific context/actions belong in the page header inside the content area
 - route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
+- navigation destinations and shell commands must remain semantically distinct: `Search` in primary navigation routes to `/search`, while Quick Search is exposed as a shell utility/keyboard accelerator
 
 The **Quick Search Overlay (4B)** is the current reference interaction under review. It complements the approved `/search` page rather than replacing it. Share Dialog remains the next reference overlay after 4B is approved.
 
@@ -34,6 +35,7 @@ Editor responsibility:
 Search responsibility:
 
 - `/search` is the approved full Search route and accepts an initial `q` query parameter
+- the sidebar `Search` item is a route-aware navigation destination and must continue to navigate to `/search`
 - the broad centered search surface, distinct idle/searching/no-match states, and editorial result rows are approved reference patterns
 - search results reuse the approved Knowledge List row treatment rather than introducing search-specific cards
 - every result row keeps consistent hover/focus geometry, including the first and last row
@@ -45,14 +47,17 @@ Search responsibility:
 Quick Search responsibility:
 
 - Quick Search is an overlay for fast navigation; `/search` remains the full search/exploration surface
-- the sidebar Search action and `Cmd/Ctrl + K` open Quick Search
+- Quick Search is a shell utility/command, not a primary-navigation destination
+- `Cmd/Ctrl + K` is the main desktop accelerator; a compact shell search utility may open it for discoverability, and mobile exposes an equivalent search utility in the top application bar
+- do not make the primary sidebar `Search` item open Quick Search; it must navigate to `/search`
 - do not bind `/` globally because it conflicts with Markdown/Crepe slash-command authoring
 - opening the overlay autofocuses search, locks background scrolling and traps focus; closing restores focus to the previous trigger when it still exists
 - Escape and backdrop interaction close the overlay
 - Arrow Up/Down traverses quick actions and Enter opens the selected result; pointer hover/focus updates the same selected state
 - an empty query shows a compact recently-updated list rather than a large empty-state page
 - typed queries show at most a small quick-result set plus `View all results`, which transfers the query to `/search?q=...`
-- Quick Search uses one restrained layered surface; selected rows use warm-neutral active fill with a thin petrol indicator rather than card-like nested containers
+- Quick Search uses one restrained layered surface; result hover and keyboard selection reuse the approved Knowledge List/Search row grammar: `--row-hover` for the broad surface and `--accent-strong` for title/action text
+- do not use a sidebar-style petrol left indicator or `--active` fill for Quick Search result rows; those semantics belong to active navigation, not knowledge-result hover/selection
 - if another control/editor has already consumed `Cmd/Ctrl + K`, Quick Search must not override that handled shortcut
 
 Share responsibility:
