@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { KnowledgeListItem } from "@/components/knowledge/knowledge-list-item";
+import { searchKnowledgeItems } from "@/lib/knowledge-search";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 
 interface KnowledgeSearchProps {
@@ -11,45 +12,6 @@ interface KnowledgeSearchProps {
 }
 
 const suggestedQueries = ["Spring Boot", "Redis", "Elasticsearch", "Nginx"];
-
-function scoreItem(item: KnowledgeListItemData, query: string) {
-  const normalizedQuery = query.toLowerCase();
-  const title = item.title.toLowerCase();
-  const description = item.description.toLowerCase();
-  const collection = item.collection.toLowerCase();
-  const tags = item.tags.map((tag) => tag.toLowerCase());
-
-  let score = 0;
-
-  if (title === normalizedQuery) score += 12;
-  else if (title.startsWith(normalizedQuery)) score += 8;
-  else if (title.includes(normalizedQuery)) score += 6;
-
-  if (collection === normalizedQuery) score += 6;
-  else if (collection.includes(normalizedQuery)) score += 3;
-
-  for (const tag of tags) {
-    if (tag === normalizedQuery) score += 6;
-    else if (tag.includes(normalizedQuery)) score += 3;
-  }
-
-  if (description.includes(normalizedQuery)) score += 2;
-
-  return score;
-}
-
-function searchItems(items: KnowledgeListItemData[], query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) {
-    return [];
-  }
-
-  return items
-    .map((item) => ({ item, score: scoreItem(item, normalizedQuery) }))
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score || b.item.updatedAtIso.localeCompare(a.item.updatedAtIso))
-    .map(({ item }) => item);
-}
 
 export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,7 +56,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
     window.history.replaceState(window.history.state, "", url);
   }, [query]);
 
-  const results = useMemo(() => searchItems(items, committedQuery), [items, committedQuery]);
+  const results = useMemo(() => searchKnowledgeItems(items, committedQuery), [items, committedQuery]);
   const hasQuery = query.trim().length > 0;
 
   const resultLinks = () =>
