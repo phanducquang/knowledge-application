@@ -4,10 +4,19 @@ interface SidebarProps {
   currentPath?: string;
   onNavigate?: () => void;
   onClose?: () => void;
+  onSearch?: () => void;
 }
 
 const collections = ["Backend", "Database", "DevOps"];
 const states = ["Private", "Shared", "Drafts"];
+
+function navItemClass(active: boolean) {
+  return `block w-full border-l-2 py-1.5 pl-3 pr-2 text-left text-[14px] leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+    active
+      ? "border-[var(--accent)] bg-[var(--active)] font-medium text-[var(--accent-strong)]"
+      : "border-transparent text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text)]"
+  }`;
+}
 
 function NavLink({
   children,
@@ -25,18 +34,16 @@ function NavLink({
       href={href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      className={`block border-l-2 py-1.5 pl-3 pr-2 text-[14px] leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
-        active
-          ? "border-[var(--accent)] bg-[var(--active)] font-medium text-[var(--accent-strong)]"
-          : "border-transparent text-[var(--text-muted)] hover:bg-[var(--nav-hover)] hover:text-[var(--text)]"
-      }`}
+      className={navItemClass(active)}
     >
       {children}
     </Link>
   );
 }
 
-export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps) {
+export function Sidebar({ currentPath = "/", onNavigate, onClose, onSearch }: SidebarProps) {
+  const searchActive = currentPath.startsWith("/search");
+
   return (
     <aside className="flex h-full flex-col bg-[var(--sidebar)] px-4 py-5">
       <div className="mb-6 flex items-center justify-between gap-4 px-2">
@@ -63,7 +70,21 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose }: SidebarProps
       <nav className="flex-1 overflow-y-auto" aria-label="Knowledge navigation">
         <div className="space-y-1">
           <NavLink href="/" active={currentPath === "/"} onNavigate={onNavigate}>All notes</NavLink>
-          <NavLink href="/search" active={currentPath.startsWith("/search")} onNavigate={onNavigate}>Search</NavLink>
+          {onSearch ? (
+            <button
+              type="button"
+              onClick={onSearch}
+              aria-current={searchActive ? "page" : undefined}
+              className={navItemClass(searchActive)}
+            >
+              <span className="flex items-center justify-between gap-3">
+                <span>Search</span>
+                <span className="text-[10px] font-normal text-[var(--text-subtle)]" aria-hidden="true">⌘K</span>
+              </span>
+            </button>
+          ) : (
+            <NavLink href="/search" active={searchActive} onNavigate={onNavigate}>Search</NavLink>
+          )}
         </div>
 
         <div className="mt-7">
