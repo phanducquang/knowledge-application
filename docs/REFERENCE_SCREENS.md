@@ -151,9 +151,42 @@ Approved decisions:
 
 The approved Search screen is the reference for future find/filter flows: broad search surface, keyboard-first result traversal, editorial rows, and distinct non-list empty states.
 
+## 4B. Quick Search Overlay
+
+**Status: In progress — reference interaction #4B.**
+
+Purpose:
+
+- establish a fast global knowledge-navigation overlay
+- complement full `/search` without replacing it
+- establish keyboard-first command/search behavior
+- establish the first reusable lightweight search overlay pattern
+- validate desktop/mobile overlay density before Share Dialog
+
+Current reference direction:
+
+- Quick Search is for fast navigation while `/search` remains the full search/exploration page
+- the sidebar `Search` action opens Quick Search; `/search` remains directly addressable and is reached from `View all results`
+- `Cmd/Ctrl + K` opens Quick Search globally when that shortcut has not already been consumed by another control/editor
+- do not bind `/` globally because Milkdown/Crepe uses slash-command authoring inside Content and the global shortcut must not interfere with editor interaction
+- opening the overlay closes the mobile navigation drawer, locks background scrolling, autofocuses the search field and traps focus inside the overlay
+- closing with Escape, the explicit `Esc` action or backdrop interaction restores focus to the previous trigger when that element still exists
+- an empty query shows a compact `Recently updated` result set instead of reproducing the large idle state from the full Search page
+- typed queries reuse the same relevance/ranking function as `/search` and show at most a small quick-result set so the overlay remains a navigation tool rather than a second full results page
+- `View all results for “<query>”` transfers the query to `/search?q=...`
+- Arrow Up/Down changes the selected quick action, Enter opens the selected result from the search input, and pointer hover/focus updates the same selected state
+- desktop uses one centered layered surface around 720px maximum width; mobile uses a near-full-width surface with controlled viewport height rather than a tiny centered desktop dialog
+- the overlay uses a restrained backdrop, 6px-scale radius and layered shadow because it is genuinely elevated UI
+- result rows remain flat inside the overlay; selected rows use a warm-neutral active fill plus a thin petrol left indicator and accent text rather than nested cards or large teal fills
+- the compact metadata line uses collection/tags for scanning, while updated date stays quiet and right-aligned
+- no-result state inside Quick Search remains compact and points to full Search instead of expanding into the full Search page's centered no-match canvas
+- while the prototype still uses mock data, results without a real reading-page route may fall back to full Search; production behavior should open the real Knowledge route once all data is wired
+
+Quick Search should feel like a fast keyboard navigation layer over the workspace, not a second page compressed into a modal.
+
 ## 5. Share Dialog
 
-**Status: In progress — reference overlay #5.**
+**Status: Planned — reference overlay #5 after Quick Search approval.**
 
 Purpose:
 
@@ -164,7 +197,7 @@ Purpose:
 - establish keyboard/focus dismissal behavior
 - establish responsive dialog behavior
 
-Current reference direction:
+Planned reference direction:
 
 - Share is an overlay/dialog opened from the page-local `Share` action on Reading and Editor screens; it is not a standalone workspace page or a new global navigation destination
 - desktop should use a centered modal surface over a restrained backdrop; mobile may use a near-full-width dialog or bottom-oriented sheet only if that improves reachability without creating a second design language
