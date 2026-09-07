@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { QuickSearchOverlay } from "@/components/search/quick-search-overlay";
@@ -15,10 +15,10 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [quickSearchOpen, setQuickSearchOpen] = useState(false);
 
-  const openQuickSearch = () => {
+  const openQuickSearch = useCallback(() => {
     setMobileNavOpen(false);
     setQuickSearchOpen(true);
-  };
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = mobileNavOpen || quickSearchOpen ? "hidden" : "";
@@ -29,6 +29,10 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
         openQuickSearch();
@@ -37,7 +41,7 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
 
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, []);
+  }, [openQuickSearch]);
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
