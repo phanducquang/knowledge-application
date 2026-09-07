@@ -166,10 +166,11 @@ Purpose:
 Current reference direction:
 
 - Quick Search is for fast navigation while `/search` remains the full search/exploration page
-- the sidebar `Search` action opens Quick Search; `/search` remains directly addressable and is reached from `View all results`
-- `Cmd/Ctrl + K` opens Quick Search globally when that shortcut has not already been consumed by another control/editor
+- primary navigation and Quick Search have different responsibilities: the sidebar `Search` item always navigates to `/search`; Quick Search is a shell utility/command rather than a navigation destination
+- `Cmd/Ctrl + K` is the primary desktop accelerator when that shortcut has not already been consumed by another control/editor
+- desktop also exposes a compact search utility in the sidebar header for discoverability; mobile exposes an equivalent search utility in the top application bar
 - do not bind `/` globally because Milkdown/Crepe uses slash-command authoring inside Content and the global shortcut must not interfere with editor interaction
-- opening the overlay closes the mobile navigation drawer, locks background scrolling, autofocuses the search field and traps focus inside the overlay
+- opening the overlay closes the mobile navigation drawer when necessary, locks background scrolling, autofocuses the search field and traps focus inside the overlay
 - closing with Escape, the explicit `Esc` action or backdrop interaction restores focus to the previous trigger when that element still exists
 - an empty query shows a compact `Recently updated` result set instead of reproducing the large idle state from the full Search page
 - typed queries reuse the same relevance/ranking function as `/search` and show at most a small quick-result set so the overlay remains a navigation tool rather than a second full results page
@@ -177,12 +178,13 @@ Current reference direction:
 - Arrow Up/Down changes the selected quick action, Enter opens the selected result from the search input, and pointer hover/focus updates the same selected state
 - desktop uses one centered layered surface around 720px maximum width; mobile uses a near-full-width surface with controlled viewport height rather than a tiny centered desktop dialog
 - the overlay uses a restrained backdrop, 6px-scale radius and layered shadow because it is genuinely elevated UI
-- result rows remain flat inside the overlay; selected rows use a warm-neutral active fill plus a thin petrol left indicator and accent text rather than nested cards or large teal fills
+- result rows remain flat inside the overlay and reuse the approved Knowledge List/Search interaction grammar: broad hover and keyboard-selection feedback use `--row-hover`, while the title/action text may move to `--accent-strong`
+- do not use a sidebar-style petrol left indicator or `--active` navigation fill on Quick Search result rows; navigation selection and knowledge-result interaction are different semantics
 - the compact metadata line uses collection/tags for scanning, while updated date stays quiet and right-aligned
 - no-result state inside Quick Search remains compact and points to full Search instead of expanding into the full Search page's centered no-match canvas
 - while the prototype still uses mock data, results without a real reading-page route may fall back to full Search; production behavior should open the real Knowledge route once all data is wired
 
-Quick Search should feel like a fast keyboard navigation layer over the workspace, not a second page compressed into a modal.
+Quick Search should feel like a fast keyboard navigation layer over the workspace, not a second page compressed into a modal and not a replacement for the Search navigation destination.
 
 ## 5. Share Dialog
 
