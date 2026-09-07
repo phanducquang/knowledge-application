@@ -116,7 +116,7 @@ The approved editor is quiet, complete and content-first: a user can understand 
 
 ## 4. Search
 
-**Status: In progress — reference screen #4.**
+**Status: Approved reference screen — September 7, 2026.**
 
 Purpose:
 
@@ -126,15 +126,18 @@ Purpose:
 - establish empty/loading states
 - establish how search connects to the approved Knowledge List shell
 
-Current reference direction:
+Approved decisions:
 
 - Search lives at `/search` and accepts an initial `q` query parameter so searches can be reached directly from the Knowledge List search field
 - the Knowledge List search field submits to `/search?q=...` rather than pretending to be an inactive local field
 - the Search page reuses the approved workspace shell, 1080px content frame, page-title hierarchy and warm-neutral + petrol/teal visual system
 - Search is exposed as a route-aware primary sidebar destination alongside All notes; the sidebar must not leave All notes visually selected while Search is active
-- the search field is the dominant interaction on the page but remains a flat bordered control, not a floating command-card treatment
-- the current prototype searches title, description/summary, collection and tags; relevance prioritizes title matches, then collection/tag matches, then description matches
+- the main search surface is centered and broad within the content frame so it visually owns the page rather than appearing as a narrow left-aligned form
+- the search field remains a flat bordered control, not a floating command-card treatment
+- the reference implementation searches title, description/summary, collection and tags; relevance prioritizes title matches, then collection/tag matches, then description matches
 - results reuse `KnowledgeListItem` and therefore keep the approved editorial rows, metadata hierarchy, dividers and subtle hover/focus treatment rather than introducing search-result cards
+- every result row uses the same vertical padding and interactive geometry; first/last rows must not change the hover/focus surface shape merely to adjust list spacing
+- broad row hover and navigation-active surfaces stay warm-neutral and restrained; petrol/teal remains concentrated in indicators, active text and focus treatment rather than filling large areas
 - keyboard navigation is first-class: Arrow Down from the search field moves into the result links, Arrow Up/Down moves between result links, Enter follows the focused result, and Escape returns focus to the search field
 - result rows use `focus-within` feedback so keyboard navigation receives the same quiet row emphasis as pointer hover
 - Search has distinct visual modes rather than representing every state as a result list: idle, searching, no matches, and matched results are separate workspace states
@@ -146,16 +149,35 @@ Current reference direction:
 - the query is reflected in the browser URL without creating a new history entry for each keystroke
 - the current search implementation uses mock/client-side data only; production MVP search must still follow the architecture decision to use PostgreSQL Full Text Search, and client filtering must not become the final backend search architecture
 
-Search results should remain information-dense and consistent with Knowledge List. Do not add result cards, category dashboards or decorative filter panels unless a later search requirement clearly needs them.
+The approved Search screen is the reference for future find/filter flows: broad search surface, keyboard-first result traversal, editorial rows, and distinct non-list empty states.
 
 ## 5. Share Dialog
 
+**Status: In progress — reference overlay #5.**
+
 Purpose:
 
-- establish dialog visual language
+- establish modal/overlay visual language
 - establish visibility selection
 - establish copy-link behavior
 - establish form controls and primary/secondary actions
+- establish keyboard/focus dismissal behavior
+- establish responsive dialog behavior
+
+Current reference direction:
+
+- Share is an overlay/dialog opened from the page-local `Share` action on Reading and Editor screens; it is not a standalone workspace page or a new global navigation destination
+- desktop should use a centered modal surface over a restrained backdrop; mobile may use a near-full-width dialog or bottom-oriented sheet only if that improves reachability without creating a second design language
+- opening Share must trap focus inside the dialog, move initial focus to a useful control, and restore focus to the triggering Share button on close
+- Escape closes the dialog; clicking the backdrop may close it when no destructive or unsaved operation is in progress
+- visibility choices are `Private`, `Unlisted`, and `Public`; reuse the semantic model already established in the Editor rather than inventing a separate sharing taxonomy
+- `Private` communicates that no external link is available
+- `Unlisted` exposes a secret share link/token that is intentionally not listed or indexed
+- `Public` exposes the public article URL and communicates that it may be indexable
+- copy-link behavior belongs inside Share and should provide quiet success feedback rather than a large toast or celebratory state
+- password-protected sharing remains a later enhancement and must not complicate the initial reference dialog
+- the dialog should be compact, flat and typography-led: one meaningful contained overlay surface is appropriate here, but avoid dashboard cards nested inside the modal
+- backdrop, radius and shadow are permitted because a dialog is genuinely layered UI, but they must remain restrained and use the established warm-neutral/petrol visual system
 
 Expected visibility options:
 
