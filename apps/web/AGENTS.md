@@ -6,7 +6,7 @@ Before any UI change, read these repository-level documents in order:
 2. `../../docs/REFERENCE_SCREENS.md`
 3. `../../docs/AI_CODING_GUIDELINES.md`
 
-The Knowledge List, Knowledge Reading Page, Knowledge Editor and Search are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces and result-state treatment rather than inventing a new visual system.
+The Knowledge List, Knowledge Reading Page, Knowledge Editor and Search Page are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces and result-state treatment rather than inventing a new visual system.
 
 Approved shell rule:
 
@@ -15,7 +15,7 @@ Approved shell rule:
 - page-specific context/actions belong in the page header inside the content area
 - route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
 
-The Share Dialog is the current reference overlay under review. It must inherit the approved workspace palette/control language while introducing only the layering patterns genuinely required by a modal/dialog.
+The **Quick Search Overlay (4B)** is the current reference interaction under review. It complements the approved `/search` page rather than replacing it. Share Dialog remains the next reference overlay after 4B is approved.
 
 Editor responsibility:
 
@@ -33,13 +33,27 @@ Editor responsibility:
 
 Search responsibility:
 
-- `/search` is the approved Search route and accepts an initial `q` query parameter
+- `/search` is the approved full Search route and accepts an initial `q` query parameter
 - the broad centered search surface, distinct idle/searching/no-match states, and editorial result rows are approved reference patterns
 - search results reuse the approved Knowledge List row treatment rather than introducing search-specific cards
 - every result row keeps consistent hover/focus geometry, including the first and last row
 - broad active/hover fills remain warm-neutral and restrained; petrol/teal is concentrated in indicators, active text and focus treatment
 - keyboard navigation remains first-class: the search field can move focus into results and result links support moving up/down and returning to the search field
+- Quick Search and `/search` must share the same search-ranking logic while the prototype still uses mock data
 - the current implementation searches mock client data only; production search should follow the architecture decision to use PostgreSQL Full Text Search for MVP rather than treating client-side filtering as final backend behavior
+
+Quick Search responsibility:
+
+- Quick Search is an overlay for fast navigation; `/search` remains the full search/exploration surface
+- the sidebar Search action and `Cmd/Ctrl + K` open Quick Search
+- do not bind `/` globally because it conflicts with Markdown/Crepe slash-command authoring
+- opening the overlay autofocuses search, locks background scrolling and traps focus; closing restores focus to the previous trigger when it still exists
+- Escape and backdrop interaction close the overlay
+- Arrow Up/Down traverses quick actions and Enter opens the selected result; pointer hover/focus updates the same selected state
+- an empty query shows a compact recently-updated list rather than a large empty-state page
+- typed queries show at most a small quick-result set plus `View all results`, which transfers the query to `/search?q=...`
+- Quick Search uses one restrained layered surface; selected rows use warm-neutral active fill with a thin petrol indicator rather than card-like nested containers
+- if another control/editor has already consumed `Cmd/Ctrl + K`, Quick Search must not override that handled shortcut
 
 Share responsibility:
 
