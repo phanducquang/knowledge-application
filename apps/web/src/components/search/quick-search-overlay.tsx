@@ -248,14 +248,18 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                   onMouseEnter={() => setSelectedIndex(index)}
                   onFocus={() => setSelectedIndex(index)}
                   onClick={() => openResult(item)}
-                  className={`grid w-full grid-cols-[minmax(0,1fr)_auto] gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-5 ${
-                    selected
-                      ? "border-[var(--accent)] bg-[var(--active)]"
-                      : "border-transparent hover:bg-[var(--row-hover)]"
+                  className={`group grid w-full grid-cols-[minmax(0,1fr)_auto] gap-4 px-4 py-3 text-left transition-colors sm:px-5 ${
+                    selected ? "bg-[var(--row-hover)]" : "hover:bg-[var(--row-hover)]"
                   } focus-visible:outline-none`}
                 >
                   <span className="min-w-0">
-                    <span className={`block truncate text-[14px] font-medium ${selected ? "text-[var(--accent-strong)]" : "text-[var(--text)]"}`}>
+                    <span
+                      className={`block truncate text-[14px] font-medium transition-colors ${
+                        selected
+                          ? "text-[var(--accent-strong)]"
+                          : "text-[var(--text)] group-hover:text-[var(--accent-strong)]"
+                      }`}
+                    >
                       {item.title}
                     </span>
                     <span className="mt-1 block truncate text-[11px] text-[var(--text-subtle)]">
@@ -286,10 +290,10 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                 onMouseEnter={() => setSelectedIndex(results.length)}
                 onFocus={() => setSelectedIndex(results.length)}
                 onClick={viewAllResults}
-                className={`flex w-full items-center justify-between border-l-2 px-4 py-3 text-left text-[13px] transition-colors sm:px-5 ${
+                className={`group flex w-full items-center justify-between px-4 py-3 text-left text-[13px] transition-colors sm:px-5 ${
                   selectedIndex === results.length
-                    ? "border-[var(--accent)] bg-[var(--active)] text-[var(--accent-strong)]"
-                    : "border-transparent text-[var(--text-muted)] hover:bg-[var(--row-hover)] hover:text-[var(--text)]"
+                    ? "bg-[var(--row-hover)] text-[var(--accent-strong)]"
+                    : "text-[var(--text-muted)] hover:bg-[var(--row-hover)] hover:text-[var(--accent-strong)]"
                 } focus-visible:outline-none`}
               >
                 <span>View all results for “{trimmedQuery}”</span>
