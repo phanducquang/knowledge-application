@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
+import { QuickSearchOverlay } from "@/components/search/quick-search-overlay";
+import { mockKnowledgeItems } from "@/data/mock-knowledge";
 
 interface WorkspaceShellProps {
   children: React.ReactNode;
@@ -11,18 +13,36 @@ interface WorkspaceShellProps {
 export function WorkspaceShell({ children }: WorkspaceShellProps) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [quickSearchOpen, setQuickSearchOpen] = useState(false);
+
+  const openQuickSearch = () => {
+    setMobileNavOpen(false);
+    setQuickSearchOpen(true);
+  };
 
   useEffect(() => {
-    document.body.style.overflow = mobileNavOpen ? "hidden" : "";
+    document.body.style.overflow = mobileNavOpen || quickSearchOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [mobileNavOpen]);
+  }, [mobileNavOpen, quickSearchOpen]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        openQuickSearch();
+      }
+    };
+
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-[236px] lg:border-r lg:border-[var(--border)]">
-        <Sidebar currentPath={pathname} />
+        <Sidebar currentPath={pathname} onSearch={openQuickSearch} />
       </div>
 
       <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-[var(--border)] bg-[var(--background)] px-5 lg:hidden">
@@ -52,10 +72,17 @@ export function WorkspaceShell({ children }: WorkspaceShellProps) {
               currentPath={pathname}
               onNavigate={() => setMobileNavOpen(false)}
               onClose={() => setMobileNavOpen(false)}
+              onSearch={openQuickSearch}
             />
           </div>
         </div>
       )}
+
+      <QuickSearchOverlay
+        open={quickSearchOpen}
+        items={mockKnowledgeItems}
+        onClose={() => setQuickSearchOpen(false)}
+      />
 
       <main className="lg:pl-[236px]">{children}</main>
     </div>
