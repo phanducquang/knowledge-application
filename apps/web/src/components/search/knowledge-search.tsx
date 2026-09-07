@@ -272,7 +272,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
 
       {hasQuery && !searching && results.length > 0 && (
         <section className="mx-auto mt-9 w-full max-w-[980px]" aria-labelledby="search-results-heading">
-          <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
+          <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
             <h2 id="search-results-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
               Search results
             </h2>

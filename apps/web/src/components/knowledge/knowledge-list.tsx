@@ -8,7 +8,7 @@ interface KnowledgeListProps {
 export function KnowledgeList({ items }: KnowledgeListProps) {
   return (
     <section aria-labelledby="knowledge-list-heading">
-      <div className="mb-4 flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
+      <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
         <h2 id="knowledge-list-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
           Recently updated
         </h2>
