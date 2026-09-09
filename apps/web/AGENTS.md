@@ -6,7 +6,7 @@ Before any UI change, read these repository-level documents in order:
 2. `../../docs/REFERENCE_SCREENS.md`
 3. `../../docs/AI_CODING_GUIDELINES.md`
 
-The Knowledge List, Knowledge Reading Page, Knowledge Editor, Search Page and Quick Search Overlay are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces, result-state treatment and overlay interaction patterns rather than inventing a new visual system.
+The Knowledge List, Knowledge Reading Page, Knowledge Editor, Search Page, Quick Search Overlay and Share Dialog are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces, result-state treatment and overlay interaction patterns rather than inventing a new visual system.
 
 Approved shell rule:
 
@@ -16,7 +16,7 @@ Approved shell rule:
 - route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
 - navigation destinations and shell commands must remain semantically distinct: `Search` in primary navigation routes to `/search`, while Quick Search is exposed as a shell utility/keyboard accelerator
 
-The **Share Dialog (#5)** is the current reference overlay under review. It reuses the approved overlay discipline from Quick Search while introducing sharing-specific visibility and copy-link behavior.
+The current reference UI phase is complete. Future implementation work should preserve the approved interaction and visual language unless a real product/backend constraint requires a documented change.
 
 Editor responsibility:
 
@@ -64,17 +64,17 @@ Quick Search responsibility:
 
 Share responsibility:
 
-- Share is a modal/overlay opened from Reading and Editor page-local actions, not a standalone page or sidebar destination
+- Share Dialog is an approved reference overlay opened from Reading and Editor page-local actions, not a standalone page or sidebar destination
 - Reading and Editor reuse the same Share interaction rather than maintaining separate dialog variants
 - expected visibility choices are Private, Unlisted and Public; reuse the established lightweight visibility-radio pattern from Editor
 - Private has no external link, Unlisted exposes a `/s/{shareToken}` secret-link shape, and Public exposes a `/k/{slug}` public-link shape
 - the current prototype may use deterministic mock share URLs; production unlisted tokens must be server-generated, secret and persisted
 - copy-link belongs beside the read-only URL and uses quiet inline success/failure feedback rather than a large toast
 - focus must be trapped while open, initial focus should land on the selected visibility option, background scrolling is locked, and focus returns to the triggering Share action on close
-- Escape, explicit close and backdrop interaction close the current reference dialog
+- Escape, explicit close and backdrop interaction close the approved dialog
 - use one restrained dialog surface with warm-neutral sections/dividers; do not nest dashboard-style cards inside the dialog
 - a restrained backdrop, shadow and small dialog radius are allowed because this is genuinely layered UI
-- password-protected sharing is a later enhancement, not part of the initial reference overlay
+- password-protected sharing is a later enhancement, not part of the approved initial Share Dialog
 - Share visibility is prototype-local until persistence/API wiring exists; backend work must later keep Editor, Reading metadata and Share state synchronized
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
