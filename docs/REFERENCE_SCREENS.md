@@ -189,7 +189,7 @@ Quick Search is the approved fast keyboard navigation layer over the workspace; 
 
 ## 5. Share Dialog
 
-**Status: In progress — reference overlay #5.**
+**Status: Approved reference overlay — September 9, 2026.**
 
 Purpose:
 
@@ -200,13 +200,13 @@ Purpose:
 - establish keyboard/focus dismissal behavior
 - establish responsive dialog behavior
 
-Current reference direction:
+Approved decisions:
 
 - Share is an overlay/dialog opened from the page-local `Share` action on Reading and Editor screens; it is not a standalone workspace page or a new global navigation destination
 - Reading and Editor reuse one `KnowledgeShareAction` interaction so sharing does not develop separate visual/behavior variants
 - desktop and mobile use one centered, near-full-width-at-small-screens dialog surface; do not introduce a separate bottom-sheet language unless later testing demonstrates a clear reachability need
 - opening Share locks background scrolling, traps focus inside the dialog, focuses the currently selected visibility control and restores focus to the triggering Share action on close
-- Escape, the explicit close action and backdrop interaction close the dialog because the current reference flow has no destructive or unsaved modal-local operation
+- Escape, the explicit close action and backdrop interaction close the dialog because the approved flow has no destructive or unsaved modal-local operation
 - visibility choices are `Private`, `Unlisted`, and `Public`; the control reuses the Editor's lightweight text-radio treatment with a bottom selected indicator rather than boxed choices
 - `Private` communicates that no external link is available and does not render a fake disabled URL control
 - `Unlisted` exposes a secret-link shape under `/s/{shareToken}` and communicates that it is not listed or indexed
@@ -215,7 +215,7 @@ Current reference direction:
 - the share URL is read-only and selecting/focusing it may select the full value for manual copy
 - Copy belongs beside the URL in the same flat bordered control; success/failure feedback remains quiet and inline rather than becoming a large toast
 - the dialog uses one meaningful contained surface with a restrained backdrop, 6px-scale radius and layered shadow; internal sections are separated with dividers/spacing instead of nested cards
-- password-protected sharing remains a later enhancement and must not complicate this reference overlay
+- password-protected sharing remains a later enhancement and must not complicate the approved initial Share Dialog
 - visibility/share-link state is prototype-local until persistence/API wiring exists; backend implementation must later keep Reading metadata, Editor visibility and Share visibility synchronized
 
 Expected visibility options:
@@ -223,6 +223,8 @@ Expected visibility options:
 - Private
 - Unlisted
 - Public
+
+With Share Dialog approved, the current reference UI phase is complete. Subsequent implementation work should preserve these approved references and move toward real backend persistence, authorization, search and sharing behavior rather than creating additional mock reference screens without a product need.
 
 ## Approval rule
 
