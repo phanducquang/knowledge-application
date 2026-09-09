@@ -153,7 +153,7 @@ The approved Search screen is the reference for future find/filter flows: broad 
 
 ## 4B. Quick Search Overlay
 
-**Status: In progress — reference interaction #4B.**
+**Status: Approved reference interaction — September 9, 2026.**
 
 Purpose:
 
@@ -163,7 +163,7 @@ Purpose:
 - establish the first reusable lightweight search overlay pattern
 - validate desktop/mobile overlay density before Share Dialog
 
-Current reference direction:
+Approved decisions:
 
 - Quick Search is for fast navigation while `/search` remains the full search/exploration page
 - primary navigation and Quick Search have different responsibilities: the sidebar `Search` item always navigates to `/search`; Quick Search is a shell utility/command rather than a navigation destination
@@ -185,11 +185,11 @@ Current reference direction:
 - no-result state inside Quick Search remains compact and points to full Search instead of expanding into the full Search page's centered no-match canvas
 - mock/prototype data should expose real Reading Page destinations for displayed results rather than using Search Page as a fallback for missing routes
 
-Quick Search should feel like a fast keyboard navigation layer over the workspace, not a second page compressed into a modal and not a replacement for the Search navigation destination.
+Quick Search is the approved fast keyboard navigation layer over the workspace; it is not a second page compressed into a modal and not a replacement for the Search navigation destination.
 
 ## 5. Share Dialog
 
-**Status: Planned — reference overlay #5 after Quick Search approval.**
+**Status: In progress — reference overlay #5.**
 
 Purpose:
 
@@ -200,20 +200,23 @@ Purpose:
 - establish keyboard/focus dismissal behavior
 - establish responsive dialog behavior
 
-Planned reference direction:
+Current reference direction:
 
 - Share is an overlay/dialog opened from the page-local `Share` action on Reading and Editor screens; it is not a standalone workspace page or a new global navigation destination
-- desktop should use a centered modal surface over a restrained backdrop; mobile may use a near-full-width dialog or bottom-oriented sheet only if that improves reachability without creating a second design language
-- opening Share must trap focus inside the dialog, move initial focus to a useful control, and restore focus to the triggering Share button on close
-- Escape closes the dialog; clicking the backdrop may close it when no destructive or unsaved operation is in progress
-- visibility choices are `Private`, `Unlisted`, and `Public`; reuse the semantic model already established in the Editor rather than inventing a separate sharing taxonomy
-- `Private` communicates that no external link is available
-- `Unlisted` exposes a secret share link/token that is intentionally not listed or indexed
-- `Public` exposes the public article URL and communicates that it may be indexable
-- copy-link behavior belongs inside Share and should provide quiet success feedback rather than a large toast or celebratory state
-- password-protected sharing remains a later enhancement and must not complicate the initial reference dialog
-- the dialog should be compact, flat and typography-led: one meaningful contained overlay surface is appropriate here, but avoid dashboard cards nested inside the modal
-- backdrop, radius and shadow are permitted because a dialog is genuinely layered UI, but they must remain restrained and use the established warm-neutral/petrol visual system
+- Reading and Editor reuse one `KnowledgeShareAction` interaction so sharing does not develop separate visual/behavior variants
+- desktop and mobile use one centered, near-full-width-at-small-screens dialog surface; do not introduce a separate bottom-sheet language unless later testing demonstrates a clear reachability need
+- opening Share locks background scrolling, traps focus inside the dialog, focuses the currently selected visibility control and restores focus to the triggering Share action on close
+- Escape, the explicit close action and backdrop interaction close the dialog because the current reference flow has no destructive or unsaved modal-local operation
+- visibility choices are `Private`, `Unlisted`, and `Public`; the control reuses the Editor's lightweight text-radio treatment with a bottom selected indicator rather than boxed choices
+- `Private` communicates that no external link is available and does not render a fake disabled URL control
+- `Unlisted` exposes a secret-link shape under `/s/{shareToken}` and communicates that it is not listed or indexed
+- `Public` exposes a public-link shape under `/k/{slug}` and communicates that it may be indexable
+- the prototype may generate deterministic/mock share URLs until backend share-token persistence exists; production unlisted tokens must be secret and server-managed
+- the share URL is read-only and selecting/focusing it may select the full value for manual copy
+- Copy belongs beside the URL in the same flat bordered control; success/failure feedback remains quiet and inline rather than becoming a large toast
+- the dialog uses one meaningful contained surface with a restrained backdrop, 6px-scale radius and layered shadow; internal sections are separated with dividers/spacing instead of nested cards
+- password-protected sharing remains a later enhancement and must not complicate this reference overlay
+- visibility/share-link state is prototype-local until persistence/API wiring exists; backend implementation must later keep Reading metadata, Editor visibility and Share visibility synchronized
 
 Expected visibility options:
 
