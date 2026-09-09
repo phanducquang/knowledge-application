@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import { ArticleSettings } from "@/components/knowledge/article-settings";
 import { KnowledgeMarkdownEditor } from "@/components/knowledge/knowledge-markdown-editor";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
-import { mockReferenceArticle } from "@/data/mock-knowledge";
+import { getMockKnowledgeArticle, mockReferenceArticle } from "@/data/mock-knowledge";
 
-const mockMarkdown = `## Problem
+const referenceMarkdown = `## Problem
 
 A downstream search service can accept a connection and then take too long to produce a useful response. Without an explicit application-level timeout, that latency leaks into the caller and makes the failure mode harder to classify.
 
@@ -51,10 +51,16 @@ const fieldLabelClassName =
 
 export default async function KnowledgeEditorPage(props: { params: Promise<{ slug: string }> }) {
   const { slug } = await props.params;
+  const article = getMockKnowledgeArticle(slug);
 
-  if (slug !== mockReferenceArticle.id) {
+  if (!article) {
     notFound();
   }
+
+  const initialMarkdown =
+    article.id === mockReferenceArticle.id
+      ? referenceMarkdown
+      : `## Overview\n\n${article.description}\n\n## Topics\n\n${article.tags.map((tag) => `- ${tag}`).join("\n")}\n`;
 
   return (
     <WorkspaceShell>
@@ -87,7 +93,7 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
         <div className="xl:grid xl:grid-cols-[minmax(0,760px)_240px] xl:gap-12">
           <main className="min-w-0">
             <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
-              {mockReferenceArticle.collection} / Editing
+              {article.collection} / Editing
             </p>
 
             <label className="block" htmlFor="knowledge-title">
@@ -95,7 +101,7 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
               <input
                 id="knowledge-title"
                 type="text"
-                defaultValue={mockReferenceArticle.title}
+                defaultValue={article.title}
                 className="mt-2 w-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] sm:text-[30px]"
               />
             </label>
@@ -105,17 +111,17 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
               <textarea
                 id="knowledge-summary"
                 rows={3}
-                defaultValue={mockReferenceArticle.lead}
+                defaultValue={article.lead}
                 className="mt-2 w-full resize-y border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[15px] leading-7 text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
               />
             </label>
 
             <ArticleSettings
               compact
-              initialVisibility={mockReferenceArticle.visibility}
-              initialCollection={mockReferenceArticle.collection}
-              initialTags={mockReferenceArticle.tags}
-              updatedAt={mockReferenceArticle.updatedAt}
+              initialVisibility={article.visibility}
+              initialCollection={article.collection}
+              initialTags={article.tags}
+              updatedAt={article.updatedAt}
             />
 
             <section className="mt-7" aria-labelledby="content-label">
@@ -127,16 +133,16 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
               </div>
 
               <div className="mt-2 border border-[var(--border)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
-                <KnowledgeMarkdownEditor initialMarkdown={mockMarkdown} />
+                <KnowledgeMarkdownEditor initialMarkdown={initialMarkdown} />
               </div>
             </section>
           </main>
 
           <ArticleSettings
-            initialVisibility={mockReferenceArticle.visibility}
-            initialCollection={mockReferenceArticle.collection}
-            initialTags={mockReferenceArticle.tags}
-            updatedAt={mockReferenceArticle.updatedAt}
+            initialVisibility={article.visibility}
+            initialCollection={article.collection}
+            initialTags={article.tags}
+            updatedAt={article.updatedAt}
           />
         </div>
       </div>
