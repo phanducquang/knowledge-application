@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleSettings } from "@/components/knowledge/article-settings";
 import { KnowledgeMarkdownEditor } from "@/components/knowledge/knowledge-markdown-editor";
+import { KnowledgeShareAction } from "@/components/knowledge/knowledge-share-action";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { getMockKnowledgeArticle, mockReferenceArticle } from "@/data/mock-knowledge";
 
@@ -81,12 +82,11 @@ export default async function KnowledgeEditorPage(props: { params: Promise<{ slu
             >
               Preview
             </Link>
-            <button
-              type="button"
-              className="inline-flex min-h-9 items-center border border-[var(--accent-muted)] px-3 text-[14px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--accent-soft)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
-            >
-              Share
-            </button>
+            <KnowledgeShareAction
+              slug={article.id}
+              title={article.title}
+              initialVisibility={article.visibility}
+            />
           </div>
         </div>
 
