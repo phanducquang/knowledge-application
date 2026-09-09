@@ -6,7 +6,7 @@ Before any UI change, read these repository-level documents in order:
 2. `../../docs/REFERENCE_SCREENS.md`
 3. `../../docs/AI_CODING_GUIDELINES.md`
 
-The Knowledge List, Knowledge Reading Page, Knowledge Editor and Search Page are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces and result-state treatment rather than inventing a new visual system.
+The Knowledge List, Knowledge Reading Page, Knowledge Editor, Search Page and Quick Search Overlay are **approved** reference implementations of the visual language. Reuse their typography, spacing, warm-neutral + petrol/teal palette, dividers, sidebar density, content widths, action hierarchy, control radius, responsive behavior, editable-field affordances, authoring patterns, search surfaces, result-state treatment and overlay interaction patterns rather than inventing a new visual system.
 
 Approved shell rule:
 
@@ -16,7 +16,7 @@ Approved shell rule:
 - route-aware primary navigation may expose destinations such as All notes and Search without introducing a second global navigation system
 - navigation destinations and shell commands must remain semantically distinct: `Search` in primary navigation routes to `/search`, while Quick Search is exposed as a shell utility/keyboard accelerator
 
-The **Quick Search Overlay (4B)** is the current reference interaction under review. It complements the approved `/search` page rather than replacing it. Share Dialog remains the next reference overlay after 4B is approved.
+The **Share Dialog (#5)** is the current reference overlay under review. It reuses the approved overlay discipline from Quick Search while introducing sharing-specific visibility and copy-link behavior.
 
 Editor responsibility:
 
@@ -46,7 +46,7 @@ Search responsibility:
 
 Quick Search responsibility:
 
-- Quick Search is an overlay for fast navigation; `/search` remains the full search/exploration surface
+- Quick Search is an approved overlay for fast navigation; `/search` remains the full search/exploration surface
 - Quick Search is a shell utility/command, not a primary-navigation destination
 - `Cmd/Ctrl + K` is the main desktop accelerator; a compact shell search utility may open it for discoverability, and mobile exposes an equivalent search utility in the top application bar
 - do not make the primary sidebar `Search` item open Quick Search; it must navigate to `/search`
@@ -54,7 +54,7 @@ Quick Search responsibility:
 - opening the overlay autofocuses search, locks background scrolling and traps focus; closing restores focus to the previous trigger when it still exists
 - Escape and backdrop interaction close the overlay
 - Arrow Up/Down traverses quick actions and Enter opens the selected result; pointer hover/focus updates the same selected state
-- selecting a knowledge result must navigate directly to that note's Reading Page; do not route an identified result back through `/search?q=...`
+- selecting a knowledge result opens that note directly; do not route an identified result through full Search
 - `/search?q=...` is reserved for the explicit `View all results` action when the user wants the full search/exploration surface
 - an empty query shows a compact recently-updated list rather than a large empty-state page
 - typed queries show at most a small quick-result set plus `View all results`, which transfers the query to `/search?q=...`
@@ -65,13 +65,16 @@ Quick Search responsibility:
 Share responsibility:
 
 - Share is a modal/overlay opened from Reading and Editor page-local actions, not a standalone page or sidebar destination
-- expected visibility choices are Private, Unlisted and Public; reuse the established visibility semantics
-- Private has no external link, Unlisted exposes a secret share link/token, and Public exposes the public article URL
-- copy-link belongs inside the Share flow and uses quiet success feedback
-- focus must be trapped while open and restored to the triggering Share action when closed
-- Escape closes the dialog; backdrop dismissal is allowed when no destructive or unsaved operation is in progress
-- a restrained backdrop, shadow and dialog radius are allowed because this is genuinely layered UI
-- do not nest dashboard-style cards inside the dialog and do not introduce a separate visual theme for sharing
+- Reading and Editor reuse the same Share interaction rather than maintaining separate dialog variants
+- expected visibility choices are Private, Unlisted and Public; reuse the established lightweight visibility-radio pattern from Editor
+- Private has no external link, Unlisted exposes a `/s/{shareToken}` secret-link shape, and Public exposes a `/k/{slug}` public-link shape
+- the current prototype may use deterministic mock share URLs; production unlisted tokens must be server-generated, secret and persisted
+- copy-link belongs beside the read-only URL and uses quiet inline success/failure feedback rather than a large toast
+- focus must be trapped while open, initial focus should land on the selected visibility option, background scrolling is locked, and focus returns to the triggering Share action on close
+- Escape, explicit close and backdrop interaction close the current reference dialog
+- use one restrained dialog surface with warm-neutral sections/dividers; do not nest dashboard-style cards inside the dialog
+- a restrained backdrop, shadow and small dialog radius are allowed because this is genuinely layered UI
 - password-protected sharing is a later enhancement, not part of the initial reference overlay
+- Share visibility is prototype-local until persistence/API wiring exists; backend work must later keep Editor, Reading metadata and Share state synchronized
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
