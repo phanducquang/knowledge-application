@@ -174,7 +174,8 @@ Current reference direction:
 - closing with Escape, the explicit `Esc` action or backdrop interaction restores focus to the previous trigger when that element still exists
 - an empty query shows a compact `Recently updated` result set instead of reproducing the large idle state from the full Search page
 - typed queries reuse the same relevance/ranking function as `/search` and show at most a small quick-result set so the overlay remains a navigation tool rather than a second full results page
-- `View all results for “<query>”` transfers the query to `/search?q=...`
+- selecting a knowledge result navigates directly to that note's Reading Page; an identified result must not bounce through `/search?q=...` and force a second selection
+- `View all results for “<query>”` is the explicit bridge to `/search?q=...` when the user wants the full search/exploration surface
 - Arrow Up/Down changes the selected quick action, Enter opens the selected result from the search input, and pointer hover/focus updates the same selected state
 - desktop uses one centered layered surface around 720px maximum width; mobile uses a near-full-width surface with controlled viewport height rather than a tiny centered desktop dialog
 - the overlay uses a restrained backdrop, 6px-scale radius and layered shadow because it is genuinely elevated UI
@@ -182,7 +183,7 @@ Current reference direction:
 - do not use a sidebar-style petrol left indicator or `--active` navigation fill on Quick Search result rows; navigation selection and knowledge-result interaction are different semantics
 - the compact metadata line uses collection/tags for scanning, while updated date stays quiet and right-aligned
 - no-result state inside Quick Search remains compact and points to full Search instead of expanding into the full Search page's centered no-match canvas
-- while the prototype still uses mock data, results without a real reading-page route may fall back to full Search; production behavior should open the real Knowledge route once all data is wired
+- mock/prototype data should expose real Reading Page destinations for displayed results rather than using Search Page as a fallback for missing routes
 
 Quick Search should feel like a fast keyboard navigation layer over the workspace, not a second page compressed into a modal and not a replacement for the Search navigation destination.
 
