@@ -23,6 +23,7 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     visibility: "Private",
     updatedAt: "Sep 5",
     updatedAtIso: "2026-09-05",
+    href: "/knowledge/redis-conditional-auto-configuration",
   },
   {
     id: "elasticsearch-sorting-strategies",
@@ -34,6 +35,7 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     visibility: "Private",
     updatedAt: "Sep 4",
     updatedAtIso: "2026-09-04",
+    href: "/knowledge/elasticsearch-sorting-strategies",
   },
   {
     id: "nginx-cdn-proxy",
@@ -45,6 +47,7 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     visibility: "Unlisted",
     updatedAt: "Aug 20",
     updatedAtIso: "2026-08-20",
+    href: "/knowledge/nginx-cdn-proxy",
   },
   {
     id: "jpa-entity-scanning",
@@ -56,6 +59,7 @@ export const mockKnowledgeItems: KnowledgeListItemData[] = [
     visibility: "Public",
     updatedAt: "Aug 17",
     updatedAtIso: "2026-08-17",
+    href: "/knowledge/jpa-entity-scanning",
   },
 ];
 
@@ -65,3 +69,20 @@ export const mockReferenceArticle: KnowledgeArticleData = {
     "A practical note on where to enforce timeouts in a Reactor chain, how errors propagate, and how to preserve enough context for observability without duplicating recovery logic.",
   readTime: "6 min read",
 };
+
+export function getMockKnowledgeArticle(slug: string): KnowledgeArticleData | undefined {
+  const item = mockKnowledgeItems.find((knowledgeItem) => knowledgeItem.id === slug);
+  if (!item) {
+    return undefined;
+  }
+
+  if (item.id === mockReferenceArticle.id) {
+    return mockReferenceArticle;
+  }
+
+  return {
+    ...item,
+    lead: item.description,
+    readTime: "3 min read",
+  };
+}
