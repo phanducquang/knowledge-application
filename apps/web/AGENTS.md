@@ -54,6 +54,8 @@ Quick Search responsibility:
 - opening the overlay autofocuses search, locks background scrolling and traps focus; closing restores focus to the previous trigger when it still exists
 - Escape and backdrop interaction close the overlay
 - Arrow Up/Down traverses quick actions and Enter opens the selected result; pointer hover/focus updates the same selected state
+- selecting a knowledge result must navigate directly to that note's Reading Page; do not route an identified result back through `/search?q=...`
+- `/search?q=...` is reserved for the explicit `View all results` action when the user wants the full search/exploration surface
 - an empty query shows a compact recently-updated list rather than a large empty-state page
 - typed queries show at most a small quick-result set plus `View all results`, which transfers the query to `/search?q=...`
 - Quick Search uses one restrained layered surface; result hover and keyboard selection reuse the approved Knowledge List/Search row grammar: `--row-hover` for the broad surface and `--accent-strong` for title/action text
