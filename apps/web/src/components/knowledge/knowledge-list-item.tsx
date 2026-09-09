@@ -24,7 +24,7 @@ export function KnowledgeListItem({ item }: KnowledgeListItemProps) {
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_100px] md:gap-8">
         <div className="min-w-0">
           <Link
-            href={item.href ?? `#${item.id}`}
+            href={item.href ?? `/knowledge/${item.id}`}
             className="text-[16px] font-medium leading-6 text-[var(--text)] underline-offset-4 transition-colors group-hover:text-[var(--accent-strong)] group-focus-within:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--accent)]"
           >
             {item.title}
