@@ -71,8 +71,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
   };
 
   const openResult = (item: KnowledgeListItemData) => {
-    const href = item.href ?? `/search?q=${encodeURIComponent(item.title)}`;
-    closeAndNavigate(href);
+    closeAndNavigate(item.href ?? `/knowledge/${item.id}`);
   };
 
   const viewAllResults = () => {
