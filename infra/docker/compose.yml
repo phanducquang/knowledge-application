@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: knowledge_app
+      POSTGRES_USER: knowledge_app
+      POSTGRES_PASSWORD: knowledge_app
+    ports:
+      - "5432:5432"
+    volumes:
+      - knowledge-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U knowledge_app -d knowledge_app"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  knowledge-postgres-data:

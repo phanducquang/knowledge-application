@@ -1,17 +1,35 @@
 import { KnowledgeSearch } from "@/components/search/knowledge-search";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
-import { mockKnowledgeItems } from "@/data/mock-knowledge";
+import { listKnowledge, searchKnowledge } from "@/lib/api/knowledge";
+import { toKnowledgeListItem } from "@/lib/knowledge-mapping";
+import { FULL_SEARCH_LIMIT } from "@/lib/knowledge-search";
+import type { KnowledgeListItemData } from "@/types/knowledge";
+import { requireCurrentUser } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
 
 interface SearchPageProps {
   searchParams: Promise<{ q?: string | string[] }>;
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
+  await requireCurrentUser();
   const params = await searchParams;
   const initialQuery = Array.isArray(params.q) ? (params.q[0] ?? "") : (params.q ?? "");
+  const items = (await listKnowledge()).map(toKnowledgeListItem);
+  let initialResults: KnowledgeListItemData[] = [];
+  let initialSearchFailed = false;
+
+  if (initialQuery.trim()) {
+    try {
+      initialResults = await searchKnowledge(initialQuery, FULL_SEARCH_LIMIT);
+    } catch {
+      initialSearchFailed = true;
+    }
+  }
 
   return (
-    <WorkspaceShell>
+    <WorkspaceShell items={items}>
       <div className="mx-auto w-full max-w-[1080px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <header className="mb-8 border-b border-[var(--border)] pb-6">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
@@ -25,7 +43,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </p>
         </header>
 
-        <KnowledgeSearch items={mockKnowledgeItems} initialQuery={initialQuery} />
+        <KnowledgeSearch
+          availableCount={items.length}
+          initialQuery={initialQuery}
+          initialResults={initialResults}
+          initialSearchFailed={initialSearchFailed}
+        />
       </div>
     </WorkspaceShell>
   );

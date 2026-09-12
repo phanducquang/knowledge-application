@@ -5,17 +5,20 @@ import type { KnowledgeVisibility } from "@/types/knowledge";
 
 interface ArticleSettingsProps {
   compact?: boolean;
-  initialVisibility: KnowledgeVisibility;
-  initialCollection: string;
-  initialTags: string[];
+  visibility: KnowledgeVisibility;
+  collection: string | null;
+  tags: string[];
+  collectionOptions: string[];
   updatedAt: string;
+  onVisibilityChange: (value: KnowledgeVisibility) => void;
+  onCollectionChange: (value: string | null) => void;
+  onTagsChange: (value: string[]) => void;
 }
 
 const propertyLabelClassName =
   "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]";
 
 const visibilityOptions: KnowledgeVisibility[] = ["Private", "Unlisted", "Public"];
-const initialCollections = ["Backend", "Database", "DevOps"];
 
 function VisibilityControl({
   value,
@@ -66,15 +69,16 @@ function VisibilityControl({
 function CollectionCombobox({
   id,
   value,
+  collections,
   onChange,
 }: {
   id: string;
-  value: string;
-  onChange: (value: string) => void;
+  value: string | null;
+  collections: string[];
+  onChange: (value: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [collections, setCollections] = useState(initialCollections);
   const rootRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -99,21 +103,29 @@ function CollectionCombobox({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, [open]);
 
+  const availableCollections = useMemo(
+    () =>
+      value && !collections.some((collection) => collection.toLowerCase() === value.toLowerCase())
+        ? [value, ...collections]
+        : collections,
+    [collections, value],
+  );
+
   const filteredCollections = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) {
-      return collections;
+      return availableCollections;
     }
 
-    return collections.filter((collection) => collection.toLowerCase().includes(normalizedQuery));
-  }, [collections, query]);
+    return availableCollections.filter((collection) => collection.toLowerCase().includes(normalizedQuery));
+  }, [availableCollections, query]);
 
   const normalizedDraft = query.trim();
   const canCreate =
     normalizedDraft.length > 0 &&
-    !collections.some((collection) => collection.toLowerCase() === normalizedDraft.toLowerCase());
+    !availableCollections.some((collection) => collection.toLowerCase() === normalizedDraft.toLowerCase());
 
-  const selectCollection = (collection: string) => {
+  const selectCollection = (collection: string | null) => {
     onChange(collection);
     setQuery("");
     setOpen(false);
@@ -124,7 +136,6 @@ function CollectionCombobox({
       return;
     }
 
-    setCollections((current) => [...current, normalizedDraft]);
     selectCollection(normalizedDraft);
   };
 
@@ -153,7 +164,7 @@ function CollectionCombobox({
         }}
         className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[14px] font-normal leading-5 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-[15px] xl:min-h-7 xl:px-2.5 xl:py-1 xl:text-[14px]"
       >
-        <span className="truncate">{value}</span>
+        <span className="truncate">{value ?? "No collection"}</span>
         <span aria-hidden="true" className="text-[10px] text-[var(--text-subtle)]">
           ▾
         </span>
@@ -188,6 +199,20 @@ function CollectionCombobox({
             </label>
 
             <div className="mt-1.5 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
+              {!query.trim() && (
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={value === null}
+                  onClick={() => selectCollection(null)}
+                  className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[14px] leading-5 transition-colors hover:bg-[var(--row-hover)] sm:text-[15px] xl:text-[14px] ${
+                    value === null ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text-muted)]"
+                  }`}
+                >
+                  <span>No collection</span>
+                  {value === null && <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">✓</span>}
+                </button>
+              )}
               {filteredCollections.map((collection) => {
                 const selected = collection === value;
 
@@ -231,8 +256,7 @@ function CollectionCombobox({
   );
 }
 
-function TagEditor({ initialTags }: { initialTags: string[] }) {
-  const [tags, setTags] = useState(initialTags);
+function TagEditor({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
   const [draft, setDraft] = useState("");
 
   const addTag = () => {
@@ -242,7 +266,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
     }
 
     if (!tags.some((tag) => tag.toLowerCase() === nextTag.toLowerCase())) {
-      setTags((current) => [...current, nextTag]);
+      onChange([...tags, nextTag]);
     }
     setDraft("");
   };
@@ -262,7 +286,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
               <button
                 type="button"
                 aria-label={`Remove ${tag} tag`}
-                onClick={() => setTags((current) => current.filter((item) => item !== tag))}
+                onClick={() => onChange(tags.filter((item) => item !== tag))}
                 className="-mr-0.5 inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
               >
                 ×
@@ -284,7 +308,7 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
             }
 
             if (event.key === "Backspace" && !draft && tags.length > 0) {
-              setTags((current) => current.slice(0, -1));
+              onChange(tags.slice(0, -1));
             }
           }}
           onBlur={addTag}
@@ -298,26 +322,29 @@ function TagEditor({ initialTags }: { initialTags: string[] }) {
 
 export function ArticleSettings({
   compact = false,
-  initialVisibility,
-  initialCollection,
-  initialTags,
+  visibility,
+  collection,
+  tags,
+  collectionOptions,
   updatedAt,
+  onVisibilityChange,
+  onCollectionChange,
+  onTagsChange,
 }: ArticleSettingsProps) {
-  const [visibility, setVisibility] = useState(initialVisibility);
-  const [collection, setCollection] = useState(initialCollection);
   const suffix = compact ? "mobile" : "desktop";
 
   const content = (
     <div className="space-y-5">
-      <VisibilityControl value={visibility} onChange={setVisibility} />
+      <VisibilityControl value={visibility} onChange={onVisibilityChange} />
 
       <CollectionCombobox
         id={`collection-${suffix}`}
         value={collection}
-        onChange={setCollection}
+        collections={collectionOptions}
+        onChange={onCollectionChange}
       />
 
-      <TagEditor initialTags={initialTags} />
+      <TagEditor tags={tags} onChange={onTagsChange} />
 
       <div>
         <p className={propertyLabelClassName}>Updated</p>

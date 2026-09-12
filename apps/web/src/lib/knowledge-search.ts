@@ -1,44 +1,58 @@
-import type { KnowledgeListItemData } from "@/types/knowledge";
+import type { KnowledgeListItemData } from "../types/knowledge.ts";
 
-function scoreKnowledgeItem(item: KnowledgeListItemData, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
-  if (!normalizedQuery) {
-    return 0;
-  }
+export const FULL_SEARCH_LIMIT = 20;
+export const QUICK_SEARCH_LIMIT = 6;
+export const SEARCH_DEBOUNCE_MS = 180;
 
-  const title = item.title.toLowerCase();
-  const description = item.description.toLowerCase();
-  const collection = item.collection.toLowerCase();
-  const tags = item.tags.map((tag) => tag.toLowerCase());
+type SearchFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
-  let score = 0;
-
-  if (title === normalizedQuery) score += 12;
-  else if (title.startsWith(normalizedQuery)) score += 8;
-  else if (title.includes(normalizedQuery)) score += 6;
-
-  if (collection === normalizedQuery) score += 6;
-  else if (collection.includes(normalizedQuery)) score += 3;
-
-  for (const tag of tags) {
-    if (tag === normalizedQuery) score += 6;
-    else if (tag.includes(normalizedQuery)) score += 3;
-  }
-
-  if (description.includes(normalizedQuery)) score += 2;
-
-  return score;
+export function knowledgeSearchRequestUrl(query: string, limit: number) {
+  const params = new URLSearchParams({ q: query.trim(), limit: String(limit) });
+  return `/api/knowledge-search?${params.toString()}`;
 }
 
-export function searchKnowledgeItems(items: KnowledgeListItemData[], query: string) {
-  const normalizedQuery = query.trim();
-  if (!normalizedQuery) {
-    return [];
+export async function fetchKnowledgeSearch(
+  query: string,
+  limit: number,
+  signal?: AbortSignal,
+  fetcher: SearchFetch = fetch,
+): Promise<KnowledgeListItemData[]> {
+  const response = await fetcher(knowledgeSearchRequestUrl(query, limit), {
+    method: "GET",
+    headers: { Accept: "application/json" },
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error("Knowledge search request failed");
   }
 
-  return items
-    .map((item) => ({ item, score: scoreKnowledgeItem(item, normalizedQuery) }))
-    .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score || b.item.updatedAtIso.localeCompare(a.item.updatedAtIso))
-    .map(({ item }) => item);
+  const body: unknown = await response.json();
+  if (!Array.isArray(body)) {
+    throw new Error("Knowledge search returned an invalid response");
+  }
+
+  // PostgreSQL order is authoritative; intentionally do not re-rank here.
+  return body as KnowledgeListItemData[];
+}
+
+export function viewAllKnowledgeSearchHref(query: string) {
+  return `/search?q=${encodeURIComponent(query.trim())}`;
+}
+
+export class LatestSearchRequest {
+  private sequence = 0;
+
+  begin() {
+    this.sequence += 1;
+    return this.sequence;
+  }
+
+  invalidate() {
+    this.sequence += 1;
+  }
+
+  isLatest(requestSequence: number) {
+    return requestSequence === this.sequence;
+  }
 }

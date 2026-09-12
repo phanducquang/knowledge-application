@@ -147,7 +147,7 @@ Approved decisions:
 - searching uses a quiet centered progress state rather than temporarily rendering a result-list shell with no results
 - these idle/searching/no-match states remain content-first and flat; do not turn them into large cards, illustrated SaaS empty states or promotional panels
 - the query is reflected in the browser URL without creating a new history entry for each keystroke
-- the current search implementation uses mock/client-side data only; production MVP search must still follow the architecture decision to use PostgreSQL Full Text Search, and client filtering must not become the final backend search architecture
+- the approved ranking interaction is currently applied client-side to the real owner-scoped Knowledge list; production MVP search must still follow the architecture decision to use PostgreSQL Full Text Search, and client filtering must not become the final backend search architecture
 
 The approved Search screen is the reference for future find/filter flows: broad search surface, keyboard-first result traversal, editorial rows, and distinct non-list empty states.
 
@@ -211,12 +211,12 @@ Approved decisions:
 - `Private` communicates that no external link is available and does not render a fake disabled URL control
 - `Unlisted` exposes a secret-link shape under `/s/{shareToken}` and communicates that it is not listed or indexed
 - `Public` exposes a public-link shape under `/k/{slug}` and communicates that it may be indexable
-- the prototype may generate deterministic/mock share URLs until backend share-token persistence exists; production unlisted tokens must be secret and server-managed
+- backend UNLISTED tokens are secret and server-managed; the integrated dialog retrieves an existing token without rotation and rotates only after inline confirmation
 - the share URL is read-only and selecting/focusing it may select the full value for manual copy
 - Copy belongs beside the URL in the same flat bordered control; success/failure feedback remains quiet and inline rather than becoming a large toast
 - the dialog uses one meaningful contained surface with a restrained backdrop, 6px-scale radius and layered shadow; internal sections are separated with dividers/spacing instead of nested cards
 - password-protected sharing remains a later enhancement and must not complicate the approved initial Share Dialog
-- visibility/share-link state is prototype-local until persistence/API wiring exists; backend implementation must later keep Reading metadata, Editor visibility and Share visibility synchronized
+- persisted backend visibility is the source of truth shared by Reading metadata, Editor settings and Share; an external link appears only after the corresponding mutation succeeds
 
 Expected visibility options:
 

@@ -4,6 +4,7 @@
 # IDE
 .idea/
 .vscode/
+.fleet/
 *.iml
 
 # Environment/secrets
@@ -14,14 +15,27 @@
 # Node / Next.js
 node_modules/
 .next/
+.turbo/
+.vercel/
 out/
 dist/
 coverage/
+*.tsbuildinfo
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+playwright-report/
+test-results/
 
 # Java / Gradle
 .gradle/
 build/
 target/
+
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log
 
 # Logs
 *.log

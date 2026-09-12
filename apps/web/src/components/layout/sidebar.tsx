@@ -1,13 +1,15 @@
 import Link from "next/link";
+import type { CurrentUser } from "@/lib/backend-auth";
 
 interface SidebarProps {
+  collections: string[];
   currentPath?: string;
   onNavigate?: () => void;
   onClose?: () => void;
   onQuickSearch?: () => void;
+  currentUser: CurrentUser;
 }
 
-const collections = ["Backend", "Database", "DevOps"];
 const states = ["Private", "Shared", "Drafts"];
 
 function navItemClass(active: boolean) {
@@ -55,7 +57,7 @@ function SearchIcon() {
   );
 }
 
-export function Sidebar({ currentPath = "/", onNavigate, onClose, onQuickSearch }: SidebarProps) {
+export function Sidebar({ collections, currentUser, currentPath = "/", onNavigate, onClose, onQuickSearch }: SidebarProps) {
   const searchActive = currentPath.startsWith("/search");
 
   return (
@@ -104,6 +106,9 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose, onQuickSearch 
             {collections.map((collection) => (
               <NavLink key={collection} onNavigate={onNavigate}>{collection}</NavLink>
             ))}
+            {collections.length === 0 && (
+              <p className="px-3 py-1.5 text-[12px] text-[var(--text-subtle)]">No collections yet</p>
+            )}
           </div>
         </div>
 
@@ -123,12 +128,26 @@ export function Sidebar({ currentPath = "/", onNavigate, onClose, onQuickSearch 
       </nav>
 
       <div className="border-t border-[var(--border)] pt-4">
-        <button
-          type="button"
-          className="w-full border border-[var(--accent-muted)] bg-transparent px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--nav-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+        <Link
+          href="/knowledge/new"
+          onClick={onNavigate}
+          className="block w-full border border-[var(--accent-muted)] bg-transparent px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--nav-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
         >
           + New note
-        </button>
+        </Link>
+        <div className="mt-4 border-t border-[var(--border)] pt-4">
+          <p className="truncate px-1 text-[11px] text-[var(--text-subtle)]" title={currentUser.email}>
+            {currentUser.email}
+          </p>
+          <form action="/api/auth/logout" method="post" className="mt-2">
+            <button
+              type="submit"
+              className="px-1 text-[12px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
       </div>
     </aside>
   );

@@ -8,11 +8,13 @@ type CrepeInstance = import("@milkdown/crepe").Crepe;
 interface KnowledgeMarkdownEditorProps {
   initialMarkdown: string;
   name?: string;
+  onMarkdownChange: (markdown: string) => void;
 }
 
 export function KnowledgeMarkdownEditor({
   initialMarkdown,
   name = "content",
+  onMarkdownChange,
 }: KnowledgeMarkdownEditorProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [markdown, setMarkdown] = useState(initialMarkdown);
@@ -65,6 +67,7 @@ export function KnowledgeMarkdownEditor({
           listener.markdownUpdated((_ctx, nextMarkdown, previousMarkdown) => {
             if (nextMarkdown !== previousMarkdown) {
               setMarkdown(nextMarkdown);
+              onMarkdownChange(nextMarkdown);
             }
           });
         });
@@ -93,7 +96,7 @@ export function KnowledgeMarkdownEditor({
       crepe?.destroy();
       root.replaceChildren();
     };
-  }, [initialMarkdown]);
+  }, [initialMarkdown, onMarkdownChange]);
 
   return (
     <div className="knowledge-markdown-editor relative" data-editor-status={status}>

@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { searchKnowledgeItems } from "@/lib/knowledge-search";
+import { useKnowledgeSearch } from "@/hooks/use-knowledge-search";
+import { QUICK_SEARCH_LIMIT, viewAllKnowledgeSearchHref } from "@/lib/knowledge-search";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 
 interface QuickSearchOverlayProps {
@@ -12,8 +13,6 @@ interface QuickSearchOverlayProps {
   onClose: () => void;
 }
 
-const MAX_QUICK_RESULTS = 6;
-
 export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayProps) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -21,17 +20,16 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const searchState = useKnowledgeSearch(QUICK_SEARCH_LIMIT);
 
   const trimmedQuery = query.trim();
-  const results = useMemo(() => {
-    if (trimmedQuery) {
-      return searchKnowledgeItems(items, trimmedQuery).slice(0, MAX_QUICK_RESULTS);
-    }
-
-    return [...items]
+  const recentItems = useMemo(
+    () => [...items]
       .sort((a, b) => b.updatedAtIso.localeCompare(a.updatedAtIso))
-      .slice(0, MAX_QUICK_RESULTS);
-  }, [items, trimmedQuery]);
+      .slice(0, QUICK_SEARCH_LIMIT),
+    [items],
+  );
+  const results = trimmedQuery ? searchState.results : recentItems;
 
   const hasViewAllAction = trimmedQuery.length > 0;
   const actionCount = results.length + (hasViewAllAction ? 1 : 0);
@@ -43,8 +41,6 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
     }
 
     previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setQuery("");
-    setSelectedIndex(0);
 
     const frame = window.requestAnimationFrame(() => inputRef.current?.focus());
 
@@ -57,10 +53,6 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
     };
   }, [open]);
 
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [trimmedQuery]);
-
   if (!open) {
     return null;
   }
@@ -71,7 +63,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
   };
 
   const openResult = (item: KnowledgeListItemData) => {
-    closeAndNavigate(item.href ?? `/knowledge/${item.id}`);
+    closeAndNavigate(item.href);
   };
 
   const viewAllResults = () => {
@@ -79,7 +71,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
       return;
     }
 
-    closeAndNavigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    closeAndNavigate(viewAllKnowledgeSearchHref(trimmedQuery));
   };
 
   const activateSelectedAction = () => {
@@ -202,7 +194,11 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
             ref={inputRef}
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setSelectedIndex(0);
+              searchState.search(event.target.value);
+            }}
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="true"
@@ -262,8 +258,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                       {item.title}
                     </span>
                     <span className="mt-1 block truncate text-[11px] text-[var(--text-subtle)]">
-                      {item.collection}
-                      {item.tags.length > 0 ? ` · ${item.tags.join(" · ")}` : ""}
+                      {[item.collection, ...item.tags].filter(Boolean).join(" · ") || "No collection or tags"}
                     </span>
                   </span>
                   <span className="pt-0.5 text-[11px] tabular-nums text-[var(--text-subtle)]">{item.updatedAt}</span>
@@ -272,7 +267,26 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
             })}
           </div>
 
-          {trimmedQuery && results.length === 0 && (
+          {trimmedQuery && searchState.status === "searching" && (
+            <div className="px-5 py-8 text-center" aria-live="polite">
+              <p className="text-[12px] text-[var(--text-muted)]">Searching…</p>
+            </div>
+          )}
+
+          {trimmedQuery && searchState.status === "error" && (
+            <div className="px-5 py-8 text-center" aria-live="polite">
+              <p className="text-[14px] font-medium text-[var(--text)]">Search is unavailable.</p>
+              <button
+                type="button"
+                onClick={() => searchState.search(query)}
+                className="mt-2 text-[12px] text-[var(--accent-strong)] underline underline-offset-4"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {trimmedQuery && searchState.status === "success" && results.length === 0 && (
             <div className="px-5 py-8 text-center">
               <p className="text-[14px] font-medium text-[var(--text)]">No quick matches.</p>
               <p className="mt-1 text-[12px] leading-5 text-[var(--text-muted)]">

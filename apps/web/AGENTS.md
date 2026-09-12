@@ -41,8 +41,50 @@ Search responsibility:
 - every result row keeps consistent hover/focus geometry, including the first and last row
 - broad active/hover fills remain warm-neutral and restrained; petrol/teal is concentrated in indicators, active text and focus treatment
 - keyboard navigation remains first-class: the search field can move focus into results and result links support moving up/down and returning to the search field
-- Quick Search and `/search` must share the same search-ranking logic while the prototype still uses mock data
-- the current implementation searches mock client data only; production search should follow the architecture decision to use PostgreSQL Full Text Search for MVP rather than treating client-side filtering as final backend behavior
+- Quick Search and `/search` share the same owner-scoped PostgreSQL Full Text Search semantics through the focused same-origin search boundary
+- preserve backend result order; do not introduce client-side relevance ranking or a local fallback when search fails
+- keep interactive queries debounced and protect state from stale responses
+
+API integration responsibility:
+
+- keep `KNOWLEDGE_API_BASE_URL` server-only; do not expose it through `NEXT_PUBLIC_*`
+- fetch mutable owner Knowledge with dynamic/no-store semantics
+- use Server Components for reads and Server Actions for browser-triggered mutations
+- map API enums/nullability/timestamps at the typed transport boundary rather than inside visual components
+- interactive search may use only the focused same-origin `/api/knowledge-search` Route Handler; do not add a generic catch-all proxy
+- never send `ownerId`, slug or timestamps in create/update requests
+- existing-note autosave must remain serialized/coalescing so only one PUT is in flight and the newest dirty draft is eventually persisted
+- `/knowledge/new` is an explicit unsaved create mode; do not create placeholder records with permanent placeholder slugs
+
+Authentication responsibility:
+
+- Spring Security and `/api/auth/me` are authoritative; never authorize a workspace route merely because a cookie exists
+- protect private pages server-side and send backend `401`/`403` outcomes to `/login`
+- forward the incoming HttpOnly session cookie only in server-only API code; never expose it to Client Components
+- obtain `/api/auth/csrf` with the same session before every state-changing backend call and use the returned header name/token
+- keep OAuth client credentials, allowed owner email and backend locations out of `NEXT_PUBLIC_*` variables
+- keep `/api/auth/login`, `/api/auth/logout` and `/api/knowledge-search` focused; do not introduce a generic catch-all proxy
+- logout must invalidate the backend session and forward its clearing cookie before returning to `/login`
+- existing PUBLIC/UNLISTED visibility does not make an owner workspace route anonymous; `/k/{slug}` and `/s/{shareToken}` use separate external read models
+
+Public reading responsibility:
+
+- `/k/{slug}` is anonymous and must remain outside `requireCurrentUser` and `WorkspaceShell`
+- call only the dedicated public backend endpoint through server-only, `no-store` transport; do not forward an owner session or expose the backend URL
+- reuse `KnowledgeMarkdown`, `ArticleToc`, heading extraction, read-time and established article typography rather than creating a second rendering pipeline
+- render no private sidebar, All notes navigation, Edit/Share controls, Quick Search, owner email or logout action
+- PRIVATE, UNLISTED and missing public slugs must share one not-found experience and noindex metadata
+- the Share Dialog's `/k/{slug}` is active only after its focused visibility mutation has persisted PUBLIC; never show a link for an unconfirmed local selection
+- do not add public listing/Search or merge `/s/{shareToken}` into public direct-slug reading
+
+Unlisted reading responsibility:
+
+- `/s/{shareToken}` is anonymous, dynamic and outside `requireCurrentUser` and `WorkspaceShell`
+- fetch only the dedicated shared backend endpoint with `no-store`; never forward the owner session
+- reuse the external article presentation shared with `/k`, including Markdown, TOC, anchors, read time and metadata footer
+- keep `noindex, nofollow, noarchive`, `Referrer-Policy: no-referrer` and private no-store headers scoped to `/s/**`
+- do not reveal token state: invalid, inactive and rotated tokens share one not-found experience
+- never put the bearer token into generic Knowledge/Search/Public state or client logs
 
 Quick Search responsibility:
 
@@ -68,13 +110,23 @@ Share responsibility:
 - Reading and Editor reuse the same Share interaction rather than maintaining separate dialog variants
 - expected visibility choices are Private, Unlisted and Public; reuse the established lightweight visibility-radio pattern from Editor
 - Private has no external link, Unlisted exposes a `/s/{shareToken}` secret-link shape, and Public exposes a `/k/{slug}` public-link shape
-- the current prototype may use deterministic mock share URLs; production unlisted tokens must be server-generated, secret and persisted
+- backend UNLISTED tokens are server-generated, secret and persisted; retrieve them only through the focused owner action and rotate them only after inline confirmation
 - copy-link belongs beside the read-only URL and uses quiet inline success/failure feedback rather than a large toast
 - focus must be trapped while open, initial focus should land on the selected visibility option, background scrolling is locked, and focus returns to the triggering Share action on close
 - Escape, explicit close and backdrop interaction close the approved dialog
 - use one restrained dialog surface with warm-neutral sections/dividers; do not nest dashboard-style cards inside the dialog
 - a restrained backdrop, shadow and small dialog radius are allowed because this is genuinely layered UI
 - password-protected sharing is a later enhancement, not part of the approved initial Share Dialog
-- Share visibility is prototype-local until persistence/API wiring exists; backend work must later keep Editor, Reading metadata and Share state synchronized
+- Reading, Editor settings and Share stay synchronized with persisted backend visibility; Editor share writes must remain serialized with autosave so stale PUT snapshots cannot revert them
 
 Do not introduce a generic `Card` component unless a future semantic use case explicitly requires a contained surface.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

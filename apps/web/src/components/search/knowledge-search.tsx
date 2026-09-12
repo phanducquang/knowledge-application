@@ -1,47 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import { KnowledgeListItem } from "@/components/knowledge/knowledge-list-item";
-import { searchKnowledgeItems } from "@/lib/knowledge-search";
+import { useKnowledgeSearch } from "@/hooks/use-knowledge-search";
+import { FULL_SEARCH_LIMIT } from "@/lib/knowledge-search";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 
 interface KnowledgeSearchProps {
-  items: KnowledgeListItemData[];
+  availableCount: number;
   initialQuery?: string;
+  initialResults?: KnowledgeListItemData[];
+  initialSearchFailed?: boolean;
 }
 
 const suggestedQueries = ["Spring Boot", "Redis", "Elasticsearch", "Nginx"];
 
-export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchProps) {
+export function KnowledgeSearch({
+  availableCount,
+  initialQuery = "",
+  initialResults = [],
+  initialSearchFailed = false,
+}: KnowledgeSearchProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState(initialQuery);
-  const [committedQuery, setCommittedQuery] = useState(initialQuery.trim());
-  const [searching, setSearching] = useState(false);
-
-  useEffect(() => {
-    const trimmedQuery = query.trim();
-
-    if (!trimmedQuery) {
-      setCommittedQuery("");
-      setSearching(false);
-      return;
-    }
-
-    if (trimmedQuery === committedQuery) {
-      setSearching(false);
-      return;
-    }
-
-    setSearching(true);
-    const timeout = window.setTimeout(() => {
-      setCommittedQuery(trimmedQuery);
-      setSearching(false);
-    }, 140);
-
-    return () => window.clearTimeout(timeout);
-  }, [query, committedQuery]);
+  const searchState = useKnowledgeSearch(FULL_SEARCH_LIMIT, {
+    query: initialQuery,
+    results: initialResults,
+    failed: initialSearchFailed,
+  });
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -56,14 +44,20 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
     window.history.replaceState(window.history.state, "", url);
   }, [query]);
 
-  const results = useMemo(() => searchKnowledgeItems(items, committedQuery), [items, committedQuery]);
   const hasQuery = query.trim().length > 0;
+  const searching = searchState.status === "searching";
+  const results = searchState.results;
 
   const resultLinks = () =>
     Array.from(resultsRef.current?.querySelectorAll<HTMLAnchorElement>("article a") ?? []);
 
   const focusFirstResult = () => {
     resultLinks()[0]?.focus();
+  };
+
+  const changeQuery = (nextQuery: string) => {
+    setQuery(nextQuery);
+    searchState.search(nextQuery);
   };
 
   const handleResultsKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -98,7 +92,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
   };
 
   const applySuggestion = (value: string) => {
-    setQuery(value);
+    changeQuery(value);
     inputRef.current?.focus();
   };
 
@@ -116,7 +110,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
             id="knowledge-search-page"
             type="search"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => changeQuery(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "ArrowDown" && !searching && results.length > 0) {
                 event.preventDefault();
@@ -125,7 +119,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
 
               if (event.key === "Escape" && query) {
                 event.preventDefault();
-                setQuery("");
+                changeQuery("");
               }
             }}
             autoFocus
@@ -171,7 +165,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
               ))}
             </div>
 
-            <p className="mt-7 text-[11px] tabular-nums text-[var(--text-subtle)]">{items.length} notes available</p>
+            <p className="mt-7 text-[11px] tabular-nums text-[var(--text-subtle)]">{availableCount} notes available</p>
           </div>
         </section>
       )}
@@ -191,7 +185,32 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
         </section>
       )}
 
-      {hasQuery && !searching && results.length === 0 && (
+      {hasQuery && searchState.status === "error" && (
+        <section
+          className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
+          aria-label="Search unavailable"
+          aria-live="polite"
+        >
+          <div className="max-w-[520px]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Search unavailable</p>
+            <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
+              We couldn&apos;t search right now.
+            </h2>
+            <p className="mx-auto mt-3 max-w-[450px] text-[14px] leading-6 text-[var(--text-muted)]">
+              Keep your query in place and try again in a moment.
+            </p>
+            <button
+              type="button"
+              onClick={() => searchState.search(query)}
+              className="mt-6 text-[12px] text-[var(--accent-strong)] underline decoration-[var(--border-strong)] underline-offset-4"
+            >
+              Try again
+            </button>
+          </div>
+        </section>
+      )}
+
+      {hasQuery && searchState.status === "success" && results.length === 0 && (
         <section
           className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
           aria-label="No search results"
@@ -199,7 +218,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
           <div className="max-w-[520px]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">No matches</p>
             <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
-              Nothing found for “{committedQuery}”.
+              Nothing found for “{searchState.query}”.
             </h2>
             <p className="mx-auto mt-3 max-w-[450px] text-[14px] leading-6 text-[var(--text-muted)]">
               Try a shorter phrase, a collection name, or a tag. You can also start again with one of the common technical topics below.
@@ -221,7 +240,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
             <button
               type="button"
               onClick={() => {
-                setQuery("");
+                changeQuery("");
                 inputRef.current?.focus();
               }}
               className="mt-7 text-[12px] text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
@@ -232,7 +251,7 @@ export function KnowledgeSearch({ items, initialQuery = "" }: KnowledgeSearchPro
         </section>
       )}
 
-      {hasQuery && !searching && results.length > 0 && (
+      {hasQuery && searchState.status === "success" && results.length > 0 && (
         <section className="mx-auto mt-9 w-full max-w-[980px]" aria-labelledby="search-results-heading">
           <div className="flex items-baseline justify-between gap-4 border-b border-[var(--border)] pb-3">
             <h2 id="search-results-heading" className="text-[13px] font-medium text-[var(--text-muted)]">
