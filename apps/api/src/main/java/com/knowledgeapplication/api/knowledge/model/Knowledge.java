@@ -22,6 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -148,13 +149,13 @@ public class Knowledge {
     public void changeVisibility(Visibility visibility) {
         this.visibility = Objects.requireNonNull(visibility, "visibility must not be null");
         if (visibility == Visibility.PUBLIC && publishedAt == null) {
-            publishedAt = Instant.now();
+            publishedAt = persistenceNow();
         }
     }
 
     public void replaceShareToken(String shareToken) {
         this.shareToken = requireText(shareToken, "shareToken");
-        this.shareTokenCreatedAt = Instant.now();
+        this.shareTokenCreatedAt = persistenceNow();
     }
 
     public void replaceMetadata(KnowledgeCollection collection, Set<Tag> tags) {
@@ -174,14 +175,20 @@ public class Knowledge {
 
     @PrePersist
     void onCreate() {
-        Instant now = Instant.now();
+        Instant now = persistenceNow();
         createdAt = now;
         updatedAt = now;
     }
 
     @PreUpdate
     void onUpdate() {
-        updatedAt = Instant.now();
+        updatedAt = persistenceNow();
+    }
+
+    private static Instant persistenceNow() {
+        // PostgreSQL timestamp with time zone persists microsecond precision. Normalize before
+        // persistence so values returned from a write are identical to values read back later.
+        return Instant.now().truncatedTo(ChronoUnit.MICROS);
     }
 
     private static String requireText(String value, String field) {
