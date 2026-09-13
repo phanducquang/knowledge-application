@@ -1,5 +1,6 @@
 package com.knowledgeapplication.api.knowledge.service;
 
+import com.knowledgeapplication.api.attachment.service.KnowledgeAttachmentLifecycleService;
 import com.knowledgeapplication.api.configuration.CurrentOwner;
 import com.knowledgeapplication.api.knowledge.model.Knowledge;
 import com.knowledgeapplication.api.knowledge.model.KnowledgeCollection;
@@ -57,6 +58,9 @@ class KnowledgeServiceTest {
     @Mock
     private KnowledgeRevisionService revisionService;
 
+    @Mock
+    private KnowledgeAttachmentLifecycleService attachmentLifecycleService;
+
     private KnowledgeService service;
 
     @BeforeEach
@@ -68,7 +72,8 @@ class KnowledgeServiceTest {
                 tagRepository,
                 currentOwner,
                 shareTokenGenerator,
-                revisionService
+                revisionService,
+                attachmentLifecycleService
         );
     }
 
@@ -139,6 +144,7 @@ class KnowledgeServiceTest {
         assertThat(updated.getSlug()).isEqualTo("stable-slug");
         assertThat(updated.getOwnerId()).isEqualTo(OWNER_ID);
         verify(revisionService).checkpointIfDue(knowledge);
+        verify(attachmentLifecycleService).synchronizeReferences(10L, "Test content", "# Updated Markdown");
     }
 
     @Test
@@ -158,6 +164,7 @@ class KnowledgeServiceTest {
 
         assertThat(knowledge.getVisibility()).isEqualTo(Visibility.PUBLIC);
         verify(revisionService, never()).checkpointIfDue(any());
+        verify(attachmentLifecycleService).synchronizeReferences(11L, "Test content", "Test content");
     }
 
     @Test
@@ -176,6 +183,7 @@ class KnowledgeServiceTest {
         );
 
         verify(revisionService, never()).checkpointIfDue(any());
+        verify(attachmentLifecycleService).synchronizeReferences(12L, "Test content", "Test content");
     }
 
     @Test
@@ -214,6 +222,7 @@ class KnowledgeServiceTest {
 
         service.delete(10L);
 
+        verify(attachmentLifecycleService).enqueueKnowledgeDeletion(10L);
         verify(repository).delete(knowledge);
     }
 
@@ -225,6 +234,7 @@ class KnowledgeServiceTest {
                 .isInstanceOf(KnowledgeNotFoundException.class)
                 .hasMessage("Knowledge item not found");
         verify(repository, never()).delete(any());
+        verify(attachmentLifecycleService, never()).enqueueKnowledgeDeletion(99L);
     }
 
     @Test
@@ -433,6 +443,11 @@ class KnowledgeServiceTest {
         assertThat(restored.getShareToken()).isEqualTo(shareToken);
         assertThat(restored.getShareTokenCreatedAt()).isEqualTo(shareTokenCreatedAt);
         verify(revisionService).snapshotBeforeRestore(current);
+        verify(attachmentLifecycleService).synchronizeReferences(
+                21L,
+                "Test content",
+                "# Historical Markdown"
+        );
     }
 
     @Test
