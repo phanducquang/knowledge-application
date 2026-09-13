@@ -9,6 +9,7 @@ import com.knowledgeapplication.api.configuration.CurrentOwner;
 import com.knowledgeapplication.api.knowledge.model.Knowledge;
 import com.knowledgeapplication.api.knowledge.model.Visibility;
 import com.knowledgeapplication.api.knowledge.repository.KnowledgeRepository;
+import com.knowledgeapplication.api.knowledge.service.KnowledgeNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -72,12 +73,29 @@ class KnowledgeAttachmentServiceTest {
 
         assertThat(attachment.getOriginalFilename()).isEqualTo("unsafe name.png");
         assertThat(attachment.getCreatedAt()).isEqualTo(NOW);
+        assertThat(attachment.getOrphanedAt()).isEqualTo(NOW);
         assertThat(attachment.getObjectKey())
                 .startsWith("knowledge/" + OWNER_ID + "/7/")
                 .doesNotContain("unsafe name.png");
         assertThat(KnowledgeAttachmentService.markdownSource(attachment.getId()))
                 .isEqualTo("attachment://" + attachment.getId());
+        verify(knowledgeRepository).lockIdByIdAndOwnerId(7L, OWNER_ID);
         verify(objectStorage).put(attachment.getObjectKey(), new byte[]{1, 2, 3}, "image/png");
+    }
+
+    @Test
+    void deletedKnowledgeIsRejectedBeforeAnyObjectWrite() {
+        var file = new MockMultipartFile("file", "image.png", "image/png", new byte[]{1});
+        when(currentOwner.id()).thenReturn(OWNER_ID);
+        when(knowledgeRepository.findByIdAndOwnerId(7L, OWNER_ID)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.uploadImage(7L, file))
+                .isInstanceOf(KnowledgeNotFoundException.class);
+
+        verify(knowledgeRepository).lockIdByIdAndOwnerId(7L, OWNER_ID);
+        verify(imageValidator, never()).validate(any());
+        verify(objectStorage, never()).put(any(), any(), any());
+        verify(attachmentRepository, never()).saveAndFlush(any());
     }
 
     @Test
