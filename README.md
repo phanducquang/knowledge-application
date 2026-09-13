@@ -38,12 +38,13 @@ The web and API applications remain independently buildable and deployable even 
 - Flyway-managed Knowledge, reusable Collection and reusable Tag persistence are implemented, together with the owner-scoped Knowledge CRUD API.
 - Create/Edit persist title, summary, Markdown, visibility, collection and tags; existing notes use serialized debounced autosave.
 - PostgreSQL Full Text Search is implemented across Knowledge text and metadata. Full Search and typed Quick Search share the owner-scoped backend ranking through a focused same-origin Next.js boundary.
-- Google OAuth2/OIDC authentication is implemented with Spring Security and a server-side HTTP session. One verified allowlisted Google email may act as the stable configured `APP_OWNER_ID`; configuration alone no longer grants access.
+- Google OAuth2/OIDC authentication is implemented with Spring Security and a server-side HTTP session. One verified allowlisted Google email may act as the stable configured `APP_OWNER_ID`; configuration alone no longer grants access. The live Google OAuth flow has been verified separately from CI.
 - Next.js protects workspace routes server-side, forwards the HttpOnly session cookie to Spring Boot, and obtains the session CSRF token before CRUD mutations.
 - Anonymous read-only PUBLIC Knowledge is available at `/k/{slug}` through a separate safe backend DTO/query. PRIVATE, UNLISTED and missing slugs all remain opaque public 404s; owner CRUD/Search stays authenticated.
 - The shared Reading/Edit Share Dialog now persists PRIVATE/PUBLIC/UNLISTED through an owner-scoped focused visibility mutation. PUBLIC links use `/k/{slug}`; UNLISTED links are loaded and explicitly rotatable through the backend-managed `/s/{shareToken}` contract without placing tokens in generic Knowledge state or browser storage.
 - Owner-scoped revision history is available at `/knowledge/{slug}/history`, with compact paginated snapshots, full Markdown preview, interval-limited autosave checkpoints and safe restore that preserves stable URLs and all sharing state.
 - Secure images are stored in a private S3-compatible bucket (MinIO locally, R2-compatible for deployment). Persisted Crepe editors upload PNG/JPEG/WebP/GIF and save stable `attachment://<UUID>` Markdown references; owner, PUBLIC, UNLISTED and history views resolve them through access-scoped application routes.
+- Revision-aware attachment lifecycle cleanup protects references in both current Markdown and retained history, gives fresh/unreferenced uploads a configurable grace period, and uses a durable PostgreSQL deletion queue so deleting a Knowledge item does not lose the object key before retryable storage cleanup.
 - Fenced Markdown code blocks use restrained syntax highlighting across private, PUBLIC, UNLISTED and History reading surfaces while canonical Markdown, inline code and unknown-language fallback remain unchanged.
 - Explicit `mermaid` fences render locally in the browser across the same shared reading surfaces, with a lazy official Mermaid runtime, strict security settings and a source-preserving error fallback.
 - GitHub Actions CI independently validates the Web and API applications on pushes to `main`, pull requests targeting `main`, and manual runs.
@@ -63,6 +64,7 @@ Initial product scope should stay small: knowledge authoring, organization, sear
 Read these before implementing features:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/ATTACHMENT_LIFECYCLE.md`](docs/ATTACHMENT_LIFECYCLE.md)
 - [`docs/DESIGN.md`](docs/DESIGN.md)
 - [`docs/AI_CODING_GUIDELINES.md`](docs/AI_CODING_GUIDELINES.md)
 - [`docs/REFERENCE_SCREENS.md`](docs/REFERENCE_SCREENS.md)
@@ -83,7 +85,7 @@ It runs on pushes to `main`, pull requests targeting `main`, and manual dispatch
 
 The API build includes the test suite, including Testcontainers-backed PostgreSQL/MinIO integration tests where the tests require them. GitHub-hosted Linux runners provide Docker for Testcontainers, so CI does not maintain a second PostgreSQL/MinIO service definition.
 
-CI intentionally does not pretend to replace environment-specific smoke tests such as live Google OAuth or Cloudflare R2. Those remain manual checks when real credentials are available. See [`docs/AI_CODING_GUIDELINES.md`](docs/AI_CODING_GUIDELINES.md) for how coding agents should use CI without repeatedly rerunning unrelated full suites during iteration.
+CI intentionally does not pretend to replace environment-specific smoke tests. Live Google OAuth has been verified separately; Cloudflare R2 remains an environment-specific check when real deployment credentials are available. See [`docs/AI_CODING_GUIDELINES.md`](docs/AI_CODING_GUIDELINES.md) for how coding agents should use CI without repeatedly rerunning unrelated full suites during iteration.
 
 ## Run the backend locally
 
