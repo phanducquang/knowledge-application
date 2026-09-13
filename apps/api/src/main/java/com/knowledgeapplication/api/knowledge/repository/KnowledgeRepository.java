@@ -34,6 +34,13 @@ public interface KnowledgeRepository extends JpaRepository<Knowledge, Long> {
     @Query("select k from Knowledge k where k.id = :id")
     Optional<Knowledge> findByIdForUpdate(@Param("id") Long id);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select k.id from Knowledge k where k.id = :id and k.ownerId = :ownerId")
+    Optional<Long> lockIdByIdAndOwnerId(
+            @Param("id") Long id,
+            @Param("ownerId") UUID ownerId
+    );
+
     boolean existsBySlug(String slug);
 
     boolean existsByShareToken(String shareToken);
