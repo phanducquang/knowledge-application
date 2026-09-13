@@ -50,6 +50,11 @@ public class KnowledgeAttachmentService {
     @Transactional
     public KnowledgeAttachment uploadImage(Long knowledgeId, MultipartFile file) {
         UUID ownerId = currentOwner.id();
+        // Use the same parent lock as Knowledge mutation/cleanup. If deletion wins first,
+        // the owner-scoped lookup below fails before an object is written. If upload wins,
+        // Knowledge deletion waits and then queues this new object key before cascading
+        // attachment metadata, so the storage object remains retryably discoverable.
+        knowledgeRepository.lockIdByIdAndOwnerId(knowledgeId, ownerId);
         Knowledge knowledge = knowledgeRepository.findByIdAndOwnerId(knowledgeId, ownerId)
                 .orElseThrow(KnowledgeNotFoundException::new);
         var validated = imageValidator.validate(file);
