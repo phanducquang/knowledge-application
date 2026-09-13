@@ -76,7 +76,7 @@ The repository uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as th
 
 It runs on pushes to `main`, pull requests targeting `main`, and manual dispatches with two independent jobs:
 
-- **Web** — Node.js 20, `npm ci`, `npm test`, `npm run lint`, `npm run build`
+- **Web** — Node.js 22, `npm ci`, `npm test`, `npm run lint`, `npm run build`. CI uses Node 22 because the current test runner relies on Node's built-in TypeScript stripping support.
 - **API** — Java 17, Gradle dependency caching, `./gradlew clean build --no-daemon`
 
 The API build includes the test suite, including Testcontainers-backed PostgreSQL/MinIO integration tests where the tests require them. GitHub-hosted Linux runners provide Docker for Testcontainers, so CI does not maintain a second PostgreSQL/MinIO service definition.
