@@ -15,7 +15,7 @@ test("extracts H2-H4 headings with stable duplicate anchors", () => {
 });
 
 test("does not treat headings inside fenced code as article headings", () => {
-  const markdown = "## Real\n```markdown\n## Not real\n```\n~~~\n### Also not real\n~~~\n### Real detail";
+  const markdown = "## Real\n```mermaid\n%% ## Not real\nflowchart TD\n  A --> B\n```\n~~~\n### Also not real\n~~~\n### Real detail";
   assert.deepEqual(extractMarkdownHeadings(markdown).map((heading) => heading.label), [
     "Real",
     "Real detail",

@@ -1,11 +1,11 @@
 import { Children, isValidElement, type ReactNode } from "react";
 import type { RootContent } from "hast";
 import { highlightCode } from "@/lib/syntax-highlighting";
+import { codeBlockSourceText, isMermaidCodeBlock } from "@/lib/mermaid";
+import { KnowledgeMermaidDiagram } from "@/components/knowledge/knowledge-mermaid-diagram";
 
 function sourceText(children: ReactNode) {
-  return Children.toArray(children)
-    .map((child) => (typeof child === "string" || typeof child === "number" ? String(child) : ""))
-    .join("");
+  return codeBlockSourceText(Children.toArray(children));
 }
 
 function renderHighlightedNode(node: RootContent, key: string): ReactNode {
@@ -29,6 +29,10 @@ export function KnowledgeCodeBlock({ children }: { children?: ReactNode }) {
   }
 
   const source = sourceText(code.props.children);
+  if (isMermaidCodeBlock(code.props.className)) {
+    return <KnowledgeMermaidDiagram source={source} />;
+  }
+
   const tree = highlightCode(source, code.props.className);
 
   return (

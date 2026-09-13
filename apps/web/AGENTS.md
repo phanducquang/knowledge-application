@@ -25,6 +25,9 @@ Markdown rendering responsibility:
 - History imports the renderer through a Client Component boundary, so renderer dependencies must remain browser-compatible and bundle-conscious
 - preserve canonical fenced Markdown, plain fallback for unknown/missing languages, compact inline code, horizontal scrolling and the restrained token theme
 - raw HTML remains disabled; never introduce `rehype-raw` or `dangerouslySetInnerHTML` for highlighting
+- explicit `mermaid` fences are intercepted in the shared code-block path and rendered only by the focused Client Component; do not duplicate Mermaid handling across routes
+- keep the official Mermaid runtime dynamically imported inside that component, with strict security, HTML labels/click behavior disabled, opaque internal IDs and stale-render/error handling
+- generated Mermaid SVG is the sole narrow `dangerouslySetInnerHTML` exception; never reuse that boundary for raw Markdown or enable a remote rendering service
 
 Editor responsibility:
 

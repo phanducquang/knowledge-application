@@ -45,6 +45,7 @@ The web and API applications remain independently buildable and deployable even 
 - Owner-scoped revision history is available at `/knowledge/{slug}/history`, with compact paginated snapshots, full Markdown preview, interval-limited autosave checkpoints and safe restore that preserves stable URLs and all sharing state.
 - Secure images are stored in a private S3-compatible bucket (MinIO locally, R2-compatible for deployment). Persisted Crepe editors upload PNG/JPEG/WebP/GIF and save stable `attachment://<UUID>` Markdown references; owner, PUBLIC, UNLISTED and history views resolve them through access-scoped application routes.
 - Fenced Markdown code blocks use restrained syntax highlighting across private, PUBLIC, UNLISTED and History reading surfaces while canonical Markdown, inline code and unknown-language fallback remain unchanged.
+- Explicit `mermaid` fences render locally in the browser across the same shared reading surfaces, with a lazy official Mermaid runtime, strict security settings and a source-preserving error fallback.
 - GitHub Actions CI independently validates the Web and API applications on pushes to `main`, pull requests targeting `main`, and manual runs.
 
 ## Core product direction

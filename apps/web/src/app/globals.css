@@ -114,6 +114,19 @@ samp {
   font-weight: 650;
 }
 
+.article-content .knowledge-mermaid > svg {
+  display: block;
+  width: auto;
+  min-width: min(100%, 36rem);
+  max-width: none;
+  height: auto;
+  margin-inline: auto;
+}
+
+.article-content .knowledge-mermaid pre code {
+  min-width: max-content;
+}
+
 .knowledge-markdown-editor {
   min-height: 760px;
   background: var(--surface);

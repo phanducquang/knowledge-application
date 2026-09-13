@@ -30,6 +30,7 @@ Next.js application for the Knowledge Application workspace.
 - protected `/knowledge/{slug}/history` with paginated checkpoints, selected full-Markdown preview and confirmed restore
 - persisted Crepe Edit mode with secure image upload and stable `attachment://<UUID>` references rendered in owner, PUBLIC, UNLISTED and History contexts
 - shared fenced-code syntax highlighting for private, PUBLIC, UNLISTED and History rendering
+- lazy browser-side Mermaid rendering for explicit `mermaid` fences through the same shared Markdown renderer
 
 Before implementing or modifying UI, read:
 
@@ -102,6 +103,16 @@ The frontend intentionally does not implement generic files, attachment browsing
 The initial set covers Java, JavaScript/JSX, TypeScript/TSX, JSON, YAML, SQL, Bash/shell, Python, HTML/XML, CSS, Markdown, Kotlin, Dockerfile, properties/INI, Gradle and Nginx. Common aliases such as `js`, `ts`, `sh`, `shell`, `yml`, `html`, `properties`, `docker`, `jsx` and `tsx` normalize to those grammars. Unknown and missing language identifiers render as plain fenced code without failing; inline code retains its compact existing style.
 
 History is a Client Component and imports `KnowledgeMarkdown`, so the highlighter is intentionally compatible with both client and server rendering rather than server-only. Private, PUBLIC and UNLISTED routes still server-render their initial article output through that same component. Only the selected grammars enter the client graph; the editor keeps Crepe's existing CodeMirror behavior and canonical fenced Markdown unchanged.
+
+## Mermaid diagrams
+
+`KnowledgeCodeBlock` intercepts only fences explicitly labelled `mermaid` before the normal lowlight path and delegates them to a focused Client Component. The component dynamically imports Mermaid 11.17.2 on mount, so the Mermaid runtime and individual diagram definitions are not part of the ordinary article's initial route payload. Private, PUBLIC, UNLISTED and History rendering all inherit this behavior from `KnowledgeMarkdown`; no route owns a separate diagram pipeline.
+
+Mermaid is initialized once per browser runtime with `securityLevel: "strict"`, `htmlLabels: false`, `startOnLoad: false`, disabled Mermaid error rendering, bounded text/edge limits and a restrained application-aligned base theme. Click behavior is not enabled. The SVG string returned by the official local renderer is inserted only inside the dedicated diagram component; arbitrary raw Markdown HTML remains disabled and `rehype-raw` is not used. No source or generated output is sent to or persisted by a remote rendering service.
+
+Each component derives an opaque render ID from React `useId()` plus a render attempt, never from article data or source. Source changes clear the old output and use an attempt guard so stale asynchronous results cannot replace the latest diagram. Invalid syntax shows a quiet error plus the unchanged Mermaid source. Loading is local to the diagram, and the scoped container prevents page-width overflow on narrow screens.
+
+The editor remains canonical fenced Markdown with Crepe's existing CodeMirror behavior; there is no visual diagram editor or live preview. Mermaid supports the diagram types provided by the installed official package; flowchart, sequence and class diagrams are the representative verified types. Diagram links, export, copy, zoom/pan and server-side SVG persistence are intentionally deferred.
 
 ## Validate
 
