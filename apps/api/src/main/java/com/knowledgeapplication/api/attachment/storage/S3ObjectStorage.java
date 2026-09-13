@@ -8,7 +8,6 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.S3Exception;
 
 @Service
 public class S3ObjectStorage {
@@ -47,8 +46,14 @@ public class S3ObjectStorage {
                     response.response().contentType(),
                     response.response().contentLength()
             );
-        } catch (S3Exception exception) {
+        } catch (RuntimeException exception) {
             throw new ObjectStorageUnavailableException(exception);
+        }
+    }
+
+    public void delete(String objectKey) {
+        try {
+            client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(objectKey).build());
         } catch (RuntimeException exception) {
             throw new ObjectStorageUnavailableException(exception);
         }
@@ -56,9 +61,9 @@ public class S3ObjectStorage {
 
     public void deleteBestEffort(String objectKey) {
         try {
-            client.deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(objectKey).build());
-        } catch (RuntimeException ignored) {
-            // PostgreSQL and S3 cannot share a transaction. Cleanup is deliberately best-effort.
+            delete(objectKey);
+        } catch (ObjectStorageUnavailableException ignored) {
+            // PostgreSQL and S3 cannot share a transaction. Upload rollback cleanup remains best-effort.
         }
     }
 }

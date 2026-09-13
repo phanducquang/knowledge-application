@@ -45,6 +45,9 @@ public class KnowledgeAttachment {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "orphaned_at")
+    private Instant orphanedAt;
+
     protected KnowledgeAttachment() {
     }
 
@@ -67,6 +70,9 @@ public class KnowledgeAttachment {
         }
         this.sizeBytes = sizeBytes;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
+        // Upload and Markdown persistence are separate requests. Until a Knowledge update
+        // references this UUID, the fresh upload is an orphan candidate protected by grace.
+        this.orphanedAt = createdAt;
     }
 
     public static KnowledgeAttachment create(
@@ -81,6 +87,14 @@ public class KnowledgeAttachment {
         return new KnowledgeAttachment(
                 id, knowledge, objectKey, originalFilename, contentType, sizeBytes, createdAt
         );
+    }
+
+    public void markReferenced() {
+        orphanedAt = null;
+    }
+
+    public void markOrphaned(Instant at) {
+        orphanedAt = Objects.requireNonNull(at, "at must not be null");
     }
 
     public UUID getId() {
@@ -109,5 +123,9 @@ public class KnowledgeAttachment {
 
     public Instant getCreatedAt() {
         return createdAt;
+    }
+
+    public Instant getOrphanedAt() {
+        return orphanedAt;
     }
 }

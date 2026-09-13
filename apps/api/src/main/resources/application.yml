@@ -37,6 +37,12 @@ app:
     image-max-size: ${KNOWLEDGE_IMAGE_MAX_SIZE:10MB}
     image-max-dimension: ${KNOWLEDGE_IMAGE_MAX_DIMENSION:20000}
     image-max-pixels: ${KNOWLEDGE_IMAGE_MAX_PIXELS:100000000}
+    attachment-cleanup:
+      enabled: ${KNOWLEDGE_ATTACHMENT_CLEANUP_ENABLED:true}
+      grace-period: ${KNOWLEDGE_ATTACHMENT_ORPHAN_GRACE_PERIOD:PT24H}
+      interval: ${KNOWLEDGE_ATTACHMENT_CLEANUP_INTERVAL:PT1H}
+      initial-delay: ${KNOWLEDGE_ATTACHMENT_CLEANUP_INITIAL_DELAY:PT5M}
+      batch-size: ${KNOWLEDGE_ATTACHMENT_CLEANUP_BATCH_SIZE:100}
   object-storage:
     endpoint: ${OBJECT_STORAGE_ENDPOINT}
     region: ${OBJECT_STORAGE_REGION:us-east-1}

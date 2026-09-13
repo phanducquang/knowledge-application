@@ -1,5 +1,6 @@
 package com.knowledgeapplication.api.knowledge.service;
 
+import com.knowledgeapplication.api.attachment.service.KnowledgeAttachmentLifecycleService;
 import com.knowledgeapplication.api.configuration.CurrentOwner;
 import com.knowledgeapplication.api.knowledge.model.Knowledge;
 import com.knowledgeapplication.api.knowledge.model.KnowledgeCollection;
@@ -32,6 +33,7 @@ public class KnowledgeService {
     private final CurrentOwner currentOwner;
     private final ShareTokenGenerator shareTokenGenerator;
     private final KnowledgeRevisionService revisionService;
+    private final KnowledgeAttachmentLifecycleService attachmentLifecycleService;
 
     public KnowledgeService(
             KnowledgeRepository repository,
@@ -39,7 +41,8 @@ public class KnowledgeService {
             TagRepository tagRepository,
             CurrentOwner currentOwner,
             ShareTokenGenerator shareTokenGenerator,
-            KnowledgeRevisionService revisionService
+            KnowledgeRevisionService revisionService,
+            KnowledgeAttachmentLifecycleService attachmentLifecycleService
     ) {
         this.repository = repository;
         this.collectionRepository = collectionRepository;
@@ -47,6 +50,7 @@ public class KnowledgeService {
         this.currentOwner = currentOwner;
         this.shareTokenGenerator = shareTokenGenerator;
         this.revisionService = revisionService;
+        this.attachmentLifecycleService = attachmentLifecycleService;
     }
 
     @Transactional
@@ -113,6 +117,7 @@ public class KnowledgeService {
         if (authoringChanged(knowledge, title, summary, content, collection, tags)) {
             revisionService.checkpointIfDue(knowledge);
         }
+        attachmentLifecycleService.synchronizeReferences(id, knowledge.getContent(), content);
         knowledge.rename(title);
         knowledge.updateSummary(summary);
         knowledge.updateContent(content);
@@ -131,6 +136,9 @@ public class KnowledgeService {
     @Transactional
     public void delete(Long id) {
         Knowledge knowledge = getById(id);
+        // Queue object keys in the same PostgreSQL transaction before ON DELETE CASCADE
+        // removes attachment metadata. A later idempotent storage cleanup can then retry.
+        attachmentLifecycleService.enqueueKnowledgeDeletion(id);
         repository.delete(knowledge);
     }
 
@@ -159,6 +167,11 @@ public class KnowledgeService {
         Set<Tag> tags = resolveTags(ownerId, revision.getTags());
 
         revisionService.snapshotBeforeRestore(knowledge);
+        attachmentLifecycleService.synchronizeReferences(
+                knowledgeId,
+                knowledge.getContent(),
+                revision.getContent()
+        );
         knowledge.rename(revision.getTitle());
         knowledge.updateSummary(revision.getSummary());
         knowledge.updateContent(revision.getContent());

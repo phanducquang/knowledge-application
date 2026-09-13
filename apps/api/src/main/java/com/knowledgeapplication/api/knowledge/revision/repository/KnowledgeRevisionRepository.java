@@ -14,4 +14,6 @@ public interface KnowledgeRevisionRepository extends JpaRepository<KnowledgeRevi
     Slice<KnowledgeRevision> findAllByKnowledgeId(Long knowledgeId, Pageable pageable);
 
     Optional<KnowledgeRevision> findByIdAndKnowledgeId(Long id, Long knowledgeId);
+
+    boolean existsByKnowledgeIdAndContentContainingIgnoreCase(Long knowledgeId, String reference);
 }
