@@ -56,12 +56,12 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-The recommended next milestone is attachment lifecycle/retention cleanup, with richer collection management as a smaller alternative. Generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. The recommended next milestone is richer Collection management/navigation, followed later by backlinks/wiki links. Generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
 - Unlisted visibility/share token — complete, including Reading/Edit Share Dialog wiring
-- attachments/images via R2 or MinIO — complete for secure images and access-scoped delivery; deletion/orphan retention is deferred
+- attachments/images via R2 or MinIO — complete for secure images, access-scoped delivery, revision-safe orphan retention and retryable deletion cleanup
 - revision history — complete for checkpoint list/preview/restore; diffs, labels and retention remain deferred
 - richer collection management/navigation
 - table of contents — complete for persisted Markdown H2-H4 headings

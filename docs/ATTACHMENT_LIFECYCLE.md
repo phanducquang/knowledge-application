@@ -97,13 +97,19 @@ KNOWLEDGE_ATTACHMENT_CLEANUP_BATCH_SIZE=100
 
 The scheduler intentionally runs at low frequency; this is garbage collection, not a real-time deletion protocol.
 
+Spring scheduling is enabled by the backend configuration and the cleanup bean can be disabled with `KNOWLEDGE_ATTACHMENT_CLEANUP_ENABLED=false`. Invalid negative grace periods, non-positive batch sizes or non-positive scheduling intervals fail application startup. A zero initial delay is valid; a negative initial delay is rejected.
+
+The current deployment model does not elect a single cleanup leader. If multiple API replicas run, they may select the same candidate. Parent/attachment database locks serialize destructive orphan work, S3 deletion is idempotent, and queue deletion converges, so duplicate attempts are safe but may perform redundant storage calls. Distributed scheduler coordination can be added only if future scale makes that operational cost meaningful.
+
 ## Revision retention interaction
 
 Revision pruning is not implemented yet. If revision retention/pruning is added later, that feature must re-evaluate attachment liveness after removing the last revision that references an attachment. Revision pruning must not bypass this lifecycle contract.
 
 ## Historical limitation
 
-Objects that were already orphaned before V7 because their Knowledge metadata had previously been cascade-deleted cannot be rediscovered from PostgreSQL. V7 prevents new unknown objects through the deletion queue, but historical bucket reconciliation would require a separate storage-inventory/reconciliation milestone.
+The V7 deletion queue prevents new unknown objects specifically when deleting a Knowledge item: it preserves each known object key before attachment metadata cascades away.
+
+It does not eliminate every S3/PostgreSQL gap. Upload still stores the object before persisting attachment metadata. Ordinary persistence failures trigger best-effort object deletion, but if the JVM/process dies after a successful S3 put and before the database row is persisted, that object has no metadata for DB-driven cleanup to discover. Objects orphaned before V7 and objects from this rare upload crash window require a future bucket inventory/reconciliation job.
 
 ## Verification
 

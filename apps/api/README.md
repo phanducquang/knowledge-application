@@ -60,6 +60,11 @@ OBJECT_STORAGE_BUCKET
 OBJECT_STORAGE_ACCESS_KEY
 OBJECT_STORAGE_SECRET_KEY
 OBJECT_STORAGE_PATH_STYLE
+KNOWLEDGE_ATTACHMENT_CLEANUP_ENABLED
+KNOWLEDGE_ATTACHMENT_ORPHAN_GRACE_PERIOD
+KNOWLEDGE_ATTACHMENT_CLEANUP_INTERVAL
+KNOWLEDGE_ATTACHMENT_CLEANUP_INITIAL_DELAY
+KNOWLEDGE_ATTACHMENT_CLEANUP_BATCH_SIZE
 ```
 
 For the supplied Compose stack, use endpoint `http://localhost:9000`, region `us-east-1`, bucket `knowledge-images`, and the development-only MinIO credentials listed in `.env.example`. For Cloudflare R2, set the account S3 endpoint and region `auto`; path-style can be disabled. Never expose these values through `NEXT_PUBLIC_*` settings.
@@ -231,7 +236,11 @@ curl http://localhost:8080/api/shared/knowledge/<share-token>/attachments/<attac
   --output shared-image.png
 ```
 
-Only PNG, JPEG, WebP and GIF are accepted; SVG is deliberately excluded. Upload requires the owner session and CSRF. Public/shared streams remain scoped to the exact parent and active visibility. See `../../docs/API.md` for consistency and deferred orphan-cleanup semantics.
+Only PNG, JPEG, WebP and GIF are accepted; SVG is deliberately excluded. Upload requires the owner session and CSRF. Public/shared streams remain scoped to the exact parent and active visibility.
+
+Revision-safe cleanup is enabled by default. Fresh unreferenced uploads are protected for `PT24H`; cleanup starts after `PT5M`, then runs every `PT1H` in batches of 100. Retained revisions keep their referenced objects alive, and Knowledge deletion places object keys in a durable retry queue before attachment metadata cascades. Override the five `KNOWLEDGE_ATTACHMENT_*` settings above only through the backend environment. Invalid negative grace/delay, non-positive interval or non-positive batch size fails startup.
+
+PostgreSQL and object storage are not one transaction. Object deletion happens before metadata deletion so failures remain retryable. A rare process crash after S3 upload and before metadata persistence can still create an object that DB-driven cleanup cannot discover; future bucket inventory reconciliation is intentionally deferred. See [`../../docs/ATTACHMENT_LIFECYCLE.md`](../../docs/ATTACHMENT_LIFECYCLE.md) for the complete contract.
 
 ## Validate
 

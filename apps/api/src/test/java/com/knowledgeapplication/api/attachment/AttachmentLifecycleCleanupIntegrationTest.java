@@ -147,6 +147,8 @@ class AttachmentLifecycleCleanupIntegrationTest {
 
         knowledgeService.update(note.getId(), note.getTitle(), null, "Image removed from current content",
                 Visibility.PRIVATE, null, List.of());
+        assertThat(jdbcClient.sql("SELECT orphaned_at FROM knowledge_attachment WHERE id = :id")
+                .param("id", attachment.getId()).query(Instant.class).optional()).isPresent();
         long revisionId = jdbcClient.sql("""
                         SELECT id FROM knowledge_revision
                         WHERE knowledge_id = :knowledgeId AND content = :content
@@ -165,10 +167,12 @@ class AttachmentLifecycleCleanupIntegrationTest {
         assertThat(jdbcClient.sql("SELECT orphaned_at FROM knowledge_attachment WHERE id = :id")
                 .param("id", attachment.getId()).query(Instant.class).optional()).isEmpty();
         assertThat(objectExists(attachment.getObjectKey())).isTrue();
+        assertThat(objectCount(attachment.getObjectKey())).isEqualTo(1);
 
         Knowledge restored = knowledgeService.restoreRevision(note.getId(), revisionId);
         assertThat(restored.getContent()).isEqualTo(markdown);
         assertThat(objectExists(attachment.getObjectKey())).isTrue();
+        assertThat(objectCount(attachment.getObjectKey())).isEqualTo(1);
     }
 
     @Test
@@ -179,6 +183,8 @@ class AttachmentLifecycleCleanupIntegrationTest {
 
         knowledgeService.delete(note.getId());
 
+        assertThat(jdbcClient.sql("SELECT COUNT(*) FROM knowledge WHERE id = :id")
+                .param("id", note.getId()).query(Long.class).single()).isZero();
         assertThat(jdbcClient.sql("SELECT COUNT(*) FROM knowledge_attachment WHERE id = :id")
                 .param("id", attachment.getId()).query(Long.class).single()).isZero();
         assertThat(jdbcClient.sql("SELECT COUNT(*) FROM knowledge_attachment_delete_queue WHERE object_key = :key")
@@ -232,13 +238,18 @@ class AttachmentLifecycleCleanupIntegrationTest {
     }
 
     private boolean objectExists(String objectKey) {
+        return objectCount(objectKey) > 0;
+    }
+
+    private int objectCount(String objectKey) {
         return s3.listObjectsV2(ListObjectsV2Request.builder()
                         .bucket(BUCKET)
                         .prefix(objectKey)
                         .build())
                 .contents()
                 .stream()
-                .anyMatch(object -> object.key().equals(objectKey));
+                .mapToInt(object -> object.key().equals(objectKey) ? 1 : 0)
+                .sum();
     }
 
     private static void authenticateAsOwner() {
