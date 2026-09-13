@@ -27,7 +27,8 @@ test("history previews Markdown and confirms restore inline through the CSRF-awa
     "utf8",
   );
 
-  assert.match(history, /KnowledgeMarkdown markdown=\{selected\.content\}/);
+  assert.match(history, /KnowledgeMarkdown[\s\S]*markdown=\{selected\.content\}/);
+  assert.match(history, /imageContext=\{\{ kind: "owner", knowledgeId: knowledge\.id \}\}/);
   assert.match(history, /Load older revisions/);
   assert.match(history, /Confirm restore/);
   assert.doesNotMatch(history, /role="dialog"|fixed inset-0/);

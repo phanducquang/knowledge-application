@@ -105,7 +105,10 @@ export default async function KnowledgeReadingPage(props: {
 
               <ArticleToc variant="inline" sections={toc} />
               {article.content ? (
-                <KnowledgeMarkdown markdown={article.content} />
+                <KnowledgeMarkdown
+                  markdown={article.content}
+                  imageContext={{ kind: "owner", knowledgeId: article.id }}
+                />
               ) : (
                 <p className="py-8 text-[14px] italic text-[var(--text-subtle)]">This note has no Markdown content yet.</p>
               )}

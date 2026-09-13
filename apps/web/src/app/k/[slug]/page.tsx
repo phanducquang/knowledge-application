@@ -48,5 +48,11 @@ export async function generateMetadata({ params }: PublicKnowledgePageProps): Pr
 export default async function PublicKnowledgePage({ params }: PublicKnowledgePageProps) {
   const { slug } = await params;
   const article = await publicKnowledgeOrNotFound(slug);
-  return <ExternalKnowledgeArticle article={article} accessLabel="Public note" />;
+  return (
+    <ExternalKnowledgeArticle
+      article={article}
+      accessLabel="Public note"
+      imageContext={{ kind: "public", slug }}
+    />
+  );
 }

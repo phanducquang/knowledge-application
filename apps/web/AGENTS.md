@@ -29,7 +29,7 @@ Editor responsibility:
 - the general product rule to avoid becoming a Notion clone does **not** prohibit proven block-editor interaction patterns inside the Markdown Content editor; slash commands, block handles, drag/drop, floating/contextual toolbars and similar authoring affordances are allowed when they materially improve writing efficiency
 - this exception is scoped to the Content authoring surface only; it must not spread Notion-style layout, navigation, cards or visual language into the rest of the workspace
 - preserve Markdown as the canonical content format even when Crepe presents WYSIWYG/block-style interactions
-- Crepe `ImageBlock` remains disabled until object-storage upload/persistence is implemented; Crepe AI remains disabled until the AI phase has a real provider and product flow
+- Crepe `ImageBlock` is enabled only for persisted Knowledge with secure object-storage upload; explicit new-note mode keeps it disabled until a server ID exists. Crepe AI remains disabled until the AI phase has a real provider and product flow
 - theme Crepe through its CSS variables and scoped `.knowledge-markdown-editor` overrides so it uses the established warm-neutral + petrol/teal visual system rather than introducing a second product theme
 
 Search responsibility:
@@ -52,6 +52,8 @@ API integration responsibility:
 - use Server Components for reads and Server Actions for browser-triggered mutations
 - map API enums/nullability/timestamps at the typed transport boundary rather than inside visual components
 - interactive search may use only the focused same-origin `/api/knowledge-search` Route Handler; do not add a generic catch-all proxy
+- image upload/content may use only the focused same-origin attachment Route Handlers; Markdown stores `attachment://<UUID>`, never raw object-storage or presigned URLs
+- keep object-storage endpoints, access keys, secret keys and object keys server-only; never introduce `NEXT_PUBLIC_*` storage configuration
 - never send `ownerId`, slug or timestamps in create/update requests
 - existing-note autosave must remain serialized/coalescing so only one PUT is in flight and the newest dirty draft is eventually persisted
 - `/knowledge/new` is an explicit unsaved create mode; do not create placeholder records with permanent placeholder slugs

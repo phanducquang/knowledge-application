@@ -1,5 +1,13 @@
 package com.knowledgeapplication.api.exception;
 
+import com.knowledgeapplication.api.attachment.service.AttachmentNotFoundException;
+import com.knowledgeapplication.api.attachment.service.AttachmentPersistenceException;
+import com.knowledgeapplication.api.attachment.service.PublicAttachmentNotFoundException;
+import com.knowledgeapplication.api.attachment.service.SharedAttachmentNotFoundException;
+import com.knowledgeapplication.api.attachment.storage.ObjectStorageUnavailableException;
+import com.knowledgeapplication.api.attachment.validation.ImageTooLargeException;
+import com.knowledgeapplication.api.attachment.validation.MalformedImageException;
+import com.knowledgeapplication.api.attachment.validation.UnsupportedImageTypeException;
 import com.knowledgeapplication.api.knowledge.service.KnowledgeNotFoundException;
 import com.knowledgeapplication.api.knowledge.publicview.PublicKnowledgeNotFoundException;
 import com.knowledgeapplication.api.knowledge.service.UnlistedLinkNotFoundException;
@@ -12,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -23,6 +32,57 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(AttachmentNotFoundException.class)
+    public ResponseEntity<ApiError> handleAttachmentNotFound(AttachmentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiError.of("ATTACHMENT_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(PublicAttachmentNotFoundException.class)
+    public ResponseEntity<ApiError> handlePublicAttachmentNotFound(PublicAttachmentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.CACHE_CONTROL, "no-store, max-age=0")
+                .body(ApiError.of("PUBLIC_ATTACHMENT_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(SharedAttachmentNotFoundException.class)
+    public ResponseEntity<ApiError> handleSharedAttachmentNotFound(SharedAttachmentNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.CACHE_CONTROL, "private, no-store, max-age=0")
+                .header("X-Robots-Tag", "noindex, nofollow, noarchive")
+                .body(ApiError.of("SHARED_ATTACHMENT_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(UnsupportedImageTypeException.class)
+    public ResponseEntity<ApiError> handleUnsupportedImageType(UnsupportedImageTypeException exception) {
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
+                .body(ApiError.of("UNSUPPORTED_IMAGE_TYPE", exception.getMessage()));
+    }
+
+    @ExceptionHandler({ImageTooLargeException.class, MaxUploadSizeExceededException.class})
+    public ResponseEntity<ApiError> handleImageTooLarge(Exception exception) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiError.of("IMAGE_TOO_LARGE", "Image exceeds the configured upload limit"));
+    }
+
+    @ExceptionHandler(MalformedImageException.class)
+    public ResponseEntity<ApiError> handleMalformedImage(MalformedImageException exception) {
+        return ResponseEntity.badRequest()
+                .body(ApiError.of("MALFORMED_IMAGE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(ObjectStorageUnavailableException.class)
+    public ResponseEntity<ApiError> handleObjectStorageUnavailable(ObjectStorageUnavailableException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ApiError.of("OBJECT_STORAGE_UNAVAILABLE", exception.getMessage()));
+    }
+
+    @ExceptionHandler(AttachmentPersistenceException.class)
+    public ResponseEntity<ApiError> handleAttachmentPersistence(AttachmentPersistenceException exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ApiError.of("ATTACHMENT_PERSISTENCE_FAILED", exception.getMessage()));
+    }
 
     @ExceptionHandler(KnowledgeNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(KnowledgeNotFoundException exception) {

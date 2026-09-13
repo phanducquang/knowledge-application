@@ -14,6 +14,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: ${KNOWLEDGE_IMAGE_MAX_SIZE:10MB}
+      max-request-size: ${KNOWLEDGE_IMAGE_MAX_SIZE:10MB}
   security:
     oauth2:
       client:
@@ -30,6 +34,16 @@ app:
   owner-id: ${APP_OWNER_ID:00000000-0000-0000-0000-000000000001}
   knowledge:
     revision-checkpoint-interval: ${KNOWLEDGE_REVISION_INTERVAL:PT5M}
+    image-max-size: ${KNOWLEDGE_IMAGE_MAX_SIZE:10MB}
+    image-max-dimension: ${KNOWLEDGE_IMAGE_MAX_DIMENSION:20000}
+    image-max-pixels: ${KNOWLEDGE_IMAGE_MAX_PIXELS:100000000}
+  object-storage:
+    endpoint: ${OBJECT_STORAGE_ENDPOINT}
+    region: ${OBJECT_STORAGE_REGION:us-east-1}
+    bucket: ${OBJECT_STORAGE_BUCKET}
+    access-key: ${OBJECT_STORAGE_ACCESS_KEY}
+    secret-key: ${OBJECT_STORAGE_SECRET_KEY}
+    path-style: ${OBJECT_STORAGE_PATH_STYLE:true}
   auth:
     allowed-email: ${AUTH_ALLOWED_EMAIL:owner@example.com}
     web-base-url: ${WEB_BASE_URL:http://localhost:3000}

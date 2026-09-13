@@ -43,6 +43,7 @@ The web and API applications remain independently buildable and deployable even 
 - Anonymous read-only PUBLIC Knowledge is available at `/k/{slug}` through a separate safe backend DTO/query. PRIVATE, UNLISTED and missing slugs all remain opaque public 404s; owner CRUD/Search stays authenticated.
 - The shared Reading/Edit Share Dialog now persists PRIVATE/PUBLIC/UNLISTED through an owner-scoped focused visibility mutation. PUBLIC links use `/k/{slug}`; UNLISTED links are loaded and explicitly rotatable through the backend-managed `/s/{shareToken}` contract without placing tokens in generic Knowledge state or browser storage.
 - Owner-scoped revision history is available at `/knowledge/{slug}/history`, with compact paginated snapshots, full Markdown preview, interval-limited autosave checkpoints and safe restore that preserves stable URLs and all sharing state.
+- Secure images are stored in a private S3-compatible bucket (MinIO locally, R2-compatible for deployment). Persisted Crepe editors upload PNG/JPEG/WebP/GIF and save stable `attachment://<UUID>` Markdown references; owner, PUBLIC, UNLISTED and history views resolve them through access-scoped application routes.
 
 ## Core product direction
 
@@ -76,6 +77,10 @@ cd apps/api
 export GOOGLE_CLIENT_ID='your-google-client-id'
 export GOOGLE_CLIENT_SECRET='your-google-client-secret'
 export AUTH_ALLOWED_EMAIL='you@example.com'
+export OBJECT_STORAGE_ENDPOINT='http://localhost:9000'
+export OBJECT_STORAGE_BUCKET='knowledge-images'
+export OBJECT_STORAGE_ACCESS_KEY='knowledge_minio'
+export OBJECT_STORAGE_SECRET_KEY='change-me-for-local-development'
 ./gradlew bootRun
 ```
 

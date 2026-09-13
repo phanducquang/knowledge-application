@@ -28,6 +28,7 @@ Next.js application for the Knowledge Application workspace.
 - anonymous, dynamic `/s/{shareToken}` Reading Page backed by the dedicated UNLISTED bearer-token endpoint
 - one persisted Share Dialog shared by Reading/Edit, with real PUBLIC links and backend-managed UNLISTED link retrieval/confirmed rotation
 - protected `/knowledge/{slug}/history` with paginated checkpoints, selected full-Markdown preview and confirmed restore
+- persisted Crepe Edit mode with secure image upload and stable `attachment://<UUID>` references rendered in owner, PUBLIC, UNLISTED and History contexts
 
 Before implementing or modifying UI, read:
 
@@ -84,6 +85,14 @@ History is a secondary action from Reading and Edit. The editor flushes pending 
 Restore uses an inline confirmation rather than a modal. Its Server Action obtains CSRF in the same way as other mutations and then returns to Edit. The API preserves slug and current sharing state, so public or unlisted routes continue to use the same URL/token with the restored authoring content.
 
 Multiple editor tabs still use last-write-wins autosave. History can help recover an overwritten authoring state, but it does not detect conflicts or merge concurrent drafts.
+
+## Image attachments
+
+Crepe ImageBlock is enabled only when editing an already-persisted Knowledge item. Create mode has no server Knowledge ID, so it does not advertise image upload. The client posts multipart data only to the focused same-origin `/api/knowledge/{knowledgeId}/attachments/images` Route Handler; server-only transport forwards the authenticated session and obtains CSRF before calling Spring Boot.
+
+Markdown stores `attachment://<UUID>`, never a MinIO/R2 URL or temporary signature. Crepe `proxyDomURL` and the shared Markdown renderer resolve that stable reference to the appropriate same-origin owner, PUBLIC or UNLISTED image route. Revision History uses the owner context, so an old revision can render the same retained object. Object-storage endpoints and credentials remain backend-only and must never use `NEXT_PUBLIC_*`.
+
+The frontend intentionally does not implement generic files, attachment browsing/deletion, image processing or direct object-storage access. Upload/stream validation and authorization remain authoritative in Spring Boot.
 
 ## Validate
 

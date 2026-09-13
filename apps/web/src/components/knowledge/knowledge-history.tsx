@@ -256,7 +256,10 @@ export function KnowledgeHistory({
 
                 <div className="mt-7">
                   {selected.content ? (
-                    <KnowledgeMarkdown markdown={selected.content} />
+                    <KnowledgeMarkdown
+                      markdown={selected.content}
+                      imageContext={{ kind: "owner", knowledgeId: knowledge.id }}
+                    />
                   ) : (
                     <p className="py-8 text-[14px] italic text-[var(--text-subtle)]">
                       This revision has no Markdown content.

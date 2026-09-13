@@ -100,6 +100,16 @@ export async function backendRequest<T>(path: string, init?: RequestInit): Promi
   return (await response.json()) as T;
 }
 
+export async function backendRawResponse(path: string, init?: RequestInit) {
+  const cookieHeader = await incomingCookieHeader();
+  const csrf = isStateChangingMethod(init?.method) ? await csrfToken(cookieHeader) : undefined;
+  return fetchBackend(path, cookieHeader, init, csrf);
+}
+
+export async function publicBackendRawResponse(path: string) {
+  return fetchBackend(path, "", { method: "GET" });
+}
+
 export async function publicBackendRequest<T>(path: string): Promise<T> {
   const response = await fetchBackend(path, "", { method: "GET" });
   if (!response.ok) {

@@ -67,6 +67,11 @@ class KnowledgeSearchIntegrationTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("app.owner-id", OWNER_ID::toString);
         registry.add("app.auth.allowed-email", () -> "owner@example.com");
+        registry.add("app.object-storage.endpoint", () -> "http://127.0.0.1:19000");
+        registry.add("app.object-storage.region", () -> "us-east-1");
+        registry.add("app.object-storage.bucket", () -> "unused-in-search-tests");
+        registry.add("app.object-storage.access-key", () -> "test-access-key");
+        registry.add("app.object-storage.secret-key", () -> "test-secret-key");
     }
 
     @Autowired

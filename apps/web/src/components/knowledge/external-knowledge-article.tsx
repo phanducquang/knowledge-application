@@ -3,6 +3,7 @@ import { KnowledgeMarkdown } from "@/components/knowledge/knowledge-markdown";
 import { Tag } from "@/components/ui/tag";
 import { formatKnowledgeDate } from "@/lib/knowledge-mapping";
 import { calculateReadTime, extractMarkdownHeadings } from "@/lib/markdown";
+import type { ImageAccessContext } from "@/lib/attachment-reference";
 
 interface ExternalKnowledgeArticleData {
   title: string;
@@ -17,11 +18,13 @@ interface ExternalKnowledgeArticleData {
 interface ExternalKnowledgeArticleProps {
   article: ExternalKnowledgeArticleData;
   accessLabel: "Public note" | "Shared note";
+  imageContext: ImageAccessContext;
 }
 
 export function ExternalKnowledgeArticle({
   article,
   accessLabel,
+  imageContext,
 }: ExternalKnowledgeArticleProps) {
   const toc = extractMarkdownHeadings(article.content);
   const readTime = calculateReadTime(article.content);
@@ -73,7 +76,7 @@ export function ExternalKnowledgeArticle({
 
             <ArticleToc variant="inline" sections={toc} />
             {article.content ? (
-              <KnowledgeMarkdown markdown={article.content} />
+              <KnowledgeMarkdown markdown={article.content} imageContext={imageContext} />
             ) : (
               <p className="py-8 text-[14px] italic text-[var(--text-subtle)]">
                 This note has no Markdown content yet.

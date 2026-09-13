@@ -1,6 +1,12 @@
 import { Children, isValidElement, type ReactNode } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  accessibleImageAlt,
+  attachmentIdFromReference,
+  resolveImageSource,
+  type ImageAccessContext,
+} from "@/lib/attachment-reference";
 import { createHeadingSlugger } from "@/lib/markdown";
 
 function textFromChildren(children: ReactNode): string {
@@ -17,7 +23,13 @@ function textFromChildren(children: ReactNode): string {
     .join("");
 }
 
-export function KnowledgeMarkdown({ markdown }: { markdown: string }) {
+export function KnowledgeMarkdown({
+  markdown,
+  imageContext,
+}: {
+  markdown: string;
+  imageContext: ImageAccessContext;
+}) {
   const nextHeadingId = createHeadingSlugger();
   const heading = (level: 2 | 3 | 4, children: ReactNode) => {
     const id = nextHeadingId(textFromChildren(children));
@@ -35,6 +47,12 @@ export function KnowledgeMarkdown({ markdown }: { markdown: string }) {
     <div className="article-content text-[16px] leading-[1.72] text-[var(--text)]">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        urlTransform={(url, key) => {
+          if (key === "src" && attachmentIdFromReference(url)) {
+            return resolveImageSource(url, imageContext);
+          }
+          return defaultUrlTransform(url);
+        }}
         components={{
           h1: ({ children }) => (
             <h2 className="mb-4 mt-10 text-[22px] font-semibold leading-tight tracking-[-0.02em] first:mt-0">
@@ -47,6 +65,16 @@ export function KnowledgeMarkdown({ markdown }: { markdown: string }) {
           h5: ({ children }) => heading(4, children),
           h6: ({ children }) => heading(4, children),
           p: ({ children }) => <p className="my-4 text-[var(--text-muted)]">{children}</p>,
+          img: ({ src, alt, title }) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={accessibleImageAlt(alt, title)}
+              title={title}
+              loading="lazy"
+              className="my-6 h-auto max-w-full border border-[var(--border)] bg-[var(--surface-muted)]"
+            />
+          ),
           a: ({ children, href }) => (
             <a
               href={href}

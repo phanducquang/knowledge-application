@@ -459,13 +459,18 @@ export function KnowledgeEditor({
           <section className="mt-7" aria-labelledby="content-label">
             <div className="flex items-end justify-between gap-4">
               <p id="content-label" className={fieldLabelClassName}>Content</p>
-              <p className="text-[11px] text-[var(--text-subtle)]">Markdown · type / for blocks</p>
+              <p className="text-[11px] text-[var(--text-subtle)]">
+                {mode === "edit"
+                  ? "Markdown · type / for blocks and images"
+                  : "Markdown · create the note before adding images"}
+              </p>
             </div>
 
             <div className="mt-2 border border-[var(--border)] bg-[var(--surface)] transition-colors focus-within:border-[var(--accent)] focus-within:ring-1 focus-within:ring-[var(--accent)]">
               <KnowledgeMarkdownEditor
                 initialMarkdown={initialMarkdown}
                 onMarkdownChange={changeMarkdown}
+                knowledgeId={initialKnowledge?.id}
               />
             </div>
           </section>

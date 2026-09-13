@@ -48,5 +48,11 @@ export async function generateMetadata({ params }: SharedKnowledgePageProps): Pr
 export default async function SharedKnowledgePage({ params }: SharedKnowledgePageProps) {
   const { shareToken } = await params;
   const article = await sharedKnowledgeOrNotFound(shareToken);
-  return <ExternalKnowledgeArticle article={article} accessLabel="Shared note" />;
+  return (
+    <ExternalKnowledgeArticle
+      article={article}
+      accessLabel="Shared note"
+      imageContext={{ kind: "shared", shareToken }}
+    />
+  );
 }

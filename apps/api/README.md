@@ -5,7 +5,7 @@ Spring Boot REST API for Knowledge Application.
 ## Requirements
 
 - Java 17
-- Docker with Docker Compose for the local PostgreSQL instance
+- Docker with Docker Compose for local PostgreSQL and private MinIO object storage
 
 The application is pinned to Spring Boot 4.1.1, the stable Spring Boot release selected for this foundation, and Gradle 8.14.3. Both support the project's Java 17 baseline. The repository includes a checksum-verified Gradle Wrapper, so a global Gradle installation is not required.
 
@@ -51,7 +51,18 @@ AUTH_ALLOWED_EMAIL
 WEB_BASE_URL
 SESSION_COOKIE_SECURE
 KNOWLEDGE_REVISION_INTERVAL
+KNOWLEDGE_IMAGE_MAX_SIZE
+KNOWLEDGE_IMAGE_MAX_DIMENSION
+KNOWLEDGE_IMAGE_MAX_PIXELS
+OBJECT_STORAGE_ENDPOINT
+OBJECT_STORAGE_REGION
+OBJECT_STORAGE_BUCKET
+OBJECT_STORAGE_ACCESS_KEY
+OBJECT_STORAGE_SECRET_KEY
+OBJECT_STORAGE_PATH_STYLE
 ```
+
+For the supplied Compose stack, use endpoint `http://localhost:9000`, region `us-east-1`, bucket `knowledge-images`, and the development-only MinIO credentials listed in `.env.example`. For Cloudflare R2, set the account S3 endpoint and region `auto`; path-style can be disabled. Never expose these values through `NEXT_PUBLIC_*` settings.
 
 The session cookie is HttpOnly and `SameSite=Lax`; keep `SESSION_COOKIE_SECURE=false` only for local HTTP and enable it for production HTTPS. Sessions currently live in API process memory and are invalidated by an API restart.
 
@@ -194,6 +205,33 @@ curl -X POST \
 V4 stores one nullable token/timestamp pair on Knowledge under a global unique constraint. The token comes from 32 `SecureRandom` bytes encoded as unpadded URL-safe Base64. It remains stable until explicit rotation, and is readable anonymously only while visibility is exactly `UNLISTED`. Normal CRUD, Search, PUBLIC and shared article responses never expose it.
 
 Retrievable database storage lets the owner copy the same link again, but database read access/backups can therefore reveal bearer credentials. Protect those systems and treat reverse-proxy access logs containing `/s/...` paths as sensitive; application code must not log tokens explicitly. The Spring request dispatcher is explicitly kept above DEBUG so an ambient debug flag does not print full token-bearing paths.
+
+## Image attachment examples
+
+Upload a validated image to an already-created note:
+
+```bash
+curl -X POST http://localhost:8080/api/knowledge/1/attachments/images \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'X-CSRF-TOKEN: <csrf-token>' \
+  -F 'file=@./diagram.png;type=image/png'
+```
+
+The returned Markdown source is stable, for example `attachment://550e8400-e29b-41d4-a716-446655440000`. Do not replace it with the private object key. Fetch bytes through the matching application endpoint:
+
+```bash
+curl -b 'JSESSIONID=<authenticated-session>' \
+  http://localhost:8080/api/knowledge/1/attachments/<attachment-id>/content \
+  --output image.png
+
+curl http://localhost:8080/api/public/knowledge/<slug>/attachments/<attachment-id>/content \
+  --output public-image.png
+
+curl http://localhost:8080/api/shared/knowledge/<share-token>/attachments/<attachment-id>/content \
+  --output shared-image.png
+```
+
+Only PNG, JPEG, WebP and GIF are accepted; SVG is deliberately excluded. Upload requires the owner session and CSRF. Public/shared streams remain scoped to the exact parent and active visibility. See `../../docs/API.md` for consistency and deferred orphan-cleanup semantics.
 
 ## Validate
 

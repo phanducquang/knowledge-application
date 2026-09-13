@@ -155,6 +155,38 @@ Restore always appends a `BEFORE_RESTORE` snapshot of the current authoring stat
 
 Every list/detail/restore operation first resolves `{id}` through `id + current owner`; a revision must additionally belong to that Knowledge item. Missing/cross-owner Knowledge returns `404 KNOWLEDGE_NOT_FOUND`, while a revision missing from an owned note returns `404 KNOWLEDGE_REVISION_NOT_FOUND`. Restore is state-changing and requires CSRF. Deleting Knowledge cascades its revision rows.
 
+## Knowledge image attachments
+
+Image upload and delivery are deliberately separate from generic files. The object-storage bucket stays private; clients receive neither object keys, credentials, direct MinIO/R2 URLs nor presigned URLs.
+
+| Method | Route | Access | Result |
+| --- | --- | --- | --- |
+| `POST` | `/api/knowledge/{id}/attachments/images` | Authenticated owner + CSRF | Upload one image and return attachment metadata |
+| `GET` | `/api/knowledge/{id}/attachments/{attachmentId}/content` | Authenticated owner | Stream an image belonging to that owner's exact Knowledge item |
+| `GET` | `/api/public/knowledge/{slug}/attachments/{attachmentId}/content` | Anonymous | Stream only when the exact parent is `PUBLIC` |
+| `GET` | `/api/shared/knowledge/{shareToken}/attachments/{attachmentId}/content` | Anonymous bearer access | Stream only when the token is current and the exact parent is `UNLISTED` |
+
+Upload uses multipart field `file`. It accepts PNG, JPEG, WebP and GIF up to `KNOWLEDGE_IMAGE_MAX_SIZE` (default 10 MB); SVG is rejected. Validation detects signatures and dimensions instead of trusting the browser filename/media type, requires declared and detected types to agree, and applies `KNOWLEDGE_IMAGE_MAX_DIMENSION` plus `KNOWLEDGE_IMAGE_MAX_PIXELS` safeguards.
+
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "originalFilename": "diagram.png",
+  "contentType": "image/png",
+  "sizeBytes": 24576,
+  "createdAt": "2026-09-13T02:00:00Z",
+  "markdownSource": "attachment://550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+`attachment://<UUID>` is the canonical stable Markdown reference. It contains no secret and remains unchanged across owner, PUBLIC, UNLISTED and revision-history views. Each rendering context resolves it to its matching same-origin Next.js content route; Spring performs the authoritative parent/access query, preventing cross-note attachment-ID substitution.
+
+V6 stores only metadata in `knowledge_attachment`; bytes live in S3-compatible storage. The server generates `knowledge/{ownerId}/{knowledgeId}/{attachmentId}` and never accepts or returns that key. It writes the object before flushing metadata, performs best-effort cleanup if metadata persistence/transaction commit fails, and does not commit metadata after an object write failure.
+
+Deleting Knowledge cascades attachment metadata but intentionally retains objects so revision Markdown remains recoverable and the first storage slice avoids destructive cleanup. This can create orphan objects after Knowledge deletion; a later retention-aware cleanup job is required. No attachment deletion API exists yet.
+
+Attachment errors are compact: `UNSUPPORTED_IMAGE_TYPE` (`415`), `IMAGE_TOO_LARGE` (`413`), `MALFORMED_IMAGE` (`400`), scoped not-found codes (`404`), `OBJECT_STORAGE_UNAVAILABLE` (`503`) and `ATTACHMENT_PERSISTENCE_FAILED` (`500`). They contain no stack trace or storage detail.
+
 ## Public Knowledge read
 
 | Method | Route | Result |
@@ -240,7 +272,8 @@ The web application consumes this contract from Next.js Server Components and Se
 - `/k/{slug}` uses a focused server-only public client with `cache: no-store` and does not send the private session cookie. Its basic metadata is indexable only after the public API successfully returns a PUBLIC item.
 - `/s/{shareToken}` uses the anonymous shared endpoint with no owner cookie and dynamic `no-store` rendering. It sends `noindex, nofollow, noarchive` plus `Referrer-Policy: no-referrer`; it has no WorkspaceShell or private actions.
 - Reading and Edit reuse one dependency-injected Share Dialog. A successful mutation updates its confirmed visibility; Reading refreshes server data, while Edit serializes an in-flight autosave, any pending draft flush, and the focused visibility PATCH in that order. Later autosaves use the confirmed visibility and cannot replay an older value over it.
-- The protected `/knowledge/{slug}/history` route reads compact revision pages, fetches full Markdown only for the selected preview, and restores through a CSRF-aware Server Action. The editor flushes pending autosave work before navigating to History.
+- The protected `/knowledge/{slug}/history` route reads compact revision pages, fetches full Markdown only for the selected preview, and restores through a CSRF-aware Server Action. Historical attachment references resolve through the current owner's exact Knowledge boundary. The editor flushes pending autosave work before navigating to History.
+- Persisted Edit pages enable Crepe ImageBlock. Its upload callback uses the focused same-origin Next.js image route; `proxyDomURL` changes only the displayed URL while Markdown keeps `attachment://<UUID>`. Create mode leaves ImageBlock disabled until the note has a server ID.
 - Opening an already-UNLISTED dialog performs the owner link GET only. Tokens are kept only in dialog memory, never in generic Knowledge responses, `localStorage` or `sessionStorage`. Regeneration requires a second inline confirmation and retains the old displayed link if the request fails.
 - Workspace pages resolve `/api/auth/me` on the server and redirect `401`/`403` responses to `/login`. Backend authorization remains authoritative.
 - Successful mutations revalidate `/`, `/search`, the stable Reading route and its Edit route.
@@ -300,6 +333,6 @@ Owner link-management requests use the same owner-scoped 404 boundary as CRUD. A
 
 ## Deferred API areas
 
-Collection/tag listing-management endpoints, attachments, revision diffs/labels/pruning, collaborative authorship and audit-grade history are intentionally not implemented yet. Existing owner endpoints remain authenticated regardless of visibility. `/k/{slug}` and `/s/{shareToken}` are real, separate anonymous read routes, and the authenticated Share Dialog now persists visibility and manages the single current UNLISTED link.
+Collection/tag listing-management endpoints, generic/non-image attachments, attachment deletion and orphan cleanup, revision diffs/labels/pruning, collaborative authorship and audit-grade history are intentionally not implemented yet. Existing owner endpoints remain authenticated regardless of visibility. `/k/{slug}` and `/s/{shareToken}` are real, separate anonymous read routes, and the authenticated Share Dialog now persists visibility and manages the single current UNLISTED link.
 
 Concurrent editing is still last-write-wins: there is no optimistic version field or multi-tab conflict resolution. Checkpoints improve recovery after a conflicting save, but they do not merge drafts or turn this feature into collaborative/audit history.

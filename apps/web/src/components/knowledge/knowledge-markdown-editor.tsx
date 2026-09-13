@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { resolveImageSource } from "@/lib/attachment-reference";
 
 type EditorStatus = "loading" | "ready" | "error";
 type CrepeInstance = import("@milkdown/crepe").Crepe;
@@ -9,16 +10,19 @@ interface KnowledgeMarkdownEditorProps {
   initialMarkdown: string;
   name?: string;
   onMarkdownChange: (markdown: string) => void;
+  knowledgeId?: number;
 }
 
 export function KnowledgeMarkdownEditor({
   initialMarkdown,
   name = "content",
   onMarkdownChange,
+  knowledgeId,
 }: KnowledgeMarkdownEditorProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [markdown, setMarkdown] = useState(initialMarkdown);
   const [status, setStatus] = useState<EditorStatus>("loading");
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -32,6 +36,31 @@ export function KnowledgeMarkdownEditor({
     const mountEditor = async () => {
       try {
         const { Crepe } = await import("@milkdown/crepe");
+        const uploadImage = async (file: File) => {
+          if (!knowledgeId) {
+            throw new Error("Create this note before uploading images");
+          }
+          setUploadError(null);
+          const formData = new FormData();
+          formData.set("file", file);
+          const response = await fetch(`/api/knowledge/${knowledgeId}/attachments/images`, {
+            method: "POST",
+            body: formData,
+          });
+          if (!response.ok) {
+            let message = "Image upload failed. Try again.";
+            try {
+              const error = (await response.json()) as { message?: string };
+              if (error.message) message = error.message;
+            } catch {
+              // Preserve the safe generic message for non-JSON infrastructure failures.
+            }
+            setUploadError(message);
+            throw new Error(message);
+          }
+          const attachment = (await response.json()) as { markdownSource: string };
+          return attachment.markdownSource;
+        };
 
         const instance = new Crepe({
           root,
@@ -39,9 +68,7 @@ export function KnowledgeMarkdownEditor({
           features: {
             [Crepe.Feature.TopBar]: true,
             [Crepe.Feature.AI]: false,
-            // Image upload belongs to the storage phase. Keep the authoring
-            // engine ready for it without exposing a control that cannot yet save.
-            [Crepe.Feature.ImageBlock]: false,
+            [Crepe.Feature.ImageBlock]: Boolean(knowledgeId),
           },
           featureConfigs: {
             [Crepe.Feature.Placeholder]: {
@@ -60,6 +87,18 @@ export function KnowledgeMarkdownEditor({
               searchPlaceholder: "Search language...",
               noResultText: "No matching language",
             },
+            ...(knowledgeId
+              ? {
+                  [Crepe.Feature.ImageBlock]: {
+                    onUpload: uploadImage,
+                    proxyDomURL: (source: string) =>
+                      resolveImageSource(source, { kind: "owner", knowledgeId }),
+                    onImageLoadError: () => {
+                      setUploadError("The image could not be loaded. Check your session and try again.");
+                    },
+                  },
+                }
+              : {}),
           },
         });
 
@@ -96,7 +135,7 @@ export function KnowledgeMarkdownEditor({
       crepe?.destroy();
       root.replaceChildren();
     };
-  }, [initialMarkdown, onMarkdownChange]);
+  }, [initialMarkdown, knowledgeId, onMarkdownChange]);
 
   return (
     <div className="knowledge-markdown-editor relative" data-editor-status={status}>
@@ -112,6 +151,12 @@ export function KnowledgeMarkdownEditor({
         <div className="min-h-[360px] px-4 py-4 text-[13px] text-[var(--danger)]">
           The Markdown editor could not be initialized.
         </div>
+      )}
+
+      {uploadError && (
+        <p className="border-t border-[var(--border)] px-4 py-2 text-[12px] text-[var(--danger)]" role="alert">
+          {uploadError}
+        </p>
       )}
 
       <textarea name={name} value={markdown} readOnly hidden aria-hidden="true" />

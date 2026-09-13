@@ -27,6 +27,7 @@ This roadmap represents the current direction, not a release commitment.
 - public slug page — complete at `/k/{slug}`
 - server-managed UNLISTED bearer link and persisted Share Dialog — complete at `/s/{shareToken}`
 - checkpoint-based revision history and authoring restore — complete at `/knowledge/{slug}/history`
+- secure image attachments with private S3-compatible storage and Crepe ImageBlock — complete
 
 ### Completed backend vertical slice
 
@@ -55,12 +56,12 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-The recommended next milestone is attachments/images via object storage, with syntax highlighting or richer collection management as smaller alternatives.
+The recommended next milestone is attachment lifecycle/retention cleanup, with syntax highlighting or richer collection management as smaller alternatives. Generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
 - Unlisted visibility/share token — complete, including Reading/Edit Share Dialog wiring
-- attachments/images via R2 or MinIO
+- attachments/images via R2 or MinIO — complete for secure images and access-scoped delivery; deletion/orphan retention is deferred
 - revision history — complete for checkpoint list/preview/restore; diffs, labels and retention remain deferred
 - richer collection management/navigation
 - table of contents — complete for persisted Markdown H2-H4 headings
