@@ -50,6 +50,26 @@ Because this is a monorepo, agents should inspect both `apps/web` and `apps/api`
 
 Do not assume that living in one repository means the applications must be deployed together.
 
+## CI and verification workflow
+
+GitHub Actions is the authoritative full regression gate for committed changes. The workflow at `.github/workflows/ci.yml` validates the independently buildable Web and API applications on pushes to `main`, pull requests targeting `main`, and manual dispatches.
+
+During feature work, coding agents should:
+
+1. run focused tests for the code they changed while iterating
+2. run relevant lint/type/build checks when they are useful for catching local issues early
+3. avoid repeatedly rerunning unrelated full suites unless a change crosses those boundaries or a failure requires it
+4. after pushing, inspect the GitHub Actions result rather than assuming CI passed
+5. if CI fails, inspect the failed job and step first, fix the root cause, then rerun the appropriate checks
+6. never report GitHub Actions as passing unless the actual workflow run was checked
+
+The CI workflow intentionally owns the repeatable full regression work:
+
+- Web: clean dependency install, tests, lint and production build
+- API: Java 17 Gradle clean build, including the test suite and Testcontainers-backed integration tests
+
+CI does not replace milestone-specific real-stack verification when a change affects runtime integration, persistence, authentication, networking, object storage, browser behavior or external providers. Live Google OAuth and Cloudflare R2 checks remain explicit manual smoke tests when real credentials are available.
+
 ## Documentation discipline
 
 When an implementation changes an agreed architecture/design decision, update the appropriate document in the same change.

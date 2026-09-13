@@ -44,6 +44,7 @@ The web and API applications remain independently buildable and deployable even 
 - The shared Reading/Edit Share Dialog now persists PRIVATE/PUBLIC/UNLISTED through an owner-scoped focused visibility mutation. PUBLIC links use `/k/{slug}`; UNLISTED links are loaded and explicitly rotatable through the backend-managed `/s/{shareToken}` contract without placing tokens in generic Knowledge state or browser storage.
 - Owner-scoped revision history is available at `/knowledge/{slug}/history`, with compact paginated snapshots, full Markdown preview, interval-limited autosave checkpoints and safe restore that preserves stable URLs and all sharing state.
 - Secure images are stored in a private S3-compatible bucket (MinIO locally, R2-compatible for deployment). Persisted Crepe editors upload PNG/JPEG/WebP/GIF and save stable `attachment://<UUID>` Markdown references; owner, PUBLIC, UNLISTED and history views resolve them through access-scoped application routes.
+- GitHub Actions CI independently validates the Web and API applications on pushes to `main`, pull requests targeting `main`, and manual runs.
 
 ## Core product direction
 
@@ -68,6 +69,19 @@ Read these before implementing features:
 - [`docs/ROADMAP.md`](docs/ROADMAP.md)
 
 For AI-assisted UI work, `docs/DESIGN.md` is the design constitution and must be read before implementing or modifying UI.
+
+## Continuous integration
+
+The repository uses [`.github/workflows/ci.yml`](.github/workflows/ci.yml) as the repeatable full regression gate.
+
+It runs on pushes to `main`, pull requests targeting `main`, and manual dispatches with two independent jobs:
+
+- **Web** — Node.js 20, `npm ci`, `npm test`, `npm run lint`, `npm run build`
+- **API** — Java 17, Gradle dependency caching, `./gradlew clean build --no-daemon`
+
+The API build includes the test suite, including Testcontainers-backed PostgreSQL/MinIO integration tests where the tests require them. GitHub-hosted Linux runners provide Docker for Testcontainers, so CI does not maintain a second PostgreSQL/MinIO service definition.
+
+CI intentionally does not pretend to replace environment-specific smoke tests such as live Google OAuth or Cloudflare R2. Those remain manual checks when real credentials are available. See [`docs/AI_CODING_GUIDELINES.md`](docs/AI_CODING_GUIDELINES.md) for how coding agents should use CI without repeatedly rerunning unrelated full suites during iteration.
 
 ## Run the backend locally
 
