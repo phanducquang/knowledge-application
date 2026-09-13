@@ -56,7 +56,7 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-The recommended next milestone is attachment lifecycle/retention cleanup, with syntax highlighting or richer collection management as smaller alternatives. Generic files and image processing remain separate work.
+The recommended next milestone is attachment lifecycle/retention cleanup, with richer collection management as a smaller alternative. Generic files, image processing and Mermaid remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
@@ -65,7 +65,7 @@ The recommended next milestone is attachment lifecycle/retention cleanup, with s
 - revision history — complete for checkpoint list/preview/restore; diffs, labels and retention remain deferred
 - richer collection management/navigation
 - table of contents — complete for persisted Markdown H2-H4 headings
-- syntax highlighting
+- syntax highlighting — complete for fenced Markdown code across every shared reading surface
 - Mermaid
 
 ## Phase 3 — Knowledge relationships

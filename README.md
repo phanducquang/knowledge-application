@@ -44,6 +44,7 @@ The web and API applications remain independently buildable and deployable even 
 - The shared Reading/Edit Share Dialog now persists PRIVATE/PUBLIC/UNLISTED through an owner-scoped focused visibility mutation. PUBLIC links use `/k/{slug}`; UNLISTED links are loaded and explicitly rotatable through the backend-managed `/s/{shareToken}` contract without placing tokens in generic Knowledge state or browser storage.
 - Owner-scoped revision history is available at `/knowledge/{slug}/history`, with compact paginated snapshots, full Markdown preview, interval-limited autosave checkpoints and safe restore that preserves stable URLs and all sharing state.
 - Secure images are stored in a private S3-compatible bucket (MinIO locally, R2-compatible for deployment). Persisted Crepe editors upload PNG/JPEG/WebP/GIF and save stable `attachment://<UUID>` Markdown references; owner, PUBLIC, UNLISTED and history views resolve them through access-scoped application routes.
+- Fenced Markdown code blocks use restrained syntax highlighting across private, PUBLIC, UNLISTED and History reading surfaces while canonical Markdown, inline code and unknown-language fallback remain unchanged.
 - GitHub Actions CI independently validates the Web and API applications on pushes to `main`, pull requests targeting `main`, and manual runs.
 
 ## Core product direction

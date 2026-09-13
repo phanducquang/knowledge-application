@@ -29,6 +29,7 @@ Next.js application for the Knowledge Application workspace.
 - one persisted Share Dialog shared by Reading/Edit, with real PUBLIC links and backend-managed UNLISTED link retrieval/confirmed rotation
 - protected `/knowledge/{slug}/history` with paginated checkpoints, selected full-Markdown preview and confirmed restore
 - persisted Crepe Edit mode with secure image upload and stable `attachment://<UUID>` references rendered in owner, PUBLIC, UNLISTED and History contexts
+- shared fenced-code syntax highlighting for private, PUBLIC, UNLISTED and History rendering
 
 Before implementing or modifying UI, read:
 
@@ -93,6 +94,14 @@ Crepe ImageBlock is enabled only when editing an already-persisted Knowledge ite
 Markdown stores `attachment://<UUID>`, never a MinIO/R2 URL or temporary signature. Crepe `proxyDomURL` and the shared Markdown renderer resolve that stable reference to the appropriate same-origin owner, PUBLIC or UNLISTED image route. Revision History uses the owner context, so an old revision can render the same retained object. Object-storage endpoints and credentials remain backend-only and must never use `NEXT_PUBLIC_*`.
 
 The frontend intentionally does not implement generic files, attachment browsing/deletion, image processing or direct object-storage access. Upload/stream validation and authorization remain authoritative in Spring Boot.
+
+## Syntax highlighting
+
+`KnowledgeMarkdown` remains the only persisted-Markdown renderer. It uses lowlight 3.3/highlight.js 11.11 with a controlled 16-grammar bundle and converts the resulting HAST text/span nodes directly to React. It does not inject generated HTML, enable raw Markdown HTML, auto-detect languages or execute code.
+
+The initial set covers Java, JavaScript/JSX, TypeScript/TSX, JSON, YAML, SQL, Bash/shell, Python, HTML/XML, CSS, Markdown, Kotlin, Dockerfile, properties/INI, Gradle and Nginx. Common aliases such as `js`, `ts`, `sh`, `shell`, `yml`, `html`, `properties`, `docker`, `jsx` and `tsx` normalize to those grammars. Unknown and missing language identifiers render as plain fenced code without failing; inline code retains its compact existing style.
+
+History is a Client Component and imports `KnowledgeMarkdown`, so the highlighter is intentionally compatible with both client and server rendering rather than server-only. Private, PUBLIC and UNLISTED routes still server-render their initial article output through that same component. Only the selected grammars enter the client graph; the editor keeps Crepe's existing CodeMirror behavior and canonical fenced Markdown unchanged.
 
 ## Validate
 

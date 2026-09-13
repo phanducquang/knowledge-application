@@ -8,6 +8,7 @@ import {
   type ImageAccessContext,
 } from "@/lib/attachment-reference";
 import { createHeadingSlugger } from "@/lib/markdown";
+import { KnowledgeCodeBlock } from "@/components/knowledge/knowledge-code-block";
 
 function textFromChildren(children: ReactNode): string {
   return Children.toArray(children)
@@ -94,9 +95,7 @@ export function KnowledgeMarkdown({
           ol: ({ children }) => (
             <ol className="my-4 list-decimal space-y-2 pl-5 text-[var(--text-muted)] marker:font-medium marker:text-[var(--accent-strong)]">{children}</ol>
           ),
-          pre: ({ children }) => (
-            <pre className="my-5 overflow-x-auto border-y border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-4 text-[13px] leading-6 text-[var(--text)]">{children}</pre>
-          ),
+          pre: KnowledgeCodeBlock,
           code: ({ children, className }) => (
             <code className={className ?? "rounded-[3px] bg-[var(--surface-muted)] px-1 py-0.5 text-[0.88em] text-[var(--accent-strong)]"}>{children}</code>
           ),

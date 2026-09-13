@@ -57,6 +57,63 @@ samp {
   font-family: var(--font-geist-mono), monospace;
 }
 
+.article-content pre code {
+  display: block;
+  min-width: max-content;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  white-space: pre;
+}
+
+.article-content .hljs-comment,
+.article-content .hljs-quote {
+  color: var(--text-subtle);
+  font-style: italic;
+}
+
+.article-content .hljs-keyword,
+.article-content .hljs-selector-tag,
+.article-content .hljs-literal,
+.article-content .hljs-section,
+.article-content .hljs-link {
+  color: var(--accent-strong);
+}
+
+.article-content .hljs-string,
+.article-content .hljs-title,
+.article-content .hljs-name,
+.article-content .hljs-type,
+.article-content .hljs-attribute,
+.article-content .hljs-symbol,
+.article-content .hljs-bullet,
+.article-content .hljs-addition {
+  color: var(--success);
+}
+
+.article-content .hljs-number,
+.article-content .hljs-meta,
+.article-content .hljs-built_in,
+.article-content .hljs-params {
+  color: var(--warning);
+}
+
+.article-content .hljs-variable,
+.article-content .hljs-template-variable,
+.article-content .hljs-regexp,
+.article-content .hljs-deletion {
+  color: var(--danger);
+}
+
+.article-content .hljs-emphasis {
+  font-style: italic;
+}
+
+.article-content .hljs-strong {
+  font-weight: 650;
+}
+
 .knowledge-markdown-editor {
   min-height: 760px;
   background: var(--surface);

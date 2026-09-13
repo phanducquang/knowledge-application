@@ -18,6 +18,14 @@ Approved shell rule:
 
 The current reference UI phase is complete. Future implementation work should preserve the approved interaction and visual language unless a real product/backend constraint requires a documented change.
 
+Markdown rendering responsibility:
+
+- `KnowledgeMarkdown` is the single renderer for private, PUBLIC, UNLISTED and History content; do not duplicate syntax-highlighting paths
+- fenced code highlighting uses the controlled lowlight/highlight.js grammar registry in `src/lib/syntax-highlighting.ts`; do not add a competing highlighter or automatic language detection
+- History imports the renderer through a Client Component boundary, so renderer dependencies must remain browser-compatible and bundle-conscious
+- preserve canonical fenced Markdown, plain fallback for unknown/missing languages, compact inline code, horizontal scrolling and the restrained token theme
+- raw HTML remains disabled; never introduce `rehype-raw` or `dangerouslySetInnerHTML` for highlighting
+
 Editor responsibility:
 
 - user-editable Knowledge fields belong in the editor: title, summary, Markdown content, visibility, collection and tags

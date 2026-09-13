@@ -144,7 +144,7 @@ The V1 schema intentionally keeps slugs globally unique. This now supports unamb
 
 Knowledge reads use an entity graph for Collection and Tags so the list endpoint does not issue one metadata query per Knowledge row. API responses sort tag display names case-insensitively for deterministic output; tag membership itself is a set rather than an ordered domain relationship.
 
-The Reading Page renders the persisted Markdown with a safe Markdown-to-React pipeline and GitHub-flavored Markdown support. Raw HTML is not enabled. H2-H4 table-of-contents anchors and approximate read time are derived at render time and are not persisted.
+The Reading Page renders persisted Markdown through the shared `KnowledgeMarkdown` React pipeline with GitHub-flavored Markdown support. Fenced blocks are highlighted from their explicit language identifiers by a client-compatible lowlight/highlight.js HAST pipeline with a controlled grammar set; unknown or absent languages remain plain code and no auto-detection runs. The renderer converts only lowlight's structured text/span nodes to React, while arbitrary raw HTML stays disabled. This dependency is client-compatible because History is an interactive Client Component that imports the same renderer; private, PUBLIC and UNLISTED pages still server-render their initial output. H2-H4 table-of-contents anchors and approximate read time are derived at render time and are not persisted.
 
 ## 5. Visibility model
 
