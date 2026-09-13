@@ -110,8 +110,8 @@ public class KnowledgeService {
             String collectionName,
             List<String> tagNames
     ) {
-        Knowledge knowledge = getById(id);
-        UUID ownerId = currentOwner.id();
+        Knowledge knowledge = getByIdForMutation(id);
+        UUID ownerId = knowledge.getOwnerId();
         KnowledgeCollection collection = resolveCollection(ownerId, collectionName);
         Set<Tag> tags = resolveTags(ownerId, tagNames == null ? List.of() : tagNames);
         if (authoringChanged(knowledge, title, summary, content, collection, tags)) {
@@ -128,14 +128,14 @@ public class KnowledgeService {
 
     @Transactional
     public Knowledge updateVisibility(Long id, Visibility visibility) {
-        Knowledge knowledge = getById(id);
+        Knowledge knowledge = getByIdForMutation(id);
         applyVisibility(knowledge, visibility);
         return knowledge;
     }
 
     @Transactional
     public void delete(Long id) {
-        Knowledge knowledge = getById(id);
+        Knowledge knowledge = getByIdForMutation(id);
         // Queue object keys in the same PostgreSQL transaction before ON DELETE CASCADE
         // removes attachment metadata. A later idempotent storage cleanup can then retry.
         attachmentLifecycleService.enqueueKnowledgeDeletion(id);
@@ -153,16 +153,16 @@ public class KnowledgeService {
 
     @Transactional
     public Knowledge regenerateUnlistedLink(Long id) {
-        Knowledge knowledge = getById(id);
+        Knowledge knowledge = getByIdForMutation(id);
         replaceShareToken(knowledge);
         return knowledge;
     }
 
     @Transactional
     public Knowledge restoreRevision(Long knowledgeId, Long revisionId) {
-        Knowledge knowledge = getById(knowledgeId);
+        Knowledge knowledge = getByIdForMutation(knowledgeId);
         KnowledgeRevision revision = revisionService.get(knowledgeId, revisionId);
-        UUID ownerId = currentOwner.id();
+        UUID ownerId = knowledge.getOwnerId();
         KnowledgeCollection collection = resolveCollection(ownerId, revision.getCollectionName());
         Set<Tag> tags = resolveTags(ownerId, revision.getTags());
 
@@ -177,6 +177,16 @@ public class KnowledgeService {
         knowledge.updateContent(revision.getContent());
         knowledge.replaceMetadata(collection, tags);
         return knowledge;
+    }
+
+    private Knowledge getByIdForMutation(Long id) {
+        UUID ownerId = currentOwner.id();
+        // Lock the owner-scoped parent before reading mutable authoring state. Cleanup takes
+        // the same parent lock before deleting an object, so a concurrent autosave cannot
+        // successfully add a reference immediately after cleanup has decided it is dead.
+        repository.lockIdByIdAndOwnerId(id, ownerId);
+        return repository.findByIdAndOwnerId(id, ownerId)
+                .orElseThrow(KnowledgeNotFoundException::new);
     }
 
     private String nextAvailableSlug(String title) {
