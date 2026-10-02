@@ -9,6 +9,7 @@ import {
 } from "@/lib/attachment-reference";
 import { createHeadingSlugger } from "@/lib/markdown";
 import { KnowledgeCodeBlock } from "@/components/knowledge/knowledge-code-block";
+import { remarkWikiLinks, type WikiTarget } from "@/lib/wiki-links";
 
 function textFromChildren(children: ReactNode): string {
   return Children.toArray(children)
@@ -27,9 +28,11 @@ function textFromChildren(children: ReactNode): string {
 export function KnowledgeMarkdown({
   markdown,
   imageContext,
+  wikiTargets,
 }: {
   markdown: string;
   imageContext: ImageAccessContext;
+  wikiTargets?: WikiTarget[];
 }) {
   const nextHeadingId = createHeadingSlugger();
   const heading = (level: 2 | 3 | 4, children: ReactNode) => {
@@ -47,7 +50,9 @@ export function KnowledgeMarkdown({
   return (
     <div className="article-content text-[16px] leading-[1.72] text-[var(--text)]">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={wikiTargets
+          ? [remarkGfm, [remarkWikiLinks, { source: markdown, targets: wikiTargets }]]
+          : [remarkGfm]}
         urlTransform={(url, key) => {
           if (key === "src" && attachmentIdFromReference(url)) {
             return resolveImageSource(url, imageContext);

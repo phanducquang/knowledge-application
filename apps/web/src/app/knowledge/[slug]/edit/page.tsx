@@ -6,10 +6,8 @@ import {
   KnowledgeApiError,
   listKnowledge,
 } from "@/lib/api/knowledge";
-import {
-  knowledgeCollectionOptions,
-  toKnowledgeListItem,
-} from "@/lib/knowledge-mapping";
+import { toKnowledgeListItem } from "@/lib/knowledge-mapping";
+import { listCollections } from "@/lib/api/collections";
 import { requireCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -21,11 +19,13 @@ export default async function KnowledgeEditorPage(props: {
   const { slug } = await props.params;
   let knowledge;
   let allKnowledge;
+  let collections;
 
   try {
-    [knowledge, allKnowledge] = await Promise.all([
+    [knowledge, allKnowledge, collections] = await Promise.all([
       getKnowledgeBySlug(slug),
       listKnowledge(),
+      listCollections(),
     ]);
   } catch (error) {
     if (error instanceof KnowledgeApiError && error.status === 404) {
@@ -39,7 +39,7 @@ export default async function KnowledgeEditorPage(props: {
       <KnowledgeEditor
         mode="edit"
         initialKnowledge={knowledge}
-        collectionOptions={knowledgeCollectionOptions(allKnowledge)}
+        collectionOptions={collections.map((collection) => collection.name)}
       />
     </WorkspaceShell>
   );

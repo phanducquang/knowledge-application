@@ -19,6 +19,8 @@ Next.js application for the Knowledge Application workspace.
 - explicit `/knowledge/new` creation flow through a Server Action
 - persisted Edit initialization plus serialized, coalescing 700 ms autosave
 - visibility, collection and tags persist with full replacement semantics
+- owner-scoped `/collections` management with create, rename and delete; sidebar counts include empty collections, and `/collections/{id}` filters notes without changing the approved reading/editor layout
+- owner Reading resolves `[[stable-slug]]` prose references to owned notes and lists backlinks below the article; unresolved references remain literal, and external PUBLIC/UNLISTED readers never receive owner-only navigation
 - safe GFM rendering, dynamic H2-H4 table of contents and calculated read time
 - Full Search and typed Quick Search consume the same backend-ranked PostgreSQL search through a focused same-origin Route Handler
 - empty Quick Search continues to show recently updated owner Knowledge
@@ -59,7 +61,9 @@ Do not use a `NEXT_PUBLIC_*` variable for either backend URL or for Google crede
 
 Open `http://localhost:3000`. Unauthenticated workspace requests are resolved against the authoritative backend session and redirect to `/login`. The browser enters Google login through `/api/auth/login`; after an authorized login, Spring redirects to `/`. The sidebar posts logout through `/api/auth/logout`, which obtains a CSRF token server-side, invalidates the backend session and forwards the clearing cookie before redirecting to `/login`.
 
-Every backend read forwards the incoming session cookie on the Next.js server. `POST`/`PUT`/`PATCH` Server Actions first fetch `/api/auth/csrf` using the same cookie and then attach the returned header/token. Client Components do not read the HttpOnly session or receive OAuth secrets.
+Every backend read forwards the incoming session cookie on the Next.js server. `POST`/`PUT`/`PATCH`/`DELETE` Server Actions first fetch `/api/auth/csrf` using the same cookie and then attach the returned header/token. Client Components do not read the HttpOnly session or receive OAuth secrets.
+
+Collection summaries come from the backend independently of the current note list. This keeps empty collections visible in the sidebar and selection controls. The management page confirms deletion inline; deleting a Collection unfiles its notes rather than deleting them. Collection routes and the workspace shell remain private and server-rendered.
 
 Interactive search calls the same-origin `/api/knowledge-search` BFF route. It is intentionally narrow: the Spring Boot base URL remains server-only, typed searches are debounced and bounded, stale requests are aborted/versioned, and API failures show an error state rather than falling back to browser-side ranking.
 The BFF forwards the incoming authenticated session and returns `401` rather than bypassing backend security when the session is absent.

@@ -9,6 +9,7 @@ import {
   getKnowledgeBySlug,
   KnowledgeApiError,
   listKnowledge,
+  listKnowledgeBacklinks,
 } from "@/lib/api/knowledge";
 import {
   formatKnowledgeDate,
@@ -26,12 +27,14 @@ export default async function KnowledgeReadingPage(props: {
   const { slug } = await props.params;
   let article;
   let allKnowledge;
+  let backlinks;
 
   try {
     [article, allKnowledge] = await Promise.all([
       getKnowledgeBySlug(slug),
       listKnowledge(),
     ]);
+    backlinks = await listKnowledgeBacklinks(article.id);
   } catch (error) {
     if (error instanceof KnowledgeApiError && error.status === 404) {
       notFound();
@@ -39,7 +42,11 @@ export default async function KnowledgeReadingPage(props: {
     throw error;
   }
 
-  const toc = extractMarkdownHeadings(article.content);
+  const wikiTargets = allKnowledge.map(({ slug: targetSlug, title }) => ({ slug: targetSlug, title }));
+  const toc = extractMarkdownHeadings(
+    article.content,
+    new Map(wikiTargets.map(({ slug: targetSlug, title }) => [targetSlug, title])),
+  );
   const readTime = calculateReadTime(article.content);
   const topicLabel = article.tags[0] ?? "Knowledge";
 
@@ -108,6 +115,7 @@ export default async function KnowledgeReadingPage(props: {
                 <KnowledgeMarkdown
                   markdown={article.content}
                   imageContext={{ kind: "owner", knowledgeId: article.id }}
+                  wikiTargets={wikiTargets}
                 />
               ) : (
                 <p className="py-8 text-[14px] italic text-[var(--text-subtle)]">This note has no Markdown content yet.</p>
@@ -122,6 +130,29 @@ export default async function KnowledgeReadingPage(props: {
                   {article.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}
                 </div>
               </footer>
+
+              <section className="mt-10 border-t border-[var(--border)] pt-6" aria-labelledby="backlinks-heading">
+                <div className="flex items-baseline justify-between gap-4">
+                  <h2 id="backlinks-heading" className="text-[13px] font-medium text-[var(--text-muted)]">Backlinks</h2>
+                  <span className="text-[12px] tabular-nums text-[var(--text-subtle)]">{backlinks.length}</span>
+                </div>
+                {backlinks.length > 0 ? (
+                  <ul className="mt-3 border-t border-[var(--border)]">
+                    {backlinks.map((source) => (
+                      <li key={source.id} className="border-b border-[var(--border)] py-3">
+                        <Link href={`/knowledge/${source.slug}`} className="text-[14px] font-medium text-[var(--text)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
+                          {source.title}
+                        </Link>
+                        <time dateTime={source.updatedAt} className="ml-3 text-[12px] text-[var(--text-subtle)]">
+                          {formatKnowledgeDate(source.updatedAt)}
+                        </time>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-3 text-[13px] text-[var(--text-subtle)]">No notes link here yet.</p>
+                )}
+              </section>
             </article>
 
             <ArticleToc variant="aside" sections={toc} />

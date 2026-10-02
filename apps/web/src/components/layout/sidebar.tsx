@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { CurrentUser } from "@/lib/backend-auth";
+import type { CollectionData } from "@/types/collection";
 
 interface SidebarProps {
-  collections: string[];
+  collections: CollectionData[];
   currentPath?: string;
   onNavigate?: () => void;
   onClose?: () => void;
@@ -104,12 +105,23 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
           <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-subtle)]">Collections</p>
           <div className="space-y-0.5">
             {collections.map((collection) => (
-              <NavLink key={collection} onNavigate={onNavigate}>{collection}</NavLink>
+              <NavLink
+                key={collection.id}
+                href={`/collections/${collection.id}`}
+                active={currentPath === `/collections/${collection.id}`}
+                onNavigate={onNavigate}
+              >
+                <span className="flex items-center justify-between gap-2">
+                  <span className="min-w-0 truncate">{collection.name}</span>
+                  <span className="text-[11px] tabular-nums text-[var(--text-subtle)]">{collection.knowledgeCount}</span>
+                </span>
+              </NavLink>
             ))}
             {collections.length === 0 && (
               <p className="px-3 py-1.5 text-[12px] text-[var(--text-subtle)]">No collections yet</p>
             )}
           </div>
+          <NavLink href="/collections" active={currentPath === "/collections"} onNavigate={onNavigate}>Manage collections</NavLink>
         </div>
 
         <div className="mt-7">

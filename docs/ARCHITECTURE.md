@@ -2,7 +2,7 @@
 
 ## 1. Architecture goal
 
-Build a personal knowledge application that is simple to operate initially but has a clear path toward public sharing, revision history, backlinks and AI-assisted retrieval.
+Build a personal knowledge application that is simple to operate initially, with public sharing, revision recovery and owner-only wiki links/backlinks now available and a clear path toward richer relationships and AI-assisted retrieval.
 
 The system uses a monorepo containing two independent applications:
 
@@ -73,7 +73,7 @@ An alternative deployment may expose the API on a dedicated subdomain. The repos
 
 The current web integration keeps the Spring Boot base URL server-only through `KNOWLEDGE_API_BASE_URL`. Knowledge routes are dynamically rendered and API reads use `cache: no-store`, preventing mutable owner data from becoming a static Next.js artifact. Browser mutations call small Next.js Server Actions, which send only the six editable fields to Spring Boot and revalidate the affected Library, Reading, Edit and Search paths. This is transport orchestration, not a second domain or authorization layer.
 
-The workspace shell receives the real owner-scoped Knowledge list for recently updated Quick Search content and derives Collection labels from that data. Non-empty Full Search and Quick Search queries share PostgreSQL ranking through one Spring endpoint. Interactive browser queries use a focused same-origin Next.js Route Handler, which calls the existing server-only API client; no generic backend proxy or public API base URL is introduced.
+The workspace shell receives the real owner-scoped Knowledge list for recently updated Quick Search content and independently loads owner-scoped Collection summaries. Empty collections therefore remain navigable, and Create/Edit can select them before any note belongs to them. `/collections` uses narrow CSRF-aware Server Actions for management; `/collections/{id}` renders the filtered owner list. Non-empty Full Search and Quick Search queries share PostgreSQL ranking through one Spring endpoint. Interactive browser queries use a focused same-origin Next.js Route Handler, which calls the existing server-only API client; no generic backend proxy or public API base URL is introduced.
 
 Spring Security is the authoritative authentication layer. Google OAuth2/OIDC establishes a normal server-side `HttpSession`; the browser holds only an HttpOnly `JSESSIONID`. Next.js Server Components, Server Actions and the focused Search BFF forward the incoming cookie server-side. Workspace routes verify the session through `/api/auth/me`, while Spring independently protects every owner CRUD/Search endpoint.
 
@@ -140,6 +140,8 @@ The opaque token is stored retrievably rather than hashed because the owner-mana
 
 Collection and Tag are persisted as reusable owner-scoped entities. `knowledge.collection_id` models the optional many-to-one collection association, while `knowledge_tag` models the many-to-many tag association. Deleting Knowledge cascades only to its join rows; reusable Tag and Collection rows are retained.
 
+Collection management queries always include the current owner. Its list projection counts owned notes, including zero for empty collections, and sorts by normalized display name and ID. Renaming preserves the Collection ID and note associations; revision snapshots intentionally keep their historical denormalized name. Deleting a Collection follows V2's `ON DELETE SET NULL`: notes become unfiled, while their content, slugs, sharing state, attachments and revisions remain. This requires no new schema migration.
+
 Both metadata tables store a stable display name and a PostgreSQL-generated `normalized_name`. Uniqueness on `(owner_id, normalized_name)` prevents case-only or surrounding-whitespace duplicates for one owner without requiring a database extension, while allowing the same name for different owners. The application also collapses internal whitespace and removes leading `#` characters from tag display names before persistence.
 
 The current CRUD API preserves the server-side `APP_OWNER_ID` as the persisted owner partition. It is not proof of identity and cannot grant access by itself. `CurrentOwner` first requires an authenticated OIDC principal whose Google email is verified and equals the backend-only `AUTH_ALLOWED_EMAIL` value case-insensitively, then returns the configured UUID. API payloads cannot choose or modify `owner_id`, and repository reads remain owner-scoped.
@@ -147,6 +149,8 @@ The current CRUD API preserves the server-side `APP_OWNER_ID` as the persisted o
 The V1 schema intentionally keeps slugs globally unique. This now supports unambiguous public `/k/{slug}` lookup and means collision suffixes are selected globally rather than per owner. Workspace and public URLs reuse the same stable slug; visibility changes never regenerate it. Owner workspace reads by slug still include `owner_id`, while the separate anonymous lookup includes `visibility = PUBLIC` in its repository query.
 
 Knowledge reads use an entity graph for Collection and Tags so the list endpoint does not issue one metadata query per Knowledge row. API responses sort tag display names case-insensitively for deterministic output; tag membership itself is a set rather than an ordered domain relationship.
+
+The first relationship slice uses canonical `[[stable-slug]]` references in Markdown. Owner Reading resolves only slugs in the authenticated owner's note list; anonymous PUBLIC/UNLISTED and historical views retain literal wiki text rather than following private workspace routes. The owner-only backlinks endpoint first verifies the target by ID and owner, then queries same-owner Markdown candidates containing the literal token and validates them outside code/escapes. Results are current-state, deterministic and require no Flyway migration or write-path synchronization. This is intentionally a scan-based personal-library implementation; a stored edge index and backfill can follow if the library grows, without changing stable slug semantics.
 
 The Reading Page renders persisted Markdown through the shared `KnowledgeMarkdown` React pipeline with GitHub-flavored Markdown support. Fenced blocks are highlighted from their explicit language identifiers by a client-compatible lowlight/highlight.js HAST pipeline with a controlled grammar set; unknown or absent languages remain plain code and no auto-detection runs. Explicit `mermaid` fences are intercepted before highlighting and delegated to a focused Client Component, which lazy-loads Mermaid only when a diagram is mounted. Mermaid runs locally with strict security, HTML labels and click behavior disabled, internally generated render IDs, bounded input/edge limits, stale-render protection and a source-preserving error fallback. Its generated SVG is the only narrowly scoped generated markup insertion; arbitrary raw Markdown HTML remains disabled. History is already an interactive Client Component, while private, PUBLIC and UNLISTED pages still server-render their initial article shell and hydrate only diagram blocks. Canonical Markdown remains the sole persisted/revision/search representation. H2-H4 table-of-contents anchors and approximate read time are derived at render time and are not persisted.
 
@@ -209,8 +213,7 @@ No application User table exists yet. A future multi-user milestone can map the 
 Not part of the initial implementation, but architecture should not block:
 
 - revision diffs, labels, pruning/export and collaborative audit history
-- backlinks
-- `[[Wiki Links]]`
+- indexed links, richer wiki-link syntax and cross-note relationship tooling beyond the first owner-only `[[stable-slug]]`/backlink slice
 - knowledge graph
 - semantic search
 - Ask My Knowledge

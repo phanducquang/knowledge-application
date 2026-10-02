@@ -26,8 +26,13 @@ export function createHeadingSlugger() {
   };
 }
 
-function plainHeadingLabel(markdown: string) {
-  return markdown
+function plainHeadingLabel(markdown: string, wikiTitles?: ReadonlyMap<string, string>) {
+  const heading = wikiTitles
+    ? markdown.replace(/(?<!\\)\[\[([a-z0-9]+(?:-[a-z0-9]+)*)\]\]/g,
+        (reference, slug: string) => wikiTitles.get(slug) ?? reference)
+    : markdown;
+  return heading
+    .replace(/\\(?=\[)/g, "")
     .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/`([^`]*)`/g, "$1")
@@ -35,7 +40,10 @@ function plainHeadingLabel(markdown: string) {
     .trim();
 }
 
-export function extractMarkdownHeadings(markdown: string): MarkdownHeading[] {
+export function extractMarkdownHeadings(
+  markdown: string,
+  wikiTitles?: ReadonlyMap<string, string>,
+): MarkdownHeading[] {
   const headings: MarkdownHeading[] = [];
   const nextSlug = createHeadingSlugger();
   let fence: { marker: "`" | "~"; length: number } | null = null;
@@ -62,7 +70,7 @@ export function extractMarkdownHeadings(markdown: string): MarkdownHeading[] {
       continue;
     }
 
-    const label = plainHeadingLabel(headingMatch[2]);
+    const label = plainHeadingLabel(headingMatch[2], wikiTitles);
     if (!label) {
       continue;
     }

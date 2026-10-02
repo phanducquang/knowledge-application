@@ -36,6 +36,8 @@ The web and API applications remain independently buildable and deployable even 
 - `apps/web`: approved Next.js reference UI connected server-side to the Knowledge CRUD API for the real List, Reading, Create, Edit, Search and Quick Search workflows.
 - `apps/api`: initialized with Java 17, Spring Boot, Gradle Wrapper, PostgreSQL/JPA, Flyway and Actuator health checks.
 - Flyway-managed Knowledge, reusable Collection and reusable Tag persistence are implemented, together with the owner-scoped Knowledge CRUD API.
+- Owner-scoped Collection management is available at `/collections`: create, rename and delete reusable collections, including empty ones. The sidebar shows real counts, and `/collections/{id}` lists only that collection's notes. Deletion unfiles notes without deleting their content or history.
+- Owner Reading recognizes `[[stable-slug]]` wiki links and shows backlinks from other owned notes. Anonymous PUBLIC/UNLISTED pages never resolve these into private workspace links.
 - Create/Edit persist title, summary, Markdown, visibility, collection and tags; existing notes use serialized debounced autosave.
 - PostgreSQL Full Text Search is implemented across Knowledge text and metadata. Full Search and typed Quick Search share the owner-scoped backend ranking through a focused same-origin Next.js boundary.
 - Google OAuth2/OIDC authentication is implemented with Spring Security and a server-side HTTP session. One verified allowlisted Google email may act as the stable configured `APP_OWNER_ID`; configuration alone no longer grants access. The live Google OAuth flow has been verified separately from CI.

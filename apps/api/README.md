@@ -122,6 +122,46 @@ curl -i -X DELETE http://localhost:8080/api/knowledge/1 \
 
 On update, `collection: null` removes the collection and `tags: []` removes all tags. Metadata names are trimmed and matched case-insensitively within the current owner. A leading `#` is removed from tag names.
 
+## Collection management examples
+
+Collections can be created before they contain a note. Use the same authenticated session and CSRF token as Knowledge CRUD:
+
+```bash
+curl -b 'JSESSIONID=<authenticated-session>' http://localhost:8080/api/collections
+
+curl -X POST http://localhost:8080/api/collections \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'X-CSRF-TOKEN: <csrf-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Backend"}'
+
+curl -b 'JSESSIONID=<authenticated-session>' http://localhost:8080/api/collections/1
+curl -b 'JSESSIONID=<authenticated-session>' http://localhost:8080/api/collections/1/knowledge
+
+curl -X PUT http://localhost:8080/api/collections/1 \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'X-CSRF-TOKEN: <csrf-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Platform backend"}'
+
+curl -i -X DELETE http://localhost:8080/api/collections/1 \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'X-CSRF-TOKEN: <csrf-token>'
+```
+
+The collection response contains `id`, `name` and `knowledgeCount`; requests can write only `name`. Names are trimmed, internal whitespace is collapsed and uniqueness is case-insensitive within an owner. Duplicate names return `409 COLLECTION_NAME_CONFLICT`; missing or differently owned IDs return `404 COLLECTION_NOT_FOUND`. Deleting a collection leaves notes and their revision history intact but makes those notes unfiled.
+
+## Wiki link and backlink example
+
+Write a canonical stable-slug reference such as `[[spring-webclient-timeout]]` in another note's Markdown content. To list the owned notes that currently reference Knowledge ID 1:
+
+```bash
+curl -b 'JSESSIONID=<authenticated-session>' \
+  http://localhost:8080/api/knowledge/1/backlinks
+```
+
+The response contains compact source ID/title/slug/updated timestamp rows, not Markdown content or owner IDs. The target and candidates are both owner-scoped; code-fenced, inline-code and escaped references are not counted. The endpoint is read-only and needs no CSRF token. A missing or differently owned target returns `404 KNOWLEDGE_NOT_FOUND`.
+
 ## Revision history examples
 
 List compact checkpoints and fetch one full Markdown snapshot:
@@ -165,7 +205,7 @@ Flyway V3 creates a generated core search vector and its GIN index. Collection a
 - Spring Security performs standard Google OAuth2/OIDC login and owns authorization.
 - Only a verified Google email equal to `AUTH_ALLOWED_EMAIL` case-insensitively receives owner access.
 - `CurrentOwner` validates that principal before returning `APP_OWNER_ID`; Knowledge/Search services keep their established owner-scoped repository calls.
-- `/api/knowledge/**`, `/api/search/**`, `/api/auth/me` and `/api/auth/csrf` require owner authorization.
+- `/api/knowledge/**`, `/api/collections/**`, `/api/search/**`, `/api/auth/me` and `/api/auth/csrf` require owner authorization.
 - `/actuator/health` and the minimum OAuth login/callback infrastructure remain public.
 - Anonymous `GET /api/public/knowledge/{slug}` returns only PUBLIC article data through a separate DTO and `slug + visibility` repository lookup.
 - Anonymous `GET /api/shared/knowledge/{shareToken}` returns only active UNLISTED article data through a separate `token + visibility` lookup and opaque 404 semantics.

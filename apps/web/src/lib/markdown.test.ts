@@ -22,6 +22,17 @@ test("does not treat headings inside fenced code as article headings", () => {
   ]);
 });
 
+test("owner table of contents tracks resolved wiki titles without changing escaped references", () => {
+  const titles = new Map([["target-note", "Target Note"]]);
+  assert.deepEqual(
+    extractMarkdownHeadings("## See [[target-note]]\n### Escaped \\[[target-note]]", titles),
+    [
+      { id: "see-target-note", label: "See Target Note", level: 2 },
+      { id: "escaped-target-note", label: "Escaped [[target-note]]", level: 3 },
+    ],
+  );
+});
+
 test("calculates deterministic read time without persistence", () => {
   assert.equal(calculateReadTime("one two three"), "1 min read");
   assert.equal(calculateReadTime(Array.from({ length: 201 }, () => "word").join(" ")), "2 min read");

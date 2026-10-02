@@ -30,6 +30,13 @@ export interface KnowledgeListItemData {
   href: string;
 }
 
+export interface KnowledgeBacklinkData {
+  id: number;
+  title: string;
+  slug: string;
+  updatedAt: string;
+}
+
 export interface KnowledgeActionError {
   message: string;
   fieldErrors: Record<string, string>;

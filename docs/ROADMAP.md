@@ -56,22 +56,22 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. The recommended next milestone is richer Collection management/navigation, followed later by backlinks/wiki links. Generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. The first owner-only wiki-link/backlink slice now uses stable slugs in Markdown and a filtered Reading Page section. Related-article recommendations and a relationship graph remain later work. Generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
 - Unlisted visibility/share token — complete, including Reading/Edit Share Dialog wiring
 - attachments/images via R2 or MinIO — complete for secure images, access-scoped delivery, revision-safe orphan retention and retryable deletion cleanup
 - revision history — complete for checkpoint list/preview/restore; diffs, labels and retention remain deferred
-- richer collection management/navigation
+- richer collection management/navigation — complete for create, rename, delete, counts, empty collections and filtered note lists
 - table of contents — complete for persisted Markdown H2-H4 headings
 - syntax highlighting — complete for fenced Markdown code across every shared reading surface
 - Mermaid diagram rendering — complete for explicit fenced Markdown across private, PUBLIC, UNLISTED and History reading surfaces
 
 ## Phase 3 — Knowledge relationships
 
-- backlinks
-- wiki links
+- backlinks — complete for owner-scoped current Markdown references
+- wiki links — complete for canonical `[[stable-slug]]` navigation in owner Reading
 - related articles
 - knowledge graph
 

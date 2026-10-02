@@ -9,6 +9,8 @@ import com.knowledgeapplication.api.attachment.validation.ImageTooLargeException
 import com.knowledgeapplication.api.attachment.validation.MalformedImageException;
 import com.knowledgeapplication.api.attachment.validation.UnsupportedImageTypeException;
 import com.knowledgeapplication.api.knowledge.service.KnowledgeNotFoundException;
+import com.knowledgeapplication.api.knowledge.collection.CollectionNameConflictException;
+import com.knowledgeapplication.api.knowledge.collection.CollectionNotFoundException;
 import com.knowledgeapplication.api.knowledge.publicview.PublicKnowledgeNotFoundException;
 import com.knowledgeapplication.api.knowledge.service.UnlistedLinkNotFoundException;
 import com.knowledgeapplication.api.knowledge.sharedview.SharedKnowledgeNotFoundException;
@@ -32,6 +34,18 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+
+    @ExceptionHandler(CollectionNotFoundException.class)
+    public ResponseEntity<ApiError> handleCollectionNotFound(CollectionNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ApiError.of("COLLECTION_NOT_FOUND", exception.getMessage()));
+    }
+
+    @ExceptionHandler(CollectionNameConflictException.class)
+    public ResponseEntity<ApiError> handleCollectionConflict(CollectionNameConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.of("COLLECTION_NAME_CONFLICT", exception.getMessage()));
+    }
 
     @ExceptionHandler(AttachmentNotFoundException.class)
     public ResponseEntity<ApiError> handleAttachmentNotFound(AttachmentNotFoundException exception) {

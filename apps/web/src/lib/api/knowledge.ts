@@ -10,6 +10,7 @@ import {
   type ApiKnowledgeSearchResultResponse,
 } from "@/lib/knowledge-mapping";
 import type {
+  KnowledgeBacklinkData,
   KnowledgeDraft,
   KnowledgeRevisionDetail,
   KnowledgeRevisionPage,
@@ -29,6 +30,10 @@ export async function getKnowledgeBySlug(slug: string) {
     `/api/knowledge/slug/${encodeURIComponent(slug)}`,
   );
   return mapApiKnowledge(response);
+}
+
+export function listKnowledgeBacklinks(id: number) {
+  return backendRequest<KnowledgeBacklinkData[]>(`/api/knowledge/${id}/backlinks`);
 }
 
 export async function createKnowledge(draft: KnowledgeDraft) {

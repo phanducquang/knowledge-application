@@ -31,7 +31,7 @@ public class KnowledgeCollection {
     @Column(name = "owner_id", nullable = false, updatable = false)
     private UUID ownerId;
 
-    @Column(nullable = false, updatable = false, length = 100)
+    @Column(nullable = false, length = 100)
     private String name;
 
     @Column(name = "normalized_name", insertable = false, updatable = false, length = 100)
@@ -53,6 +53,10 @@ public class KnowledgeCollection {
 
     public static KnowledgeCollection create(UUID ownerId, String name) {
         return new KnowledgeCollection(ownerId, name);
+    }
+
+    public void rename(String name) {
+        this.name = MetadataNameNormalizer.collectionDisplayName(name);
     }
 
     @PrePersist

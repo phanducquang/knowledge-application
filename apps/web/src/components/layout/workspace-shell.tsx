@@ -3,6 +3,7 @@ import { listKnowledge } from "@/lib/api/knowledge";
 import { toKnowledgeListItem } from "@/lib/knowledge-mapping";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 import { getCurrentUser } from "@/lib/api/auth";
+import { listCollections } from "@/lib/api/collections";
 
 interface WorkspaceShellProps {
   children: React.ReactNode;
@@ -10,10 +11,11 @@ interface WorkspaceShellProps {
 }
 
 export async function WorkspaceShell({ children, items }: WorkspaceShellProps) {
-  const [currentUser, shellItems] = await Promise.all([
+  const [currentUser, shellItems, collections] = await Promise.all([
     getCurrentUser(),
     items ? Promise.resolve(items) : listKnowledge().then((knowledge) => knowledge.map(toKnowledgeListItem)),
+    listCollections(),
   ]);
 
-  return <WorkspaceShellClient items={shellItems} currentUser={currentUser}>{children}</WorkspaceShellClient>;
+  return <WorkspaceShellClient items={shellItems} collections={collections} currentUser={currentUser}>{children}</WorkspaceShellClient>;
 }

@@ -126,9 +126,3 @@ export function mapApiKnowledgeSearchResult(
     href: `/knowledge/${response.slug}`,
   };
 }
-
-export function knowledgeCollectionOptions(items: KnowledgeData[]) {
-  return Array.from(
-    new Set(items.map((item) => item.collection).filter((value): value is string => Boolean(value))),
-  ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
-}

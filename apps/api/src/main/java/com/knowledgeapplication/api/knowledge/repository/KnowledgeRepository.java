@@ -30,6 +30,13 @@ public interface KnowledgeRepository extends JpaRepository<Knowledge, Long> {
     @EntityGraph(attributePaths = {"collection", "tags"})
     List<Knowledge> findAllByOwnerIdOrderByUpdatedAtDescIdDesc(UUID ownerId);
 
+    @EntityGraph(attributePaths = {"collection", "tags"})
+    List<Knowledge> findAllByOwnerIdAndCollectionIdOrderByUpdatedAtDescIdDesc(UUID ownerId, Long collectionId);
+
+    List<Knowledge> findAllByOwnerIdAndContentContainingOrderByUpdatedAtDescIdDesc(UUID ownerId, String content);
+
+    long countByOwnerIdAndCollectionId(UUID ownerId, Long collectionId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select k from Knowledge k where k.id = :id")
     Optional<Knowledge> findByIdForUpdate(@Param("id") Long id);

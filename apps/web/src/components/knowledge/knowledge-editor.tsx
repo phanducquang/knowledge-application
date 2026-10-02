@@ -473,6 +473,7 @@ export function KnowledgeEditor({
                 knowledgeId={initialKnowledge?.id}
               />
             </div>
+            <p className="mt-2 text-[11px] text-[var(--text-subtle)]">Link to another note with its stable slug: <code>[[note-slug]]</code>.</p>
           </section>
         </main>
 

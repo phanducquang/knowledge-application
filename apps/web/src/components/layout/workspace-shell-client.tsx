@@ -1,16 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { QuickSearchOverlay } from "@/components/search/quick-search-overlay";
 import type { KnowledgeListItemData } from "@/types/knowledge";
 import type { CurrentUser } from "@/lib/backend-auth";
+import type { CollectionData } from "@/types/collection";
 
 interface WorkspaceShellClientProps {
   children: React.ReactNode;
   items: KnowledgeListItemData[];
+  collections: CollectionData[];
   currentUser: CurrentUser;
 }
 
@@ -28,17 +30,10 @@ function SearchIcon() {
   );
 }
 
-export function WorkspaceShellClient({ children, items, currentUser }: WorkspaceShellClientProps) {
+export function WorkspaceShellClient({ children, items, collections, currentUser }: WorkspaceShellClientProps) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [quickSearchOpen, setQuickSearchOpen] = useState(false);
-  const collections = useMemo(
-    () =>
-      Array.from(
-        new Set(items.map((item) => item.collection).filter((value): value is string => Boolean(value))),
-      ).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" })),
-    [items],
-  );
 
   const openQuickSearch = useCallback(() => {
     setMobileNavOpen(false);

@@ -116,6 +116,37 @@ The path is relative so Spring Boot does not guess the frontend origin. Owner GE
 
 When no collection exists, `collection` is `null`. When no tags exist, `tags` is an empty array. Tag names are returned in deterministic case-insensitive alphabetical order.
 
+## Wiki links and backlinks
+
+Current Markdown supports owner-workspace wiki references in the form `[[stable-slug]]`, for example `[[spring-webclient-timeout]]`. The target is the immutable Knowledge slug, not the editable title. Repeated references to the same target in one source note count as one backlink. Only literal prose references are considered: fenced/indented code, inline backticks, escaped opening brackets and non-canonical slugs are ignored. Missing targets remain literal text in the owner reader; no note is created implicitly.
+
+| Method | Route | Result |
+| --- | --- | --- |
+| `GET` | `/api/knowledge/{id}/backlinks` | Owner-scoped sources whose current Markdown links to the owned note |
+
+The response is an array of `{ "id": 4, "title": "Source note", "slug": "source-note", "updatedAt": "2026-10-01T10:00:00Z" }` rows ordered by `updatedAt DESC`, then `id DESC`. It contains no source Markdown, owner ID or share token. Missing or differently owned targets return `404 KNOWLEDGE_NOT_FOUND`; unauthenticated requests return `401`. Source edits, restore and deletion are reflected on the next read because backlinks are derived from current Markdown rather than a separate stored edge table.
+
+The authenticated Reading Page resolves `[[slug]]` to the current title and `/knowledge/{slug}` only when that slug exists in the current owner's note list. The anonymous PUBLIC and UNLISTED readers do not resolve wiki references or receive backlinks, so the relationship feature never grants access to a private target. This first personal-workspace slice uses an owner-scoped PostgreSQL substring candidate query plus Markdown validation at read time; a dedicated link index/backfill is deferred until library size warrants it. Links are slug references, not permanent target IDs: deleting a target and later reusing its slug can rebind old references. Title-based resolution, aliases, relationship graphs and recommendations are not implemented.
+
+## Collection management
+
+Collection management is an authenticated owner-only API. Collection IDs are stable across renames; note authoring still accepts a collection display name rather than an ID.
+
+| Method | Route | Result |
+| --- | --- | --- |
+| `GET` | `/api/collections` | List all of the current owner's collections, including empty ones, with note counts |
+| `POST` | `/api/collections` | Create a collection; returns `201 Created` |
+| `GET` | `/api/collections/{id}` | Fetch one owned collection with its note count |
+| `PUT` | `/api/collections/{id}` | Rename an owned collection |
+| `DELETE` | `/api/collections/{id}` | Delete an owned collection; returns `204 No Content` |
+| `GET` | `/api/collections/{id}/knowledge` | List that collection's owned Knowledge items |
+
+`POST` and `PUT` accept only `{"name":"Backend"}`. The name must be non-blank and at most 100 characters. Surrounding whitespace is trimmed and repeated internal whitespace collapses; names are unique case-insensitively within an owner. A normalized-name collision returns `409 COLLECTION_NAME_CONFLICT`. The response is `{ "id": 3, "name": "Backend", "knowledgeCount": 2 }`; `id`, `knowledgeCount` and `ownerId` are not writable, and `ownerId` is never returned.
+
+The collection list includes zero-count rows and sorts by case-insensitive name, then ID. The Knowledge list uses the normal Knowledge response and sorts by `updatedAt DESC`, then `id DESC`. A missing or differently owned collection returns `404 COLLECTION_NOT_FOUND` on ID-based routes. State-changing methods require the same session CSRF token as Knowledge CRUD.
+
+Renaming updates the reusable Collection name without changing its ID, associations or historical revision snapshots. Deleting a Collection sets the associated notes' `collection` to `null` via the existing V2 foreign-key rule; it does not delete notes, tags, attachments or history. Historical snapshots retain their denormalized collection names. Collection operations do not edit note content, stable slugs, visibility or note `updatedAt` values. Because note editing and revision restore still resolve Collection by display name, a later save of a stale draft or restore of an old snapshot may recreate a deleted name; concurrent editing remains last-write-wins.
+
 ## Knowledge revision history
 
 Revision routes are authenticated owner operations under the same Knowledge boundary:
@@ -183,7 +214,7 @@ Upload uses multipart field `file`. It accepts PNG, JPEG, WebP and GIF up to `KN
 
 V6 stores only metadata in `knowledge_attachment`; bytes live in S3-compatible storage. The server generates `knowledge/{ownerId}/{knowledgeId}/{attachmentId}` and never accepts or returns that key. It writes the object before flushing metadata, performs best-effort cleanup if metadata persistence/transaction commit fails, and does not commit metadata after an object write failure.
 
-Deleting Knowledge cascades attachment metadata but intentionally retains objects so revision Markdown remains recoverable and the first storage slice avoids destructive cleanup. This can create orphan objects after Knowledge deletion; a later retention-aware cleanup job is required. No attachment deletion API exists yet.
+Deleting Knowledge queues its known attachment object keys before attachment metadata cascades. The existing revision-aware cleanup worker removes queued objects with retries after the note and its revisions are gone. Fresh unreferenced uploads receive a grace period, and references in retained revisions protect objects while the note exists. A rare object written before a crash but never recorded in PostgreSQL still requires future bucket-inventory reconciliation. No attachment deletion API exists yet.
 
 Attachment errors are compact: `UNSUPPORTED_IMAGE_TYPE` (`415`), `IMAGE_TOO_LARGE` (`413`), `MALFORMED_IMAGE` (`400`), scoped not-found codes (`404`), `OBJECT_STORAGE_UNAVAILABLE` (`503`) and `ATTACHMENT_PERSISTENCE_FAILED` (`500`). They contain no stack trace or storage detail.
 
@@ -266,6 +297,7 @@ A future multi-user system may map OIDC subject to an application User UUID at t
 The web application consumes this contract from Next.js Server Components and Server Actions. Its backend URL comes from the server-only `KNOWLEDGE_API_BASE_URL` setting, which defaults to `http://localhost:8080`; no `NEXT_PUBLIC_*` API URL is required. The narrow login redirect may use the separate server-only `KNOWLEDGE_API_BROWSER_BASE_URL` when the browser and server need different origins.
 
 - List, Reading and Edit initialization use owner-specific API reads with `cache: no-store` and dynamic route rendering.
+- The workspace shell loads Collection summaries independently of notes, so empty collections appear in the sidebar and Create/Edit pickers. `/collections` manages names and `/collections/{id}` loads the owner's filtered note list.
 - Full Search initially executes server-side. Subsequent Full Search and typed Quick Search requests use only the focused same-origin `/api/knowledge-search` Next.js Route Handler; it delegates to the same Spring endpoint without exposing the backend URL.
 - `POST`, `PUT`, focused visibility `PATCH`, and link regeneration run through Server Actions. The frontend mapping emits only fields required by each operation.
 - Server-side reads and the Search BFF forward the incoming `JSESSIONID`; mutations additionally fetch `/api/auth/csrf` and forward its token header.
@@ -276,7 +308,7 @@ The web application consumes this contract from Next.js Server Components and Se
 - Persisted Edit pages enable Crepe ImageBlock. Its upload callback uses the focused same-origin Next.js image route; `proxyDomURL` changes only the displayed URL while Markdown keeps `attachment://<UUID>`. Create mode leaves ImageBlock disabled until the note has a server ID.
 - Opening an already-UNLISTED dialog performs the owner link GET only. Tokens are kept only in dialog memory, never in generic Knowledge responses, `localStorage` or `sessionStorage`. Regeneration requires a second inline confirmation and retains the old displayed link if the request fails.
 - Workspace pages resolve `/api/auth/me` on the server and redirect `401`/`403` responses to `/login`. Backend authorization remains authoritative.
-- Successful mutations revalidate `/`, `/search`, the stable Reading route and its Edit route.
+- Successful mutations revalidate `/`, `/search`, affected Collection routes, the stable Reading route and its Edit route.
 - Frontend `Private`/`Unlisted`/`Public` labels map to API `PRIVATE`/`UNLISTED`/`PUBLIC` values in one transport boundary.
 - API errors are reduced to quiet user-facing create/autosave feedback; upstream stack traces are never exposed.
 
@@ -333,6 +365,6 @@ Owner link-management requests use the same owner-scoped 404 boundary as CRUD. A
 
 ## Deferred API areas
 
-Collection/tag listing-management endpoints, generic/non-image attachments, attachment deletion and orphan cleanup, revision diffs/labels/pruning, collaborative authorship and audit-grade history are intentionally not implemented yet. Existing owner endpoints remain authenticated regardless of visibility. `/k/{slug}` and `/s/{shareToken}` are real, separate anonymous read routes, and the authenticated Share Dialog now persists visibility and manages the single current UNLISTED link.
+Tag listing-management endpoints, generic/non-image attachments, attachment deletion, bucket-inventory reconciliation for crash-window objects, revision diffs/labels/pruning, collaborative authorship and audit-grade history are intentionally not implemented yet. Existing owner endpoints remain authenticated regardless of visibility. `/k/{slug}` and `/s/{shareToken}` are real, separate anonymous read routes, and the authenticated Share Dialog now persists visibility and manages the single current UNLISTED link.
 
 Concurrent editing is still last-write-wins: there is no optimistic version field or multi-tab conflict resolution. Checkpoints improve recovery after a conflicting save, but they do not merge drafts or turn this feature into collaborative/audit history.
