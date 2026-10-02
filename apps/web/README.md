@@ -21,6 +21,7 @@ Next.js application for the Knowledge Application workspace.
 - visibility, collection and tags persist with full replacement semantics
 - owner-scoped `/collections` management with create, rename and delete; sidebar counts include empty collections, and `/collections/{id}` filters notes without changing the approved reading/editor layout
 - owner Reading resolves `[[stable-slug]]` prose references to owned notes and lists backlinks below the article; unresolved references remain literal, and external PUBLIC/UNLISTED readers never receive owner-only navigation
+- owner Reading adds a flat Related notes list after Backlinks, with current titles/summaries and relation reasons; empty lists are omitted. The no-store owner API supplies up to five notes ranked by wiki/backlink, shared persisted tags and actual Collection, without AI/embeddings or a dedicated relationship index. External PUBLIC/UNLISTED readers never load or render it
 - safe GFM rendering, dynamic H2-H4 table of contents and calculated read time
 - Full Search and typed Quick Search consume the same backend-ranked PostgreSQL search through a focused same-origin Route Handler
 - empty Quick Search continues to show recently updated owner Knowledge

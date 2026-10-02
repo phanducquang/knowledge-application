@@ -11,6 +11,7 @@ import {
 } from "@/lib/knowledge-mapping";
 import type {
   KnowledgeBacklinkData,
+  KnowledgeRelatedData,
   KnowledgeDraft,
   KnowledgeRevisionDetail,
   KnowledgeRevisionPage,
@@ -34,6 +35,10 @@ export async function getKnowledgeBySlug(slug: string) {
 
 export function listKnowledgeBacklinks(id: number) {
   return backendRequest<KnowledgeBacklinkData[]>(`/api/knowledge/${id}/backlinks`);
+}
+
+export function listRelatedKnowledge(id: number) {
+  return backendRequest<KnowledgeRelatedData[]>(`/api/knowledge/${id}/related?limit=5`);
 }
 
 export async function createKnowledge(draft: KnowledgeDraft) {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleToc } from "@/components/knowledge/article-toc";
 import { KnowledgeMarkdown } from "@/components/knowledge/knowledge-markdown";
+import { RelatedNotes } from "@/components/knowledge/related-notes";
 import { ReadingKnowledgeShareAction } from "@/components/knowledge/reading-knowledge-share-action";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { Tag } from "@/components/ui/tag";
@@ -10,6 +11,7 @@ import {
   KnowledgeApiError,
   listKnowledge,
   listKnowledgeBacklinks,
+  listRelatedKnowledge,
 } from "@/lib/api/knowledge";
 import {
   formatKnowledgeDate,
@@ -28,13 +30,17 @@ export default async function KnowledgeReadingPage(props: {
   let article;
   let allKnowledge;
   let backlinks;
+  let related;
 
   try {
     [article, allKnowledge] = await Promise.all([
       getKnowledgeBySlug(slug),
       listKnowledge(),
     ]);
-    backlinks = await listKnowledgeBacklinks(article.id);
+    [backlinks, related] = await Promise.all([
+      listKnowledgeBacklinks(article.id),
+      listRelatedKnowledge(article.id),
+    ]);
   } catch (error) {
     if (error instanceof KnowledgeApiError && error.status === 404) {
       notFound();
@@ -153,6 +159,7 @@ export default async function KnowledgeReadingPage(props: {
                   <p className="mt-3 text-[13px] text-[var(--text-subtle)]">No notes link here yet.</p>
                 )}
               </section>
+              <RelatedNotes notes={related} />
             </article>
 
             <ArticleToc variant="aside" sections={toc} />

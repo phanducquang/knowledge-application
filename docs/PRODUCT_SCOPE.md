@@ -34,7 +34,7 @@ After the core workflow is proven:
 ## Later stage
 
 - backlinks and stable-slug wiki links — first owner-only slice complete
-- related articles
+- related articles — complete for deterministic owner-only current relationships; no AI/embeddings
 - knowledge graph
 - improved search
 

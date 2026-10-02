@@ -56,7 +56,7 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. The first owner-only wiki-link/backlink slice now uses stable slugs in Markdown and a filtered Reading Page section. Related-article recommendations and a relationship graph remain later work. Generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks and Related Articles use current persisted content/metadata and stable slugs in Reading. Related notes have deterministic ranking without AI/embeddings or a dedicated index, and never appear on PUBLIC/UNLISTED pages. Knowledge Graph is next; generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
@@ -72,8 +72,8 @@ Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a 
 
 - backlinks — complete for owner-scoped current Markdown references
 - wiki links — complete for canonical `[[stable-slug]]` navigation in owner Reading
-- related articles
-- knowledge graph
+- related articles — complete for owner-only current wiki, backlink, shared-tag and Collection signals with deterministic ranking
+- knowledge graph — next
 
 ## Phase 4 — AI-assisted retrieval
 

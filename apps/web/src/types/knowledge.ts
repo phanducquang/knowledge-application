@@ -37,6 +37,16 @@ export interface KnowledgeBacklinkData {
   updatedAt: string;
 }
 
+export type KnowledgeRelationReason = "WIKI_LINK" | "BACKLINK" | "SHARED_TAG" | "SAME_COLLECTION";
+
+export interface KnowledgeRelatedData {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string | null;
+  reasons: KnowledgeRelationReason[];
+}
+
 export interface KnowledgeActionError {
   message: string;
   fieldErrors: Record<string, string>;

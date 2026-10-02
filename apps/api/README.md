@@ -162,6 +162,17 @@ curl -b 'JSESSIONID=<authenticated-session>' \
 
 The response contains compact source ID/title/slug/updated timestamp rows, not Markdown content or owner IDs. The target and candidates are both owner-scoped; code-fenced, inline-code and escaped references are not counted. The endpoint is read-only and needs no CSRF token. A missing or differently owned target returns `404 KNOWLEDGE_NOT_FOUND`.
 
+## Related articles example
+
+```bash
+curl -b 'JSESSIONID=<authenticated-session>' \
+  'http://localhost:8080/api/knowledge/1/related?limit=5'
+```
+
+This owner-only GET returns compact `id`, `slug`, current `title`, nullable `summary` and ordered `reasons` (`WIKI_LINK`, `BACKLINK`, `SHARED_TAG`, `SAME_COLLECTION`). The limit defaults to 5 and accepts 1–20; invalid values return 400. Both wiki directions rank before shared tags, then Collection-only matches; ties use shared tag count, updated time and ID descending. The service reuses the existing wiki parser and current persisted Tag/Collection IDs; null collections never match. Current owner comes from authenticated context, never the client. Missing/cross-owner targets return 404 and anonymous requests 401.
+
+No revisions contribute unless restored into current content. No migration, dedicated relationship index or AI/embeddings is introduced. PUBLIC/UNLISTED APIs never include owner relationships. See `../../docs/API.md` for the full contract.
+
 ## Revision history examples
 
 List compact checkpoints and fetch one full Markdown snapshot:

@@ -126,7 +126,35 @@ Current Markdown supports owner-workspace wiki references in the form `[[stable-
 
 The response is an array of `{ "id": 4, "title": "Source note", "slug": "source-note", "updatedAt": "2026-10-01T10:00:00Z" }` rows ordered by `updatedAt DESC`, then `id DESC`. It contains no source Markdown, owner ID or share token. Missing or differently owned targets return `404 KNOWLEDGE_NOT_FOUND`; unauthenticated requests return `401`. Source edits, restore and deletion are reflected on the next read because backlinks are derived from current Markdown rather than a separate stored edge table.
 
-The authenticated Reading Page resolves `[[slug]]` to the current title and `/knowledge/{slug}` only when that slug exists in the current owner's note list. The anonymous PUBLIC and UNLISTED readers do not resolve wiki references or receive backlinks, so the relationship feature never grants access to a private target. This first personal-workspace slice uses an owner-scoped PostgreSQL substring candidate query plus Markdown validation at read time; a dedicated link index/backfill is deferred until library size warrants it. Links are slug references, not permanent target IDs: deleting a target and later reusing its slug can rebind old references. Title-based resolution, aliases, relationship graphs and recommendations are not implemented.
+The authenticated Reading Page resolves `[[slug]]` to the current title and `/knowledge/{slug}` only when that slug exists in the current owner's note list. The anonymous PUBLIC and UNLISTED readers do not resolve wiki references or receive backlinks, so the relationship feature never grants access to a private target. This first personal-workspace slice uses an owner-scoped PostgreSQL substring candidate query plus Markdown validation at read time; a dedicated link index/backfill is deferred until library size warrants it. Links are slug references, not permanent target IDs: deleting a target and later reusing its slug can rebind old references. Title-based resolution, aliases and relationship graphs are not implemented.
+
+## Related articles (owner workspace only)
+
+| Method | Route | Result |
+| --- | --- | --- |
+| `GET` | `/api/knowledge/{id}/related?limit=5` | Compact related notes in deterministic relevance order |
+
+`limit` defaults to 5 and must be an integer from 1 to 20; invalid values return `400` using the existing validation/malformed-input error model. Missing or differently owned targets return `404 KNOWLEDGE_NOT_FOUND`; anonymous calls return `401`. Ownership comes exclusively from authenticated backend context, never from request payload/query parameters.
+
+```json
+[
+  {
+    "id": 12,
+    "slug": "spring-security",
+    "title": "Spring Security",
+    "summary": null,
+    "reasons": ["WIKI_LINK", "BACKLINK", "SHARED_TAG", "SAME_COLLECTION"]
+  }
+]
+```
+
+Reasons have the fixed order shown above: outgoing canonical wiki reference, incoming canonical wiki reference, at least one shared persisted Tag ID, and the same actual non-null Collection ID. Each candidate appears once with all matching reasons. Both wiki directions reuse the existing prose/code/escape parser. Candidates include all visibility states inside the authenticated owner's workspace, but exclude self, deleted notes and every other owner. Two unfiled notes are not related just because both collections are null.
+
+Ranking uses three tiers: any explicit wiki relationship first, shared tags second, Collection-only third. Within a tier, more shared tags comes first, then `updatedAt DESC`, then `id DESC`. Multiple explicit directions do not introduce a hidden score. The limit applies after ranking and deduplication. Returned title/summary are current values and slug remains stable after renaming.
+
+Relations are derived on each read from current Knowledge Markdown and metadata using the existing owner-scoped metadata entity graph, not retained revision snapshots. Editing, deleting, metadata replacement and Collection deletion are reflected on the next read; restoring a revision may reintroduce a relation only when its authoring data becomes current. No schema migration, persisted edge table, dedicated relationship index, AI or embeddings are involved. Scanning the personal library is deliberately simple and remains a scaling limitation.
+
+Only authenticated Reading renders the flat Related notes section, after Backlinks, and omits it when empty. The no-store server-only API transport preserves backend ordering. Anonymous PUBLIC/UNLISTED endpoints and `/k/{slug}` / `/s/{shareToken}` pages expose no related list, reason metadata or private workspace navigation.
 
 ## Collection management
 
