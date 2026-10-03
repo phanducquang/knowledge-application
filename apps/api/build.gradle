@@ -41,4 +41,6 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // Never inherit an enabled production embedding provider into integration tests.
+    systemProperty 'app.embedding.enabled', 'false'
 }

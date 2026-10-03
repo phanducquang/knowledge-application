@@ -306,6 +306,16 @@ Revision-safe cleanup is enabled by default. Fresh unreferenced uploads are prot
 
 PostgreSQL and object storage are not one transaction. Object deletion happens before metadata deletion so failures remain retryable. A rare process crash after S3 upload and before metadata persistence can still create an object that DB-driven cleanup cannot discover; future bucket inventory reconciliation is intentionally deferred. See [`../../docs/ATTACHMENT_LIFECYCLE.md`](../../docs/ATTACHMENT_LIFECYCLE.md) for the complete contract.
 
+## Semantic retrieval foundation
+
+PostgreSQL remains major 17 and now uses the pgvector project image. Flyway V8 enables the extension and creates owner-partitioned chunk-level vector storage with cascading Knowledge deletion. Only current title, summary and Markdown are embedded; revisions and attachments are excluded. Collection/Tags do not participate in semantic input.
+
+Embeddings are **disabled by default** (`EMBEDDING_ENABLED=false`), with no provider client/scheduler calls or health penalty. Enabling requires a backend-only base URL, model, dimensions and provider-appropriate credentials. `.env.example` lists `EMBEDDING_*` settings for batches, connect/read deadlines, scheduler and chunk size/overlap; never expose credentials via `NEXT_PUBLIC_*`. The provider must support the indexed OpenAI-compatible float embeddings/dimensions contract.
+
+Background indexing/backfill is bounded, preserves authoring responsiveness, retries failures and transactionally replaces complete sets only if current source still matches. SHA-256 detects stale/model/dimension/chunker changes; an internal owner-scoped exact cosine query excludes stale/incomplete/incompatible chunks. No semantic endpoint/UI, LLM calls, AI relationships or ANN index is added. ANN remains deferred at personal-library scale, and **Semantic Search** is next.
+
+See [`../../docs/SEMANTIC_RETRIEVAL.md`](../../docs/SEMANTIC_RETRIEVAL.md) for all defaults, source/hash semantics, provider privacy implications, local extension inspection and production migration privileges. Normal tests use deterministic fake embeddings and loopback HTTP mocks without API keys or paid/network calls.
+
 ## Validate
 
 ```bash

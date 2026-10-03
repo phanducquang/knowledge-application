@@ -56,7 +56,7 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation is next; generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation is complete and Semantic Search is next; generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
@@ -77,11 +77,12 @@ Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a 
 
 ## Phase 4 — AI-assisted retrieval
 
-Next milestone: **Semantic Retrieval Foundation**. No part of that milestone is implemented by the Knowledge Graph slice.
+Semantic Retrieval Foundation is complete; next milestone: **Semantic Search**. External embeddings remain disabled unless explicitly configured, and no semantic endpoint/UI is implemented yet.
 
-- pgvector
-- embeddings
-- semantic search
+- PostgreSQL 17 + pgvector — complete
+- embedding provider/storage infrastructure — complete
+- current Knowledge chunk indexing/backfill and freshness detection — complete
+- semantic search — next
 - Ask My Knowledge
 - source-linked answers
 - auto tagging/summarization

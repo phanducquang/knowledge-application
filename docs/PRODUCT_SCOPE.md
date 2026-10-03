@@ -42,9 +42,11 @@ After the core workflow is proven:
 
 Only after enough useful knowledge exists:
 
-Next milestone: **Semantic Retrieval Foundation**. It is not implemented yet.
+Semantic Retrieval Foundation is complete for owner-internal current-Knowledge chunk storage, disabled-by-default embeddings and background indexing/backfill. Revisions, attachments and anonymous retrieval are excluded; existing FTS and relationships remain unchanged.
 
-- semantic retrieval with pgvector
+Next milestone: **Semantic Search**. No user-facing semantic retrieval is implemented yet.
+
+- semantic search using the pgvector foundation
 - Ask My Knowledge
 - automatic tags
 - automatic summaries

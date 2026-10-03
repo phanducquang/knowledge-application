@@ -207,9 +207,18 @@ MVP:
 
 Do not introduce Elasticsearch solely for the MVP.
 
+Semantic Retrieval Foundation — implemented:
+
+- PostgreSQL 17 with pgvector, enabled by Flyway V8; unconstrained chunk-level vectors, cascading composite Knowledge/owner FK and no ANN index
+- only current title/summary/Markdown, not revisions, attachments or Collection/Tags; all visibility states remain owner-internal
+- disabled-by-default backend-only OpenAI-compatible provider behind `EmbeddingClient`; deterministic fake/loopback mocks in tests
+- bounded scheduled backfill and reindex, with session advisory locking, no provider call in authoring transactions, complete atomic replacement and source recheck
+- authoritative SHA-256 freshness includes model/dimension/provider/chunker version/settings; stale or incomplete sets cannot enter the centralized owner-scoped exact cosine query
+- no public embedding DTO or semantic endpoint; see [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md) for configuration, privacy and operational constraints
+
 Future:
 
-- PostgreSQL + pgvector for semantic retrieval
+- Semantic Search consuming the internal compatible/current pgvector foundation
 - AI-assisted question answering with citations back to stored knowledge
 
 ## 8. Authentication

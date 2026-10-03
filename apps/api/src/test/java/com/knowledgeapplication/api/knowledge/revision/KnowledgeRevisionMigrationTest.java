@@ -4,6 +4,7 @@ import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationVersion;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
+import com.knowledgeapplication.api.testsupport.TestContainerImages;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -15,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KnowledgeRevisionMigrationTest {
 
     @Container
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17-alpine");
+    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>(TestContainerImages.POSTGRES);
 
     @Test
     void v5BackfillsTruthfulMetadataSnapshotForExistingKnowledge() throws Exception {

@@ -32,6 +32,21 @@ spring:
 
 app:
   owner-id: ${APP_OWNER_ID:00000000-0000-0000-0000-000000000001}
+  embedding:
+    enabled: ${EMBEDDING_ENABLED:false}
+    base-url: ${EMBEDDING_BASE_URL:}
+    api-key: ${EMBEDDING_API_KEY:}
+    model: ${EMBEDDING_MODEL:}
+    dimensions: ${EMBEDDING_DIMENSIONS:1536}
+    connect-timeout: ${EMBEDDING_CONNECT_TIMEOUT:PT5S}
+    read-timeout: ${EMBEDDING_READ_TIMEOUT:PT30S}
+    batch-size: ${EMBEDDING_BATCH_SIZE:16}
+    indexing-enabled: ${EMBEDDING_INDEXING_ENABLED:true}
+    interval: ${EMBEDDING_INDEX_INTERVAL:PT1M}
+    initial-delay: ${EMBEDDING_INDEX_INITIAL_DELAY:PT30S}
+    knowledge-batch-size: ${EMBEDDING_KNOWLEDGE_BATCH_SIZE:10}
+    max-chunk-chars: ${EMBEDDING_MAX_CHUNK_CHARS:4000}
+    overlap-chars: ${EMBEDDING_OVERLAP_CHARS:200}
   knowledge:
     revision-checkpoint-interval: ${KNOWLEDGE_REVISION_INTERVAL:PT5M}
     image-max-size: ${KNOWLEDGE_IMAGE_MAX_SIZE:10MB}

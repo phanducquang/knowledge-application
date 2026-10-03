@@ -350,6 +350,12 @@ PostgreSQL uses `websearch_to_tsquery('simple', q)` with parameterized SQL. The 
 
 Results sort by combined relevance descending, then `updatedAt DESC` and `id DESC`. A multi-term query may match across a core field and metadata. The generated stored `knowledge.search_vector` covers title, summary and content and has a GIN index. Collection and tag text remains normalized relational data and is converted to an owner-scoped metadata vector during the query; this avoids duplicated metadata and trigger synchronization at the cost of metadata-only and cross-vector matching not using the core GIN index.
 
+## Semantic retrieval foundation (internal only)
+
+No semantic/embedding HTTP endpoint is added. V8 enables pgvector on PostgreSQL 17 and stores owner-internal current-Knowledge chunks with model/dimension/version and SHA-256 freshness metadata. Background indexing is disabled by default, never calls the provider during CRUD/restore, and replaces chunks only after full generation and a current-source recheck. Deletion cascades chunk rows; revisions and attachment bytes are not embedded. Collection/Tags are excluded from semantic input, so metadata-only changes do not require re-embedding.
+
+The internal exact cosine repository query filters owner, compatible model/dimensions/strategy, complete sets and current source hash before returning bounded deterministic results. Raw vectors, distances, provider inputs and credentials are not part of any API DTO. FTS/Quick Search, PUBLIC/UNLISTED, Related Articles and Graph behavior are unchanged. See [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md); Semantic Search is the next milestone.
+
 ## Ownership and authorization
 
 The backend accepts only an authenticated Google OIDC principal with a verified email matching `AUTH_ALLOWED_EMAIL` case-insensitively. After that identity check, `CurrentOwner` returns:
