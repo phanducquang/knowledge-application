@@ -386,7 +386,49 @@ Disabled/missing provider returns `503 SEMANTIC_SEARCH_DISABLED`; timeout, provi
 
 V8 enables pgvector on PostgreSQL 17 and stores owner-internal current-Knowledge chunks with model/dimension/version and SHA-256 freshness metadata. Background indexing is disabled by default, never calls the provider during CRUD/restore, and replaces chunks only after full generation and a current-source recheck. Deletion cascades chunk rows; revisions and attachment bytes are not embedded. Collection/Tags are excluded from semantic input, so metadata-only changes do not require re-embedding.
 
-The centralized exact cosine repository query filters owner, compatible model/dimensions/strategy, complete sets and current source hash before returning bounded deterministic results. Raw vectors, distances, provider inputs and credentials are not part of any API DTO. FTS/Quick Search, PUBLIC/UNLISTED, Related Articles and Graph behavior are unchanged. See [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md); Ask My Knowledge is the next milestone.
+The centralized exact cosine repository query filters owner, compatible model/dimensions/strategy, complete sets and current source hash before returning bounded deterministic results. Raw vectors, distances, provider inputs and credentials are not part of any API DTO. Production uses Gemini native embeddings, default `gemini-embedding-2`/768, with a new strategy marker that automatically invalidates/reindexes old vectors. V9 adds persistent minute/day quota counters, not a vector schema change. Local quota denial/429 maps to `SEMANTIC_SEARCH_UNAVAILABLE`. FTS/Quick Search, PUBLIC/UNLISTED, Related Articles and Graph behavior are unchanged. See [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md).
+
+## Ask My Knowledge (authenticated owner only)
+
+`POST /api/ask` accepts JSON **only** `{ "question": "How did I configure timeouts?" }`. Question is required, trimmed/non-blank, maximum 2000 UTF-16 units; request body is capped at 16 KiB before deserialization. Unknown fields are malformed input: no client owner, model, dimensions, context, limits or key. Existing owner session and CSRF token are required even though Knowledge is not mutated: this operation can consume provider quota/cost. No public/unlisted Ask endpoint exists.
+
+Successful responses (`200`, private/no-store):
+
+```json
+{
+  "status": "ANSWERED",
+  "answer": "The current notes record a five-second response timeout.",
+  "sources": [
+    {
+      "id": 12,
+      "title": "WebClient timeouts",
+      "slug": "webclient-timeouts",
+      "excerpt": "responseTimeout(Duration.ofSeconds(5)) …"
+    }
+  ]
+}
+```
+
+```json
+{ "status": "NO_CONTEXT", "answer": null, "sources": [] }
+```
+
+One query embedding uses the same `EmbeddingClient`/strategy/vector checks as Semantic Search. Retrieval uses owner-scoped current complete compatible chunks only, exact cosine, deterministic distance/Knowledge ID/chunk index/row ID ties. The default cap of 2 chunks per note is applied **before** the global 8 chunks, then context assembly caps 6 unique notes and 24000 serialized characters including escaped metadata/text. It preserves whole chunks when possible and safely trims the final chunk. Note sources deduplicate in first-appearance order; excerpts max 600 units. Revisions are excluded unless restored into current content and reindexed. All owner visibility states are allowed; no sharing token/owner/hash/model/vector/distance is returned.
+
+No context means no generation request. Otherwise one `KnowledgeAnswerClient` native Gemini generation call uses current reference JSON and question as untrusted data, separate from system grounding instructions. Both provider calls are outside DB transactions/connections. No synchronous indexing, automatic retry, Keyword fallback, web search, query rewrite, rerank, tools, agent loop or chat persistence. Sources are **note-level context**, not verified citations for each assertion. Context is current at the SQL snapshot; edits/deletion after that snapshot may occur before the answer arrives. Empty corpus means no compatible indexed context, not a calibrated semantic relevance cutoff.
+
+| HTTP | Code | Meaning |
+| --- | --- | --- |
+| 400 | `VALIDATION_ERROR` | Blank/missing/oversized question |
+| 400 | `MALFORMED_REQUEST` | Invalid JSON, unknown fields or body over 16 KiB |
+| 401 / 403 | Existing auth/access error | Missing owner session, unauthorized identity or invalid CSRF |
+| 503 | `ASK_DISABLED` | Generation disabled/missing client |
+| 503 | `ASK_RETRIEVAL_UNAVAILABLE` | Embeddings disabled/unavailable, local quota denial, provider 429/timeout or invalid retrieval data |
+| 503 | `ASK_UNAVAILABLE` | Generation quota denial/provider error/timeout/invalid answer |
+
+API errors retain `{code,message,fieldErrors}` with constant sanitized messages, no upstream body/cause/secret. Gemini embedding and Ask default off; configured model IDs/dimensions/limits remain server-owned. Shared `GEMINI_API_KEY` never reaches DTOs or browser JavaScript. Persistent quota reservations count attempted calls conservatively, with global/background embedding budgets and independent generation budgets. See [`ASK_MY_KNOWLEDGE.md`](ASK_MY_KNOWLEDGE.md) for exact defaults, privacy, model-change responsibility and quota limits.
+
+Protected `/ask` calls only a focused same-origin `/api/ask-my-knowledge` POST BFF with session/CSRF forwarding, bounded question-only body and Host/Origin validation. Typing/mount do not call AI; button/Cmd-Ctrl Enter explicitly submits; regular Enter adds a newline. No question URL/storage/history. Limited answer Markdown cannot render active arbitrary links/images/HTML/Mermaid; only structured source links navigate to `/knowledge/{slug}`. Cancel/obsolete response guards protect UI state, not guaranteed cancellation/refund of already-running provider work.
 
 ## Ownership and authorization
 
@@ -407,6 +449,7 @@ The web application consumes this contract from Next.js Server Components and Se
 - List, Reading and Edit initialization use owner-specific API reads with `cache: no-store` and dynamic route rendering.
 - The workspace shell loads Collection summaries independently of notes, so empty collections appear in the sidebar and Create/Edit pickers. `/collections` manages names and `/collections/{id}` loads the owner's filtered note list.
 - Full Search initially executes its selected mode server-side. Subsequent Keyword Full Search and typed Quick Search use `/api/knowledge-search`; explicit-submit Semantic uses the focused `/api/knowledge-semantic-search` BFF. Both delegate to their owner-scoped Spring endpoints without exposing the backend URL.
+- Ask uses only the focused `/api/ask-my-knowledge` POST BFF with no-store, server-side session/CSRF and no question in URLs; existing authoring Server Actions remain unchanged.
 - `POST`, `PUT`, focused visibility `PATCH`, and link regeneration run through Server Actions. The frontend mapping emits only fields required by each operation.
 - Server-side reads and the Search BFF forward the incoming `JSESSIONID`; mutations additionally fetch `/api/auth/csrf` and forward its token header.
 - `/k/{slug}` uses a focused server-only public client with `cache: no-store` and does not send the private session cookie. Its basic metadata is indexable only after the public API successfully returns a PUBLIC item.

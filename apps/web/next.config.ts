@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/ask",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }, { key: "Referrer-Policy", value: "no-referrer" }],
+      },
+      {
         source: "/s/:path*",
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0" },

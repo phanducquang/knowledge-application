@@ -21,7 +21,7 @@ class KnowledgeSemanticSearchServiceTest {
     KnowledgeEmbeddingRepository repository;
 
     static EmbeddingProperties properties(boolean enabled) {
-        return new EmbeddingProperties(enabled, "http://localhost:12345/v1", "", "test-model", 3,
+        return new EmbeddingProperties(enabled, "http://localhost:12345", "test-model", 3,
                 Duration.ofSeconds(2), Duration.ofSeconds(5), 2, false, Duration.ofMinutes(1), Duration.ZERO, 10, 256, 20);
     }
 

@@ -34,6 +34,11 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(com.knowledgeapplication.api.ask.AskUnavailableException.class)
+    public ResponseEntity<ApiError> handleAskUnavailable(com.knowledgeapplication.api.ask.AskUnavailableException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).header(HttpHeaders.CACHE_CONTROL,"private, no-store, max-age=0")
+                .body(ApiError.of(exception.code(),exception.getMessage()));
+    }
 
     @ExceptionHandler(com.knowledgeapplication.api.search.service.SemanticSearchUnavailableException.class)
     public ResponseEntity<ApiError> handleSemanticUnavailable(com.knowledgeapplication.api.search.service.SemanticSearchUnavailableException exception) {

@@ -13,7 +13,7 @@ final class EmbeddingTestSupport {
     static EmbeddingProperties properties() { return properties(true, "test-model", 3, 2, 2); }
 
     static EmbeddingProperties properties(boolean enabled, String model, int dimensions, int batchSize, int knowledgeBatchSize) {
-        return new EmbeddingProperties(enabled, "http://localhost:12345/v1", "", model, dimensions,
+        return new EmbeddingProperties(enabled, "http://localhost:12345", model, dimensions,
                 Duration.ofSeconds(2), Duration.ofSeconds(5), batchSize, false,
                 Duration.ofMinutes(1), Duration.ofDays(1), knowledgeBatchSize, 256, 20);
     }

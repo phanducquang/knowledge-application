@@ -29,20 +29,21 @@ class EmbeddingSourceTest {
     }
 
     @Test
-    void modelDimensionVersionChunkSettingsAndProviderChangesInvalidateButKeyRotationDoesNot() {
+    void modelDimensionVersionChunkSettingsAndEndpointChangesInvalidateAndGeminiStrategyIsExplicit() {
         var source = source("Title", "Summary", "Content");
         assertThat(source.hash(new EmbeddingStrategy(config, MarkdownChunker.VERSION + 1))).isNotEqualTo(source.hash(strategy));
         assertThat(source.hash(new EmbeddingStrategy(EmbeddingTestSupport.properties(true, "new-model", 3, 2, 2), 1))).isNotEqualTo(source.hash(strategy));
         assertThat(source.hash(new EmbeddingStrategy(EmbeddingTestSupport.properties(true, "test-model", 4, 2, 2), 1))).isNotEqualTo(source.hash(strategy));
         for (var changed : new EmbeddingProperties[]{
-                changed(config.baseUrl(), "", 512, 20), changed(config.baseUrl(), "", 256, 10), changed("http://localhost:12346/v1", "", 256, 20)}) {
+                changed(config.baseUrl(), 512, 20), changed(config.baseUrl(), 256, 10), changed("http://localhost:12346", 256, 20)}) {
             assertThat(source.hash(new EmbeddingStrategy(changed, 1))).isNotEqualTo(source.hash(strategy));
         }
-        assertThat(source.hash(new EmbeddingStrategy(changed(config.baseUrl(), "rotated-test-key", 256, 20), 1))).isEqualTo(source.hash(strategy));
+        assertThat(strategy.marker()).startsWith("semantic-source-v2:provider=gemini:symmetric-text-v1");
+        assertThat(strategy.marker()).doesNotContain("api-key");
     }
 
-    private EmbeddingProperties changed(String url, String key, int maxChars, int overlap) {
-        return new EmbeddingProperties(true, url, key, config.model(), config.dimensions(), config.connectTimeout(), config.readTimeout(),
+    private EmbeddingProperties changed(String url, int maxChars, int overlap) {
+        return new EmbeddingProperties(true, url, config.model(), config.dimensions(), config.connectTimeout(), config.readTimeout(),
                 config.batchSize(), config.indexingEnabled(), config.interval(), config.initialDelay(), config.knowledgeBatchSize(), maxChars, overlap);
     }
     private EmbeddingSource source(String title, String summary, String content) {

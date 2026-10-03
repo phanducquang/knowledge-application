@@ -99,6 +99,7 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
         <div className="space-y-1">
           <NavLink href="/" active={currentPath === "/"} onNavigate={onNavigate}>All notes</NavLink>
           <NavLink href="/search" active={searchActive} onNavigate={onNavigate}>Search</NavLink>
+          <NavLink href="/ask" active={currentPath === "/ask"} onNavigate={onNavigate}>Ask My Knowledge</NavLink>
           <NavLink href="/graph" active={currentPath === "/graph"} onNavigate={onNavigate}>Graph</NavLink>
         </div>
 

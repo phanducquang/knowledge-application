@@ -1,6 +1,6 @@
 # Semantic Retrieval and Search
 
-The foundation implements internal vector persistence and background indexing. Owner-only **Semantic Search is now complete** at `/search`, alongside default Keyword FTS. FTS, Quick Search, Related Articles, explicit wiki graph edges and existing public/shared routes are unchanged. No raw embedding endpoint, anonymous retrieval, LLM/RAG or revision/image embedding is added. Ask My Knowledge is next.
+The foundation implements internal vector persistence and background indexing. Owner-only **Semantic Search is complete** at `/search`, alongside default Keyword FTS. Gemini now powers production embeddings and the optional single-turn [Ask My Knowledge](ASK_MY_KNOWLEDGE.md) slice. FTS, Quick Search, Related Articles, explicit wiki graph edges and existing public/shared routes are unchanged. No raw embedding endpoint, anonymous retrieval or revision/image embedding is added.
 
 ## Database and source contract
 
@@ -20,17 +20,18 @@ Persisted `chunk_text` is the source excerpt, not a repeated provider prompt. Pr
 
 ## Provider boundary and configuration
 
-`EmbeddingClient.embed(List<String>)` returns one finite, non-zero vector per input in the same order. The production client uses an [OpenAI-compatible embeddings contract](https://developers.openai.com/api/reference/resources/embeddings/methods/create): POST `<base-url>/embeddings` with `input`, `model`, `dimensions`, and float encoding. Response indexes are checked and reordered; count, numeric values, dimension and returned model are validated. The provider must accept the dimensions parameter and return the configured model identifier; aliases resolving to a different identifier need explicit configuration. Providers requiring another HTTP contract need another client, not changes to indexing/domain logic.
+`EmbeddingClient.embed(List<String>)` returns one finite, non-zero vector per input in the same order. `GeminiEmbeddingClient` uses the official [Google Java GenAI SDK 1.70.0](https://github.com/googleapis/java-genai/releases/tag/v1.70.0), native `models.embedContent(model, List<String>, config)` and `outputDimensionality`. The SDK wraps each input as an independent Content and sends one synchronous `batchEmbedContents` request, not an asynchronous batch job. Ordered response count, dimensions, finite numeric values and non-zero norms are validated. SDK DTOs stay inside Gemini adapters; indexing/search still depend on generic interfaces.
 
-API keys stay backend-only. A non-blank key becomes a Bearer header; keyless compatible local hosts are supported, while `api.openai.com` requires a key. Base URLs cannot contain credentials, query or fragment. Redirects are disabled so credentials cannot be forwarded to another host. Connect timeout plus a whole-response deadline bound calls, including a stalled response body. Provider error bodies/causes, raw input and credentials are never propagated in client exceptions or application indexing logs. Properties' string representation is redacted; only Actuator health is exposed.
+Default exact API ID is [`gemini-embedding-2`](https://ai.google.dev/gemini-api/docs/models/gemini-embedding-2), **768 dimensions**. Per [Gemini embedding guidance](https://ai.google.dev/gemini-api/docs/embeddings), Embedding 2 does not use `taskType`; both documents and queries use the same fixed `task: semantic similarity | text: ` prefix. It precedes the existing title/summary/chunk input for notes. That symmetric-input version is part of the strategy identity. One native batch consumes one RPM/RPD request but the sum of **all** prefixed inputs counts toward estimated input TPM. No client truncation of returned vectors is performed.
+
+One backend-only `GEMINI_API_KEY` is required whenever embedding or Ask generation is enabled. It is passed explicitly to the SDK (native key header); no ambient `GOOGLE_API_KEY`, Vertex identity or keyless production fallback. Base URLs cannot contain credentials, query or fragment. Redirects and connection/SDK automatic retries are disabled (`attempts=1`). Connect timeout plus whole-call deadline bound calls, including stalled response bodies. Provider error bodies/causes, raw input and credentials are never propagated in client exceptions or application indexing logs. Properties' string representation is redacted; only Actuator health is exposed.
 
 | `app.embedding.*` setting | Environment | Default |
 | --- | --- | --- |
 | `enabled` | `EMBEDDING_ENABLED` | `false` |
-| `base-url` | `EMBEDDING_BASE_URL` | blank; include API prefix such as `/v1` |
-| `api-key` | `EMBEDDING_API_KEY` | blank; inject securely |
-| `model` | `EMBEDDING_MODEL` | blank |
-| `dimensions` | `EMBEDDING_DIMENSIONS` | `1536` |
+| `base-url` | `EMBEDDING_BASE_URL` | `https://generativelanguage.googleapis.com`; SDK uses `v1beta` native routes |
+| `model` | `EMBEDDING_MODEL` | `gemini-embedding-2` |
+| `dimensions` | `EMBEDDING_DIMENSIONS` | `768` |
 | `connect-timeout` | `EMBEDDING_CONNECT_TIMEOUT` | `PT5S` |
 | `read-timeout` | `EMBEDDING_READ_TIMEOUT` | `PT30S` |
 | `batch-size` | `EMBEDDING_BATCH_SIZE` | `16` inputs/provider request |
@@ -41,9 +42,9 @@ API keys stay backend-only. A non-blank key becomes a Bearer header; keyless com
 | `max-chunk-chars` | `EMBEDDING_MAX_CHUNK_CHARS` | `4000` |
 | `overlap-chars` | `EMBEDDING_OVERLAP_CHARS` | `200` |
 
-Enabled configuration fails startup for malformed/blank base URL or model, invalid dimensions (1–16000), non-positive timeouts/batches, interval below 10 seconds, negative initial delay, chunk size outside 256–16000 or overlap outside 0–25% of chunk size. Disabled mode accepts absent provider settings, creates neither external client nor embedding scheduler, and performs no indexing/provider calls. It does not make health DOWN. Setting `indexing-enabled=false` suspends scheduling without changing stored index state.
+Enabled configuration fails startup for malformed/blank base URL or model, missing/invalid key, dimensions outside 1–3072, timeouts outside 1–2147483647 milliseconds, invalid batches, interval below 10 seconds, negative initial delay, chunk size outside 256–16000 or overlap outside 0–25% of chunk size. The selected model must actually support configured dimensions; recommended default is 768. Disabled mode accepts absent provider settings, creates neither embedding client nor scheduler, and performs no indexing/provider calls. It does not make health DOWN. Setting `indexing-enabled=false` suspends scheduling without changing stored index state.
 
-Configure these only in the Spring process environment, never `NEXT_PUBLIC_*`. Enabling an external provider sends current private note text to that chosen provider and can incur charges; review its privacy/retention policy and costs before enabling. Gradle's test JVM explicitly disables production embeddings even when the parent shell enables them. Tests use a deterministic SHA-256-derived fake and loopback HTTP mocks, never a paid service/API key.
+Configure these only in the Spring process environment, never `NEXT_PUBLIC_*`. Enabling Gemini sends current private note text to Google and may incur charges. Free Tier/unpaid data handling may allow Google to use submitted content for product improvement and human review; do not send confidential material without reviewing [current terms](https://ai.google.dev/gemini-api/terms). See [Ask operations](ASK_MY_KNOWLEDGE.md) for separate global/background and generation quota settings. Gradle's test JVM explicitly disables production embeddings/Ask and clears the Gemini key even when the parent shell enables them. Tests use a deterministic SHA-256-derived fake and native-SDK loopback HTTP mocks, never external Gemini calls.
 
 ## Background indexing, atomicity and retry
 
@@ -53,9 +54,13 @@ The worker chunks the current snapshot, embeds in bounded requests, validates ev
 
 Existing rows naturally backfill after enabling; startup and Flyway do not generate vectors. Failures retry in later cycles. An in-memory ID cursor wraps so one repeatedly failing early note cannot starve later notes; restarts simply rescan pending data. No durable external queue or per-note exponential backoff is added. Aggregate logs report indexed notes/chunks, superseded snapshots, failures and cycle elapsed time, without raw data or high-cardinality metric labels.
 
+V9 persists quota reservations across replicas/restarts: global defaults **80 RPM / 24000 estimated input TPM / 800 RPD**, with background **50 / 18000 / 650** required in addition. Interactive Semantic/Ask embeddings use global capacity without the smaller background ceiling. Local denial or provider 429 immediately stops the indexing cycle; remaining notes stay pending and retry only on later scheduled cycles. No blocking sleeps/tight retries. Defaults are application ceilings, not verified provider entitlements; check actual project/model/tier limits in AI Studio. Failed attempted provider requests remain counted conservatively. Token estimates include every input in the batch; see [quota details](ASK_MY_KNOWLEDGE.md#quota-accounting-and-operations).
+
 ## Freshness and internal retrieval
 
 Index states are `NOT_INDEXED`, `CURRENT`, and `STALE`. `source_updated_at` records the current note timestamp at successful replacement, but **semantic SHA-256 is authoritative** because metadata-only edits can change `updated_at` without changing semantic inputs. The digest uses unambiguous length-prefixed UTF-8 title/summary/content (null summary maps to empty), plus source strategy marker, provider base URL, model, dimensions, chunker version, chunk-size and overlap settings. API-key rotation does not invalidate vectors.
+
+The Gemini migration explicitly bumps that marker to **`semantic-source-v2:provider=gemini:symmetric-text-v1:...`**. Even an unchanged model name/dimension cannot reuse the old compatible adapter's rows. No V8 rows are manually deleted and no old Flyway migration is edited. Existing vectors remain physically present but stale/excluded until automatic bounded reindex replaces them. A model/dimension/context/chunker change behaves the same way, with temporarily partial Semantic/Ask coverage. API key/quota changes do not alter semantic identity.
 
 Candidate selection and retrieval recompute the same hash in PostgreSQL, not the browser. A current set must have every contiguous chunk, a consistent total count, and compatible hash/model/dimension/version on every row. Returning authoring text exactly to an earlier state can reuse its identical compatible semantic index. Changing model, dimensions, provider, chunk settings or the code's chunker version invalidates old sets and naturally reindexes them.
 
@@ -85,12 +90,14 @@ Limitations remain: no ANN index, token-aware batching, durable retry telemetry,
 
 Only current complete compatible sets participate, across the owner's PRIVATE/UNLISTED/PUBLIC notes. Edits hide stale notes immediately; indexing later makes their new current state searchable. Retained revisions never contribute until restore becomes current and is reindexed. Deletion cascades. With no calibrated cutoff, an empty result means no current compatible indexed notes/library rather than proof of no semantically related notes.
 
-Disabled/missing client produces `503 SEMANTIC_SEARCH_DISABLED`; provider timeout, invalid response/count/dimensions produces sanitized `503 SEMANTIC_SEARCH_UNAVAILABLE`. Knowledge remains unaffected. Query text necessarily goes to the configured provider, may incur usage charges and may be private. Application code does not explicitly log queries/vectors/matches; operational proxy/URL logs must be restricted/redacted. There is no automatic Keyword fallback.
+Disabled/missing client produces `503 SEMANTIC_SEARCH_DISABLED`; local quota denial, provider 429/timeout, invalid response/count/dimensions produces sanitized `503 SEMANTIC_SEARCH_UNAVAILABLE`. Knowledge remains unaffected. Query text necessarily goes to Gemini, may incur usage charges and may be private. Application code does not explicitly log queries/vectors/matches; operational proxy/URL logs must be restricted/redacted. There is no automatic Keyword fallback.
 
 The `/search` Server Component selects exactly one mode: absent/invalid mode is Keyword; `mode=semantic&q=...` can perform one initial semantic query. Client mode switching/typing never calls semantic transport. Separate explicit-submit state distinguishes draft/submitted queries, updates URLs only on submit through native history (no duplicate server query), suppresses duplicate active submit, and aborts/ignores obsolete browser responses. Abort cannot guarantee cancellation of an already-running upstream call. The focused no-store BFF `/api/knowledge-semantic-search` forwards the session server-side; GET requires no CSRF. Loading, empty-index, disabled/provider-error and manual retry states remain restrained, with an explicit Keyword alternative. Quick Search keeps its original 180ms live FTS behavior.
 
-## Milestone verification
+## Previous Semantic Search milestone verification
 
 Local API validation ran `./gradlew test` and `./gradlew clean build`: 190 tests passed, including 19 new Semantic Search tests (9 real-pgvector integration tests). They cover best-chunk/dedup-before-limit, owner/current/compatibility/completeness filtering, all visibility states, ordering, edit/reindex, revision restore, cascade, controlled errors and no automatic provider retries. Web validation ran `npm test`, `npm run lint`, and `npm run build`: 72 tests passed, including 12 new transport/mode/cost-guard/state tests; lint and production build succeeded.
 
 Browser QA ran the actual production Next.js build against a disposable loopback-only backend fixture containing synthetic notes, not a production embedding service or real OAuth session. Verified Keyword default/live behavior, Semantic mode/draft/Enter/button, initial deep link, plain-text matched context, keyboard result/Reading navigation, loading, disabled/provider errors/manual retry, empty index, invalid-mode fallback and unchanged Quick Search. Fixture counters confirmed zero semantic calls on typing/mode switch, one per submit/deep link and none from Quick Search. Desktop 1366px and mobile 390px were checked; a discovered 200-character unbroken-query heading overflow was fixed and reverified. Real authentication/persistence/vector semantics were verified separately by Spring Security + pgvector integration tests. No paid/external embedding call was made; live model retrieval quality remains environment-specific.
+
+Current Gemini migration/Ask verification is recorded separately in [ASK_MY_KNOWLEDGE.md](ASK_MY_KNOWLEDGE.md).

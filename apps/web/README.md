@@ -79,6 +79,16 @@ Semantic typing/mode switching never sends a provider request. Enter/Search expl
 
 The focused `/api/knowledge-semantic-search` BFF uses server-only cookie forwarding, no-store and the existing backend URL boundary; read-only GET needs no CSRF. Results reuse editorial rows/navigation and display `Matched context` as escaped plain text, never rendered Markdown/HTML. Disabled, temporarily unavailable, loading and empty/not-indexed states offer explicit Keyword alternatives; provider failures do not affect stored notes. Query text is sent to the configured provider and may appear in protected operational URL logs. No raw vector/model/distance/key is exposed; no hybrid rank, anonymous semantic search or ANN is added.
 
+## Ask My Knowledge
+
+`/ask` is a protected dynamic/no-store workspace page using the existing sidebar/mobile navigation. One multiline Question and explicit Ask button or Cmd/Ctrl + Enter submit; ordinary Enter adds a line. Mounting, typing, navigation and changing a draft never call AI. Active duplicate submits are suppressed; Cancel view/unmount abort browser requests and stale responses cannot overwrite current state. Upstream work may already have happened, so cancel does not promise a quota refund.
+
+The question-only `/api/ask-my-knowledge` POST BFF bounds JSON at 16 KiB, trims/max-validates 2000 characters, rejects unknown fields/cross-origin requests and delegates only to Spring `/api/ask`. Session cookie and CSRF header are forwarded by existing server-only transport. Origin is checked against incoming `Host` (Next's internal request URL may differ); deployment proxies must preserve the validated external Host. The backend URL, Gemini key/model/context and vectors are never browser configuration. Questions stay out of URLs/storage; no conversations/history are saved.
+
+Answer Markdown allows only simple paragraphs/lists/emphasis/code: raw HTML/images/active arbitrary links and Mermaid are not rendered/executed. Only structured validated source slugs link to `/knowledge/{slug}`; excerpts are plain text. Sources describe context notes, not verified per-claim citations. Loading, no-context, disabled, retrieval error, generation error and explicit retry retain the editorial layout and question draft. A privacy warning explains Gemini receives private text and Free Tier data handling.
+
+Enable optional embedding and generation in the API environment only; both default off. See [Ask configuration/privacy/quotas](../../docs/ASK_MY_KNOWLEDGE.md). Web tests use fake transports; browser QA uses a synthetic loopback backend, not Gemini or a production OAuth session.
+
 ## Knowledge Graph
 
 `/graph` is a protected Server Component route. Its server-only, no-store transport fetches compact current Knowledge nodes and explicit directed wiki edges, then hands the DTO to a focused graph Client Component. Graph is available in the existing desktop/mobile sidebar; unrelated Library/Reading routes remain server-rendered.

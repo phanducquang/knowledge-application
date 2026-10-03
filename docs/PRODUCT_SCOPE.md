@@ -44,10 +44,13 @@ Only after enough useful knowledge exists:
 
 Semantic Retrieval Foundation is complete for owner-internal current-Knowledge chunk storage, disabled-by-default embeddings and background indexing/backfill. Revisions, attachments and anonymous retrieval are excluded; existing FTS and relationships remain unchanged.
 
-Owner-only **Semantic Search is complete** on `/search`, alongside default live Keyword FTS. Semantic requests require explicit submit and send the query to the configured provider; results contain one best current compatible chunk per note. No anonymous retrieval or hybrid ranking is added. Next milestone: **Ask My Knowledge**.
+Owner-only **Semantic Search is complete** on `/search`, alongside default live Keyword FTS. Semantic requests require explicit submit and send the query to Gemini; results contain one best current compatible chunk per note. No anonymous retrieval or hybrid ranking is added.
+
+**Ask My Knowledge is complete** as an optional owner-only single-turn `/ask` workspace. One explicit question uses current compatible indexed chunks and one Gemini answer call, with limited Markdown and note-level Reading sources; no context means no generation. Both Gemini features default off, share a backend-only key and have persistent configurable quota guards. No chat/history, tools, public AI access or per-claim citation verification. Private text leaves the application when enabled; review current Google terms, especially Free Tier usage. Next milestone: **Source-linked Answers**.
 
 - semantic search using the pgvector foundation — complete
-- Ask My Knowledge
+- Ask My Knowledge — complete
+- Source-linked Answers — next, precise citations beyond note-level sources
 - automatic tags
 - automatic summaries
 - similar-knowledge suggestions

@@ -7,7 +7,7 @@ import java.time.Duration;
 
 @ConfigurationProperties("app.embedding")
 public record EmbeddingProperties(
-        boolean enabled, String baseUrl, String apiKey, String model, int dimensions,
+        boolean enabled, String baseUrl, String model, int dimensions,
         Duration connectTimeout, Duration readTimeout, int batchSize,
         boolean indexingEnabled, Duration interval, Duration initialDelay, int knowledgeBatchSize,
         int maxChunkChars, int overlapChars
@@ -28,12 +28,11 @@ public record EmbeddingProperties(
             if (model == null || model.isBlank() || model.length() > 255) {
                 throw new IllegalArgumentException("Embedding model must be non-blank and at most 255 characters");
             }
-            if (dimensions < 1 || dimensions > 16000) {
-                throw new IllegalArgumentException("Embedding dimensions must be between 1 and 16000");
+            if (dimensions < 1 || dimensions > 3072) {
+                throw new IllegalArgumentException("Embedding dimensions must be between 1 and 3072");
             }
-            if (connectTimeout == null || connectTimeout.isNegative() || connectTimeout.isZero()
-                    || readTimeout == null || readTimeout.isNegative() || readTimeout.isZero()) {
-                throw new IllegalArgumentException("Embedding timeouts must be positive");
+            if (!boundedTimeout(connectTimeout) || !boundedTimeout(readTimeout)) {
+                throw new IllegalArgumentException("Embedding timeouts must be between 1 and 2147483647 milliseconds");
             }
             if (batchSize < 1 || batchSize > 2048 || knowledgeBatchSize < 1 || knowledgeBatchSize > 1000) {
                 throw new IllegalArgumentException("Embedding batch sizes are out of range");
@@ -45,13 +44,12 @@ public record EmbeddingProperties(
             if (maxChunkChars < 256 || maxChunkChars > 16000 || overlapChars < 0 || overlapChars > maxChunkChars / 4) {
                 throw new IllegalArgumentException("Embedding chunk size/overlap are out of range");
             }
-            if (apiKey != null && !apiKey.isBlank() && apiKey.chars().anyMatch(c -> c < 33 || c > 126)) {
-                throw new IllegalArgumentException("Embedding API key must contain only visible ASCII characters");
-            }
-            if (uri.getHost().equalsIgnoreCase("api.openai.com") && (apiKey == null || apiKey.isBlank())) {
-                throw new IllegalArgumentException("Embedding API key is required for the OpenAI host");
-            }
         }
+    }
+
+    private static boolean boundedTimeout(Duration timeout) {
+        return timeout != null && timeout.compareTo(Duration.ofMillis(1)) >= 0
+                && timeout.compareTo(Duration.ofMillis(Integer.MAX_VALUE)) <= 0;
     }
 
     @Override

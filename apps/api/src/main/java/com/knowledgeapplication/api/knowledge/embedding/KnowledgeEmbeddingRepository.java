@@ -50,6 +50,7 @@ public class KnowledgeEmbeddingRepository {
 
     public enum IndexState { NOT_INDEXED, CURRENT, STALE }
     public record NearestChunk(long knowledgeId, int chunkIndex, String chunkText, double distance) {}
+    public record RagChunk(long id, String title, String slug, int chunkIndex, String chunkText) {}
     public record NearestKnowledge(long id, String title, String slug, String summary, Visibility visibility,
             String collection, List<String> tags, java.time.Instant updatedAt, int chunkIndex, String chunkText) {}
 
@@ -166,6 +167,28 @@ public class KnowledgeEmbeddingRepository {
                                 row.getObject("updated_at", OffsetDateTime.class).toInstant(), row.getInt("chunk_index"), row.getString("chunk_text"));
                     } finally { tags.free(); }
                 }).list();
+    }
+
+    /** RAG diversity: per-note cap BEFORE total chunk limit; identical CURRENT_SET as every retrieval/index path. */
+    public List<RagChunk> findRagChunks(UUID ownerId, EmbeddingStrategy strategy, float[] vector, int limit, int perNote) {
+        checkLimit(limit,100); checkLimit(perNote,10);
+        EmbeddingVectors.validate(List.of(vector),1,strategy.properties().dimensions());
+        return compatible(jdbc.sql("""
+                WITH compatible_chunks AS MATERIALIZED (
+                    SELECT c.id, c.knowledge_id, c.chunk_index, c.chunk_text, c.embedding, k.title, k.slug
+                    FROM knowledge_embedding_chunk c JOIN knowledge k ON k.id=c.knowledge_id AND k.owner_id=c.owner_id
+                    WHERE k.owner_id=:owner AND c.embedding_model=:model AND c.embedding_dimensions=:dimensions AND %s
+                ), distances AS (
+                    SELECT *, embedding <=> CAST(:vector AS vector) AS distance FROM compatible_chunks
+                ), ranked AS (
+                    SELECT *, row_number() OVER(PARTITION BY knowledge_id ORDER BY distance,chunk_index,id) AS position
+                    FROM distances
+                )
+                SELECT knowledge_id,title,slug,chunk_index,chunk_text FROM ranked WHERE position<=:perNote
+                ORDER BY distance,knowledge_id,chunk_index,id LIMIT :limit
+                """.formatted(CURRENT_SET)),ownerId,strategy).param("vector",EmbeddingVectors.literal(vector))
+                .param("perNote",perNote).param("limit",limit).query((row,n)->new RagChunk(row.getLong("knowledge_id"),
+                        row.getString("title"),row.getString("slug"),row.getInt("chunk_index"),row.getString("chunk_text"))).list();
     }
 
     /** Session advisory lock across generation; no row lock/transaction blocks normal authoring. */

@@ -56,7 +56,7 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation and Semantic Search are complete; Ask My Knowledge is next. Generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation, Semantic Search and Gemini-powered Ask My Knowledge are complete; Source-linked Answers is next. Generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
@@ -77,12 +77,12 @@ Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a 
 
 ## Phase 4 — AI-assisted retrieval
 
-Semantic Retrieval Foundation and owner-only Semantic Search are complete; next milestone: **Ask My Knowledge**. External embeddings remain disabled unless explicitly configured. `/search` offers explicit-submit Semantic alongside default 180ms live Keyword FTS; Quick Search stays FTS. No hybrid ranking, anonymous semantic search or generated answers are added.
+Semantic Retrieval Foundation, owner-only Semantic Search and **Gemini-powered Ask My Knowledge** are complete; next milestone: **Source-linked Answers**. Embedding/generation remain disabled unless explicitly enabled with a backend-only key. `/search` offers explicit-submit Semantic alongside default 180ms live Keyword FTS; Quick Search stays FTS. `/ask` adds one question/answer with current note-level sources, not chat or verified per-claim citations. PostgreSQL quota reservations protect global/background embeddings and independent generation; configuration changes automatically stale/reindex old vectors. No hybrid ranking or anonymous AI access is added.
 
 - PostgreSQL 17 + pgvector — complete
 - embedding provider/storage infrastructure — complete
 - current Knowledge chunk indexing/backfill and freshness detection — complete
 - semantic search — complete
-- Ask My Knowledge — next
-- source-linked answers
+- Ask My Knowledge — complete for single-turn Gemini answers and note-level sources
+- Source-linked Answers — next, precise citations and source navigation
 - auto tagging/summarization

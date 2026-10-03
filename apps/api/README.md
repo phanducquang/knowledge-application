@@ -310,9 +310,9 @@ PostgreSQL and object storage are not one transaction. Object deletion happens b
 
 PostgreSQL remains major 17 and now uses the pgvector project image. Flyway V8 enables the extension and creates owner-partitioned chunk-level vector storage with cascading Knowledge deletion. Only current title, summary and Markdown are embedded; revisions and attachments are excluded. Collection/Tags do not participate in semantic input.
 
-Embeddings are **disabled by default** (`EMBEDDING_ENABLED=false`), with no provider client/scheduler calls or health penalty. Enabling requires a backend-only base URL, model, dimensions and provider-appropriate credentials. `.env.example` lists `EMBEDDING_*` settings for batches, connect/read deadlines, scheduler and chunk size/overlap; never expose credentials via `NEXT_PUBLIC_*`. The provider must support the indexed OpenAI-compatible float embeddings/dimensions contract.
+Embeddings are **disabled by default** (`EMBEDDING_ENABLED=false`), with no provider client/scheduler calls or health penalty. Production uses official Google Java GenAI SDK `1.70.0`, native synchronous batch embeddings, default `gemini-embedding-2`/768. Set backend-only `GEMINI_API_KEY` securely when enabling; no `NEXT_PUBLIC_*` credentials. `.env.example` lists configurable model/dimensions, batches, deadlines, scheduler/chunk settings and global/background quotas.
 
-Background indexing/backfill is bounded, preserves authoring responsiveness, retries failures and transactionally replaces complete sets only if current source still matches. SHA-256 detects stale/model/dimension/chunker changes; exact cosine retrieval excludes stale/incomplete/incompatible chunks. No raw vector endpoint, LLM calls, AI relationships or ANN index is added. ANN remains deferred at personal-library scale, and **Ask My Knowledge** is next.
+Background indexing/backfill is bounded, preserves authoring responsiveness and transactionally replaces complete sets only if current source still matches. SHA-256 detects stale/model/dimension/chunker changes; the new explicit Gemini strategy marker invalidates the old adapter's rows automatically. Exact cosine retrieval excludes stale/incomplete/incompatible chunks during gradual reindex. Local quota denial/429 stops that cycle; later scheduled cycles resume pending work. No raw vector endpoint, AI relationships or ANN index is added.
 
 ## Semantic Search example
 
@@ -325,9 +325,32 @@ curl --get http://localhost:8080/api/search/knowledge/semantic \
 
 Authenticated owner only, no CSRF for GET; q is non-blank/max 200, limit defaults 20 and accepts 1–50. One provider query embedding, no automatic retry, no DB transaction across the provider, no query persistence or synchronous backfill. SQL selects each note's best current compatible chunk before applying the limit, orders exact cosine then updated time/ID descending, and returns compact metadata plus plain-text `match: {chunkIndex,text}` (max 600 characters). No raw vector/distance/model/credentials are exposed.
 
-Default disabled configuration returns `503 SEMANTIC_SEARCH_DISABLED`; provider timeout/invalid response returns `503 SEMANTIC_SEARCH_UNAVAILABLE`, without upstream details. All owner visibility states may participate, never anonymous PUBLIC/UNLISTED. Keyword FTS, Quick Search, Related Articles and Graph stay unchanged. Query text goes to the configured provider and can be private; protect access/URL logs. No hybrid rank, ANN or similarity threshold is added.
+Default disabled configuration returns `503 SEMANTIC_SEARCH_DISABLED`; local quota denial, provider 429/timeout/invalid response returns `503 SEMANTIC_SEARCH_UNAVAILABLE`, without upstream details. All owner visibility states may participate, never anonymous PUBLIC/UNLISTED. Keyword FTS, Quick Search, Related Articles and Graph stay unchanged. Query text goes to Gemini and can be private; protect access/URL logs. No hybrid rank, ANN or similarity threshold is added.
 
 See [`../../docs/SEMANTIC_RETRIEVAL.md`](../../docs/SEMANTIC_RETRIEVAL.md) for all defaults, source/hash semantics, provider privacy implications, local extension inspection and production migration privileges. Normal tests use deterministic fake embeddings and loopback HTTP mocks without API keys or paid/network calls.
+
+## Ask My Knowledge
+
+`ASK_ENABLED=false` by default. To enable answers, securely inject `GEMINI_API_KEY`, set `EMBEDDING_ENABLED=true` and `ASK_ENABLED=true`, and allow automatic indexing to build the current compatible corpus. Generation defaults to configurable `gemini-3.5-flash-lite`. Embeddings alone may be enabled; Ask alone returns retrieval unavailable without doing generation. Neither feature requires a key while both are disabled.
+
+After existing Google owner login, obtain the session's CSRF token/header with:
+
+```bash
+curl http://localhost:8080/api/auth/csrf -b 'JSESSIONID=<authenticated-session>'
+curl http://localhost:8080/api/ask \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'Content-Type: application/json' \
+  -H 'X-CSRF-TOKEN: <token-from-csrf-response>' \
+  --data '{"question":"How did I configure WebClient timeouts?"}'
+```
+
+Use the `headerName` returned by the CSRF response. Only `question` is writable: trimmed/non-blank/max 2000, JSON body max 16 KiB. Unknown fields (including owner/model/context) are rejected. `ANSWERED` exposes `{status,answer,sources:[{id,title,slug,excerpt}]}`; `NO_CONTEXT` exposes null answer and empty sources, making zero generation calls. Responses are private/no-store. Disabled generation gives `503 ASK_DISABLED`, retrieval/quota errors `503 ASK_RETRIEVAL_UNAVAILABLE`, generation/quota errors `503 ASK_UNAVAILABLE`; messages never expose provider internals. Authentication/CSRF remain 401/403.
+
+At most one query embedding and one generation request per Ask; no automatic SDK/application retries, tools, fallback, synchronous backfill or question/answer persistence. Context defaults: 8 chunks, 2 per note before global ranking, 6 unique sources, 24000 serialized characters. Notes are current owner-only indexed text, not historical revisions. Sources are note-level context, not verified per-claim citations.
+
+V9 adds PostgreSQL quota counters only. Defaults: embeddings global `80 RPM / 24000 input TPM / 800 RPD`, background `50 / 18000 / 650` within global; independent generation `10 / 200000 / 400`. Estimates use ceil(total input chars / 2.5), RPD midnight `America/Los_Angeles`, counters persist across restarts/replicas. These are operational ceilings, **not actual account quotas**; check AI Studio when changing model/tier and keep all replicas consistent.
+
+Gemini receives private text/questions when enabled. Free Tier/unpaid handling may differ from paid terms and permit product improvement/human review. Review [Google terms](https://ai.google.dev/gemini-api/terms) and [pricing](https://ai.google.dev/gemini-api/docs/pricing) before enabling. See [`../../docs/ASK_MY_KNOWLEDGE.md`](../../docs/ASK_MY_KNOWLEDGE.md) for full configuration, cost/retention boundaries and limitations. Tests explicitly disable production AI and clear its key; zero external Gemini calls.
 
 ## Validate
 

@@ -65,7 +65,7 @@ public class KnowledgeEmbeddingIndexer {
                         for (int offset = 0; offset < chunks.size(); offset += properties.batchSize()) {
                             var batch = chunks.subList(offset, Math.min(chunks.size(), offset + properties.batchSize()));
                             var inputs = batch.stream().map(chunk -> source.input(chunk.text())).toList();
-                            var generated = provider.embed(inputs);
+                            var generated = provider.embedBackground(inputs);
                             EmbeddingVectors.validate(generated, inputs.size(), properties.dimensions());
                             vectors.addAll(generated);
                         }
@@ -74,6 +74,9 @@ public class KnowledgeEmbeddingIndexer {
                             chunkCount += chunks.size();
                         } else superseded++;
                     }
+                } catch (EmbeddingQuotaUnavailableException ex) {
+                    log.info("Embedding indexing cycle stopped by quota/rate boundary; work remains pending");
+                    break;
                 } catch (RuntimeException ex) {
                     failures++;
                     // Do not attach the exception: providers/database errors may echo sensitive inputs.

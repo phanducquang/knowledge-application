@@ -211,7 +211,7 @@ Semantic Retrieval Foundation — implemented:
 
 - PostgreSQL 17 with pgvector, enabled by Flyway V8; unconstrained chunk-level vectors, cascading composite Knowledge/owner FK and no ANN index
 - only current title/summary/Markdown, not revisions, attachments or Collection/Tags; all visibility states remain owner-internal
-- disabled-by-default backend-only OpenAI-compatible provider behind `EmbeddingClient`; deterministic fake/loopback mocks in tests
+- disabled-by-default backend-only official Gemini Java GenAI SDK `1.70.0` behind `EmbeddingClient`; deterministic fake/native-SDK loopback mocks in tests
 - bounded scheduled backfill and reindex, with session advisory locking, no provider call in authoring transactions, complete atomic replacement and source recheck
 - authoritative SHA-256 freshness includes model/dimension/provider/chunker version/settings; stale or incomplete sets cannot enter the centralized owner-scoped exact cosine query
 - no public embedding/vector DTO; see [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md) for configuration, privacy and operational constraints
@@ -222,7 +222,15 @@ Semantic Search — implemented: authenticated `GET /api/search/knowledge/semant
 
 Future:
 
-- AI-assisted question answering with citations back to stored knowledge
+- Precise source-linked/per-claim citations beyond the current note-level sources
+
+Ask My Knowledge — implemented: authenticated, CSRF-protected `POST /api/ask` accepts only a question. `AskService` calls the existing query embedding boundary once, then `findRagChunks` uses the shared `CURRENT_SET` predicate and exact cosine ordering. Per-note chunk limits precede the global limit in SQL. Deterministic JSON context includes at most 8 chunks, 2 per note, 6 sources and 24000 serialized characters; Unicode-safe final trimming accounts for escaped text/metadata. No current context returns `NO_CONTEXT` with zero generation calls. Otherwise `KnowledgeAnswerClient` makes one native Gemini generation call with untrusted question/reference data separate from system grounding instructions. Both calls occur outside DB transactions/connections; edits after the retrieval snapshot are an explicit concurrency limitation.
+
+The provider-specific adapters/configuration isolate SDK DTOs. Shared backend-only `GEMINI_API_KEY` is explicit, with no ambient credential/Vertex fallback. Defaults are configurable `gemini-embedding-2`/768 and `gemini-3.5-flash-lite`; the old compatible adapter is removed. Strategy marker `semantic-source-v2` includes Gemini symmetric input semantics, so existing V8 rows become stale automatically and bounded backfill replaces them without vector truncation or schema changes.
+
+Flyway V9 adds only `ai_quota_usage`. Short advisory-locked PostgreSQL transactions reserve fixed-minute RPM/estimated-input-TPM and timezone-aware RPD immediately before each SDK request. Background embedding must satisfy global plus smaller background limits; Semantic Search/Ask query embeddings share only the global limit. Generation has independent counters. Reservations persist across restarts/replicas and count failed calls conservatively. Local denial/provider 429 yields a safe unavailable state; indexing stops that cycle. SDK/transport retries are disabled. These operational ceilings are not Gemini's authoritative model/project quotas; see [`ASK_MY_KNOWLEDGE.md`](ASK_MY_KNOWLEDGE.md) for rate configuration, privacy and fixed-window limitations.
+
+Protected `/ask` uses a focused question-only no-store POST BFF, existing session/CSRF forwarding and Host/Origin checks. Typing/mount never calls AI; only explicit button/Cmd-Ctrl Enter submits, with duplicate suppression and abort/latest-response guards. Questions never enter URLs, browser storage or chat persistence. Answer Markdown disallows active links/images/HTML/Mermaid; structured note sources alone link to Reading. No public/shared retrieval, tool execution, web search, rewrites, reranking or agent loop is introduced.
 
 ## 8. Authentication
 
@@ -237,8 +245,8 @@ Not part of the initial implementation, but architecture should not block:
 - revision diffs, labels, pruning/export and collaborative audit history
 - indexed links, richer wiki-link syntax and cross-note relationship tooling beyond the first owner-only `[[stable-slug]]`/backlink slice
 - advanced graph exploration beyond the current read-only owner graph
-- semantic search
-- Ask My Knowledge
+- hybrid/large-library semantic retrieval beyond current exact cosine search
+- precise source-linked answers beyond the single-turn Ask foundation
 - automatic tagging and summaries
 
 ## 10. Architectural principles
