@@ -4,6 +4,7 @@ import type { KnowledgeListItemData } from "@/types/knowledge";
 
 interface KnowledgeListItemProps {
   item: KnowledgeListItemData;
+  matchText?: string;
 }
 
 function visibilityClass(visibility: string) {
@@ -18,7 +19,7 @@ function visibilityClass(visibility: string) {
   return "text-[var(--text-subtle)]";
 }
 
-export function KnowledgeListItem({ item }: KnowledgeListItemProps) {
+export function KnowledgeListItem({ item, matchText }: KnowledgeListItemProps) {
   return (
     <article className="group -mx-3 border-b border-[var(--border)] px-3 py-5 transition-colors last:border-b-0 hover:bg-[var(--row-hover)] focus-within:bg-[var(--row-hover)]">
       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_100px] md:gap-8">
@@ -41,6 +42,12 @@ export function KnowledgeListItem({ item }: KnowledgeListItemProps) {
             ))}
             <span className={`text-[12px] ${visibilityClass(item.visibility)}`}>{item.visibility}</span>
           </div>
+          {matchText !== undefined && (
+            <div className="mt-3 max-w-3xl">
+              <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--text-subtle)]">Matched context</p>
+              <p className="mt-1 whitespace-pre-wrap break-words text-[13px] leading-6 text-[var(--text-muted)] [overflow-wrap:anywhere]">{matchText}</p>
+            </div>
+          )}
         </div>
         <time className="text-[12px] tabular-nums text-[var(--text-subtle)] md:pt-1 md:text-right" dateTime={item.updatedAtIso}>
           {item.updatedAt}

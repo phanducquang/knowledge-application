@@ -312,7 +312,20 @@ PostgreSQL remains major 17 and now uses the pgvector project image. Flyway V8 e
 
 Embeddings are **disabled by default** (`EMBEDDING_ENABLED=false`), with no provider client/scheduler calls or health penalty. Enabling requires a backend-only base URL, model, dimensions and provider-appropriate credentials. `.env.example` lists `EMBEDDING_*` settings for batches, connect/read deadlines, scheduler and chunk size/overlap; never expose credentials via `NEXT_PUBLIC_*`. The provider must support the indexed OpenAI-compatible float embeddings/dimensions contract.
 
-Background indexing/backfill is bounded, preserves authoring responsiveness, retries failures and transactionally replaces complete sets only if current source still matches. SHA-256 detects stale/model/dimension/chunker changes; an internal owner-scoped exact cosine query excludes stale/incomplete/incompatible chunks. No semantic endpoint/UI, LLM calls, AI relationships or ANN index is added. ANN remains deferred at personal-library scale, and **Semantic Search** is next.
+Background indexing/backfill is bounded, preserves authoring responsiveness, retries failures and transactionally replaces complete sets only if current source still matches. SHA-256 detects stale/model/dimension/chunker changes; exact cosine retrieval excludes stale/incomplete/incompatible chunks. No raw vector endpoint, LLM calls, AI relationships or ANN index is added. ANN remains deferred at personal-library scale, and **Ask My Knowledge** is next.
+
+## Semantic Search example
+
+```bash
+curl --get http://localhost:8080/api/search/knowledge/semantic \
+  -b 'JSESSIONID=<authenticated-session>' \
+  --data-urlencode 'q=how did I solve reverse proxy timeouts?' \
+  --data-urlencode 'limit=20'
+```
+
+Authenticated owner only, no CSRF for GET; q is non-blank/max 200, limit defaults 20 and accepts 1–50. One provider query embedding, no automatic retry, no DB transaction across the provider, no query persistence or synchronous backfill. SQL selects each note's best current compatible chunk before applying the limit, orders exact cosine then updated time/ID descending, and returns compact metadata plus plain-text `match: {chunkIndex,text}` (max 600 characters). No raw vector/distance/model/credentials are exposed.
+
+Default disabled configuration returns `503 SEMANTIC_SEARCH_DISABLED`; provider timeout/invalid response returns `503 SEMANTIC_SEARCH_UNAVAILABLE`, without upstream details. All owner visibility states may participate, never anonymous PUBLIC/UNLISTED. Keyword FTS, Quick Search, Related Articles and Graph stay unchanged. Query text goes to the configured provider and can be private; protect access/URL logs. No hybrid rank, ANN or similarity threshold is added.
 
 See [`../../docs/SEMANTIC_RETRIEVAL.md`](../../docs/SEMANTIC_RETRIEVAL.md) for all defaults, source/hash semantics, provider privacy implications, local extension inspection and production migration privileges. Normal tests use deterministic fake embeddings and loopback HTTP mocks without API keys or paid/network calls.
 

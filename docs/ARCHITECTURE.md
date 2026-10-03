@@ -214,11 +214,14 @@ Semantic Retrieval Foundation — implemented:
 - disabled-by-default backend-only OpenAI-compatible provider behind `EmbeddingClient`; deterministic fake/loopback mocks in tests
 - bounded scheduled backfill and reindex, with session advisory locking, no provider call in authoring transactions, complete atomic replacement and source recheck
 - authoritative SHA-256 freshness includes model/dimension/provider/chunker version/settings; stale or incomplete sets cannot enter the centralized owner-scoped exact cosine query
-- no public embedding DTO or semantic endpoint; see [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md) for configuration, privacy and operational constraints
+- no public embedding/vector DTO; see [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md) for configuration, privacy and operational constraints
+
+Semantic Search — implemented: authenticated `GET /api/search/knowledge/semantic` resolves `CurrentOwner`, embeds one validated query exactly once outside a database transaction, then reuses the embedding repository's current complete-set predicate. SQL selects the nearest chunk per note before the note limit, orders cosine distance ascending then updated time/ID descending, and enriches metadata in the same bounded statement/snapshot. DTOs expose normal navigation metadata and a plain-text source excerpt capped at 600 UTF-16 units; no vectors, model/provider details or distance leave the API. Query vectors are temporary; search never backfills synchronously or retries automatically.
+
+`/search` defaults to unchanged Keyword FTS/live 180ms debounce. Semantic has separate explicit-submit state, draft versus submitted query and cancellation/latest-response protection. Typing/mode switching makes no semantic request; deep links may execute one initial server query. Native history replacement synchronizes submitted URLs without repeating Server Component requests. A focused no-store `/api/knowledge-semantic-search` BFF forwards session cookies through existing transport without CSRF for this GET. Disabled/provider failures produce distinct sanitized 503 states and an explicit Keyword alternative. Empty results mean no current compatible indexed notes/library, not a similarity cutoff. Quick Search, public/shared routes, Related Articles and Graph are unchanged.
 
 Future:
 
-- Semantic Search consuming the internal compatible/current pgvector foundation
 - AI-assisted question answering with citations back to stored knowledge
 
 ## 8. Authentication

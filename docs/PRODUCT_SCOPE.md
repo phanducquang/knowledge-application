@@ -44,9 +44,9 @@ Only after enough useful knowledge exists:
 
 Semantic Retrieval Foundation is complete for owner-internal current-Knowledge chunk storage, disabled-by-default embeddings and background indexing/backfill. Revisions, attachments and anonymous retrieval are excluded; existing FTS and relationships remain unchanged.
 
-Next milestone: **Semantic Search**. No user-facing semantic retrieval is implemented yet.
+Owner-only **Semantic Search is complete** on `/search`, alongside default live Keyword FTS. Semantic requests require explicit submit and send the query to the configured provider; results contain one best current compatible chunk per note. No anonymous retrieval or hybrid ranking is added. Next milestone: **Ask My Knowledge**.
 
-- semantic search using the pgvector foundation
+- semantic search using the pgvector foundation — complete
 - Ask My Knowledge
 - automatic tags
 - automatic summaries

@@ -14,6 +14,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Arrays;
+import com.knowledgeapplication.api.knowledge.model.Visibility;
 
 @Repository
 public class KnowledgeEmbeddingRepository {
@@ -48,6 +50,8 @@ public class KnowledgeEmbeddingRepository {
 
     public enum IndexState { NOT_INDEXED, CURRENT, STALE }
     public record NearestChunk(long knowledgeId, int chunkIndex, String chunkText, double distance) {}
+    public record NearestKnowledge(long id, String title, String slug, String summary, Visibility visibility,
+            String collection, List<String> tags, java.time.Instant updatedAt, int chunkIndex, String chunkText) {}
 
     public List<Long> findPending(UUID ownerId, EmbeddingStrategy strategy, int limit, long afterId) {
         checkLimit(limit, 1000);
@@ -122,6 +126,46 @@ public class KnowledgeEmbeddingRepository {
                 """.formatted(CURRENT_SET)), ownerId, strategy).param("vector", EmbeddingVectors.literal(queryVector))
                 .param("limit", limit).query((row, n) -> new NearestChunk(row.getLong("knowledge_id"),
                         row.getInt("chunk_index"), row.getString("chunk_text"), row.getDouble("distance"))).list();
+    }
+
+    /** One best current chunk per note BEFORE the note limit. Metadata shares the same SQL snapshot. */
+    public List<NearestKnowledge> findNearestKnowledge(UUID ownerId, EmbeddingStrategy strategy, float[] queryVector, int limit) {
+        checkLimit(limit, 50);
+        EmbeddingVectors.validate(List.of(queryVector), 1, strategy.properties().dimensions());
+        return compatible(jdbc.sql("""
+                WITH compatible_chunks AS MATERIALIZED (
+                    SELECT c.id, c.knowledge_id, c.chunk_index, c.chunk_text, c.embedding, k.updated_at
+                    FROM knowledge_embedding_chunk c
+                    JOIN knowledge k ON k.id = c.knowledge_id AND k.owner_id = c.owner_id
+                    WHERE k.owner_id = :owner AND c.embedding_model = :model AND c.embedding_dimensions = :dimensions
+                      AND %s
+                ), distances AS (
+                    SELECT *, embedding <=> CAST(:vector AS vector) AS distance FROM compatible_chunks
+                ), ranked_chunks AS (
+                    SELECT *, row_number() OVER (
+                        PARTITION BY knowledge_id ORDER BY distance, chunk_index, id
+                    ) AS position FROM distances
+                ), best_notes AS (
+                    SELECT * FROM ranked_chunks WHERE position = 1
+                    ORDER BY distance, updated_at DESC, knowledge_id DESC LIMIT :limit
+                )
+                SELECT k.id, k.title, k.slug, k.summary, k.visibility, k.updated_at, collection.name AS collection,
+                       best.chunk_index, best.chunk_text,
+                       ARRAY(SELECT t.name FROM knowledge_tag kt JOIN tag t ON t.id = kt.tag_id
+                             WHERE kt.knowledge_id = k.id AND t.owner_id = :owner ORDER BY lower(t.name), t.name) AS tags
+                FROM best_notes best JOIN knowledge k ON k.id = best.knowledge_id AND k.owner_id = :owner
+                LEFT JOIN knowledge_collection collection ON collection.id = k.collection_id AND collection.owner_id = :owner
+                ORDER BY best.distance, k.updated_at DESC, k.id DESC
+                """.formatted(CURRENT_SET)), ownerId, strategy).param("vector", EmbeddingVectors.literal(queryVector))
+                .param("limit", limit).query((row, n) -> {
+                    var tags = row.getArray("tags");
+                    try {
+                        return new NearestKnowledge(row.getLong("id"), row.getString("title"), row.getString("slug"),
+                                row.getString("summary"), Visibility.valueOf(row.getString("visibility")), row.getString("collection"),
+                                Arrays.stream((Object[]) tags.getArray()).map(String::valueOf).toList(),
+                                row.getObject("updated_at", OffsetDateTime.class).toInstant(), row.getInt("chunk_index"), row.getString("chunk_text"));
+                    } finally { tags.free(); }
+                }).list();
     }
 
     /** Session advisory lock across generation; no row lock/transaction blocks normal authoring. */

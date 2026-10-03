@@ -3,10 +3,10 @@ package com.knowledgeapplication.api.knowledge.embedding;
 import java.util.List;
 import java.util.StringJoiner;
 
-final class EmbeddingVectors {
+public final class EmbeddingVectors {
     private EmbeddingVectors() {}
 
-    static void validate(List<float[]> vectors, int count, int dimensions) {
+    public static void validate(List<float[]> vectors, int count, int dimensions) {
         if (vectors == null || vectors.size() != count) throw new EmbeddingUnavailableException();
         for (float[] vector : vectors) {
             if (vector == null || vector.length != dimensions) throw new EmbeddingUnavailableException();

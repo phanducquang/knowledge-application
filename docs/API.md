@@ -350,11 +350,43 @@ PostgreSQL uses `websearch_to_tsquery('simple', q)` with parameterized SQL. The 
 
 Results sort by combined relevance descending, then `updatedAt DESC` and `id DESC`. A multi-term query may match across a core field and metadata. The generated stored `knowledge.search_vector` covers title, summary and content and has a GIN index. Collection and tag text remains normalized relational data and is converted to an owner-scoped metadata vector during the query; this avoids duplicated metadata and trigger synchronization at the cost of metadata-only and cross-vector matching not using the core GIN index.
 
-## Semantic retrieval foundation (internal only)
+## Semantic Search (authenticated owner only)
 
-No semantic/embedding HTTP endpoint is added. V8 enables pgvector on PostgreSQL 17 and stores owner-internal current-Knowledge chunks with model/dimension/version and SHA-256 freshness metadata. Background indexing is disabled by default, never calls the provider during CRUD/restore, and replaces chunks only after full generation and a current-source recheck. Deletion cascades chunk rows; revisions and attachment bytes are not embedded. Collection/Tags are excluded from semantic input, so metadata-only changes do not require re-embedding.
+| Method | Route | Result |
+| --- | --- | --- |
+| `GET` | `/api/search/knowledge/semantic?q={query}&limit={limit}` | One best current matching chunk per owned Knowledge note |
 
-The internal exact cosine repository query filters owner, compatible model/dimensions/strategy, complete sets and current source hash before returning bounded deterministic results. Raw vectors, distances, provider inputs and credentials are not part of any API DTO. FTS/Quick Search, PUBLIC/UNLISTED, Related Articles and Graph behavior are unchanged. See [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md); Semantic Search is the next milestone.
+`q` is required, non-blank, trimmed and at most 200 characters; `limit` defaults to 20, accepts integers 1–50. Only these two parameters are consumed: owner/model/dimensions/provider/vector/credentials remain backend-controlled. Authentication is required (401 without owner session, 403 for unauthorized identity); GET needs no CSRF token. Responses are private `no-store`.
+
+```json
+[
+  {
+    "id": 12,
+    "title": "WebClient timeouts",
+    "slug": "webclient-timeouts",
+    "summary": null,
+    "visibility": "PRIVATE",
+    "collection": "Spring",
+    "tags": ["Java", "WebFlux"],
+    "updatedAt": "2026-10-03T00:00:00Z",
+    "match": { "chunkIndex": 2, "text": "responseTimeout(Duration.ofSeconds(5)) …" }
+  }
+]
+```
+
+The query is sent once to the configured `EmbeddingClient`; exactly one finite non-zero vector of configured dimensions is required. Calls are outside DB transactions, use existing provider deadlines and have no automatic retry/fallback. Query vectors are temporary, never persisted. SQL reuses the indexer's complete/current SHA-256/model/dimension/chunker predicate, filters owner before ranking, and selects the best chunk per note before the note limit. Ranking is exact cosine distance ascending, then Knowledge updated time and ID descending; best-chunk ties use chunk index and row ID. Metadata is enriched in the same bounded statement/snapshot, not N+1 queries.
+
+`match.text` is the best current source chunk excerpt, capped at 600 UTF-16 units including ellipsis without splitting surrogate pairs. It is plain text, never trusted HTML/Markdown. Responses omit owner, vectors, distance, provider/model/dimensions/hash and secrets. All visibility states may appear in the private workspace. Stale, incompatible, incomplete, unindexed and deleted notes do not participate; background indexing alone makes pending notes searchable. With no similarity cutoff, an empty array means no current compatible indexed notes/library, not proof that no semantically related note exists.
+
+Disabled/missing provider returns `503 SEMANTIC_SEARCH_DISABLED`; timeout, provider error or invalid vectors returns `503 SEMANTIC_SEARCH_UNAVAILABLE`. Both use `{code,message,fieldErrors}` with sanitized messages, no upstream body/cause/secret. Validation/malformed parameter errors remain 400. There is no anonymous/public/shared semantic endpoint, hybrid score or ANN index.
+
+`/search?q=redis` and absent/invalid mode remain Keyword; `/search?mode=semantic&q=cache+invalidation` performs one initial semantic request. Typing/switching to Semantic never invokes the provider; Enter/Search explicitly submits and updates the URL. Browser requests use only `/api/knowledge-semantic-search` BFF with server-side cookie forwarding/no-store. Submitted query text goes to the configured provider and may be sensitive; restrict operational URL/access logs. Application code does not explicitly log it. Keyword SQL/ranking/debounce and Quick Search stay unchanged.
+
+## Semantic retrieval foundation (internal storage)
+
+V8 enables pgvector on PostgreSQL 17 and stores owner-internal current-Knowledge chunks with model/dimension/version and SHA-256 freshness metadata. Background indexing is disabled by default, never calls the provider during CRUD/restore, and replaces chunks only after full generation and a current-source recheck. Deletion cascades chunk rows; revisions and attachment bytes are not embedded. Collection/Tags are excluded from semantic input, so metadata-only changes do not require re-embedding.
+
+The centralized exact cosine repository query filters owner, compatible model/dimensions/strategy, complete sets and current source hash before returning bounded deterministic results. Raw vectors, distances, provider inputs and credentials are not part of any API DTO. FTS/Quick Search, PUBLIC/UNLISTED, Related Articles and Graph behavior are unchanged. See [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md); Ask My Knowledge is the next milestone.
 
 ## Ownership and authorization
 
@@ -374,7 +406,7 @@ The web application consumes this contract from Next.js Server Components and Se
 
 - List, Reading and Edit initialization use owner-specific API reads with `cache: no-store` and dynamic route rendering.
 - The workspace shell loads Collection summaries independently of notes, so empty collections appear in the sidebar and Create/Edit pickers. `/collections` manages names and `/collections/{id}` loads the owner's filtered note list.
-- Full Search initially executes server-side. Subsequent Full Search and typed Quick Search requests use only the focused same-origin `/api/knowledge-search` Next.js Route Handler; it delegates to the same Spring endpoint without exposing the backend URL.
+- Full Search initially executes its selected mode server-side. Subsequent Keyword Full Search and typed Quick Search use `/api/knowledge-search`; explicit-submit Semantic uses the focused `/api/knowledge-semantic-search` BFF. Both delegate to their owner-scoped Spring endpoints without exposing the backend URL.
 - `POST`, `PUT`, focused visibility `PATCH`, and link regeneration run through Server Actions. The frontend mapping emits only fields required by each operation.
 - Server-side reads and the Search BFF forward the incoming `JSESSIONID`; mutations additionally fetch `/api/auth/csrf` and forward its token header.
 - `/k/{slug}` uses a focused server-only public client with `cache: no-store` and does not send the private session cookie. Its basic metadata is indexable only after the public API successfully returns a PUBLIC item.

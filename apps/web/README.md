@@ -26,6 +26,7 @@ Next.js application for the Knowledge Application workspace.
 - safe GFM rendering, dynamic H2-H4 table of contents and calculated read time
 - Full Search and typed Quick Search consume the same backend-ranked PostgreSQL search through a focused same-origin Route Handler
 - empty Quick Search continues to show recently updated owner Knowledge
+- `/search` offers default live Keyword FTS and explicit-submit Semantic search, with current best-chunk context; Semantic is owner-only and requires configured backend embeddings
 - server-side private-route protection backed by Spring Security `/api/auth/me`
 - focused Google login/logout routes, HttpOnly session forwarding and CSRF-aware Server Actions
 - anonymous, dynamic `/k/{slug}` Reading Page for already-persisted PUBLIC Knowledge
@@ -69,6 +70,14 @@ Collection summaries come from the backend independently of the current note lis
 
 Interactive search calls the same-origin `/api/knowledge-search` BFF route. It is intentionally narrow: the Spring Boot base URL remains server-only, typed searches are debounced and bounded, stale requests are aborted/versioned, and API failures show an error state rather than falling back to browser-side ranking.
 The BFF forwards the incoming authenticated session and returns `401` rather than bypassing backend security when the session is absent.
+
+## Semantic Search
+
+`/search?q=redis` and absent/invalid `mode` remain Keyword, including the unchanged 180ms debounce and backend order. `/search?mode=semantic&q=cache+invalidation` executes only one initial server semantic query. The compact Keyword/Semantic selector stays in the approved Search workspace; Quick Search is unchanged FTS.
+
+Semantic typing/mode switching never sends a provider request. Enter/Search explicitly submits; draft text is separate from submitted text, and the URL updates only on submit. Duplicate in-flight submits are suppressed; a different submit aborts/ignores stale browser responses without assuming the upstream provider was canceled. No automatic retry or silent Keyword fallback is performed.
+
+The focused `/api/knowledge-semantic-search` BFF uses server-only cookie forwarding, no-store and the existing backend URL boundary; read-only GET needs no CSRF. Results reuse editorial rows/navigation and display `Matched context` as escaped plain text, never rendered Markdown/HTML. Disabled, temporarily unavailable, loading and empty/not-indexed states offer explicit Keyword alternatives; provider failures do not affect stored notes. Query text is sent to the configured provider and may appear in protected operational URL logs. No raw vector/model/distance/key is exposed; no hybrid rank, anonymous semantic search or ANN is added.
 
 ## Knowledge Graph
 

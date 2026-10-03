@@ -1,6 +1,6 @@
-# Semantic Retrieval Foundation
+# Semantic Retrieval and Search
 
-This milestone implements internal vector persistence and background indexing, **not Semantic Search**. FTS, Quick Search, Related Articles, explicit wiki graph edges and all existing HTTP DTOs/routes are unchanged. No embedding endpoint, anonymous retrieval, LLM/RAG, revision/image embedding or Web integration is added. Semantic Search is next.
+The foundation implements internal vector persistence and background indexing. Owner-only **Semantic Search is now complete** at `/search`, alongside default Keyword FTS. FTS, Quick Search, Related Articles, explicit wiki graph edges and existing public/shared routes are unchanged. No raw embedding endpoint, anonymous retrieval, LLM/RAG or revision/image embedding is added. Ask My Knowledge is next.
 
 ## Database and source contract
 
@@ -75,4 +75,22 @@ docker compose -f infra/docker/compose.yml exec -T postgres \
   -c "SELECT extversion FROM pg_extension WHERE extname = 'vector';"
 ```
 
-This foundation has no semantic endpoint/UI, ANN index, token-aware batching, durable retry telemetry, multi-model parallel corpus, or revision/attachment embeddings. Future Semantic Search must use the centralized freshness/owner/model filters rather than reading chunk rows directly.
+Limitations remain: no ANN index, token-aware batching, durable retry telemetry, multi-model parallel corpus, query cache, hybrid ranking, similarity threshold, or revision/attachment embeddings. Production provider credentials/live embedding quality are environment-specific; automated tests use fake/local mock providers only.
+
+## Owner-only Semantic Search
+
+`GET /api/search/knowledge/semantic?q=...&limit=20` uses authenticated `CurrentOwner`, validates q (non-blank/max 200) and limit (1–50), then calls `EmbeddingClient` once with the trimmed query. It requires one finite non-zero vector of configured dimensions. The provider call holds no DB transaction, is never automatically retried and does not persist query vectors or backfill notes.
+
+`findNearestKnowledge` reuses the exact same `CURRENT_SET` predicate as the indexer and internal chunk smoke query. Compatible current chunks are materialized before cosine evaluation; SQL row-number selection picks one best chunk per Knowledge (distance, chunk index, row ID), then applies note ordering (distance ASC, updated_at DESC, Knowledge ID DESC) and note limit. Collection/Tags are loaded in the same owner-scoped bounded SQL statement, not one network query per result. Raw distance/vectors remain internal. Result `match.text` is capped at 600 UTF-16 units including ellipsis, without splitting surrogate pairs, and is rendered as plain text.
+
+Only current complete compatible sets participate, across the owner's PRIVATE/UNLISTED/PUBLIC notes. Edits hide stale notes immediately; indexing later makes their new current state searchable. Retained revisions never contribute until restore becomes current and is reindexed. Deletion cascades. With no calibrated cutoff, an empty result means no current compatible indexed notes/library rather than proof of no semantically related notes.
+
+Disabled/missing client produces `503 SEMANTIC_SEARCH_DISABLED`; provider timeout, invalid response/count/dimensions produces sanitized `503 SEMANTIC_SEARCH_UNAVAILABLE`. Knowledge remains unaffected. Query text necessarily goes to the configured provider, may incur usage charges and may be private. Application code does not explicitly log queries/vectors/matches; operational proxy/URL logs must be restricted/redacted. There is no automatic Keyword fallback.
+
+The `/search` Server Component selects exactly one mode: absent/invalid mode is Keyword; `mode=semantic&q=...` can perform one initial semantic query. Client mode switching/typing never calls semantic transport. Separate explicit-submit state distinguishes draft/submitted queries, updates URLs only on submit through native history (no duplicate server query), suppresses duplicate active submit, and aborts/ignores obsolete browser responses. Abort cannot guarantee cancellation of an already-running upstream call. The focused no-store BFF `/api/knowledge-semantic-search` forwards the session server-side; GET requires no CSRF. Loading, empty-index, disabled/provider-error and manual retry states remain restrained, with an explicit Keyword alternative. Quick Search keeps its original 180ms live FTS behavior.
+
+## Milestone verification
+
+Local API validation ran `./gradlew test` and `./gradlew clean build`: 190 tests passed, including 19 new Semantic Search tests (9 real-pgvector integration tests). They cover best-chunk/dedup-before-limit, owner/current/compatibility/completeness filtering, all visibility states, ordering, edit/reindex, revision restore, cascade, controlled errors and no automatic provider retries. Web validation ran `npm test`, `npm run lint`, and `npm run build`: 72 tests passed, including 12 new transport/mode/cost-guard/state tests; lint and production build succeeded.
+
+Browser QA ran the actual production Next.js build against a disposable loopback-only backend fixture containing synthetic notes, not a production embedding service or real OAuth session. Verified Keyword default/live behavior, Semantic mode/draft/Enter/button, initial deep link, plain-text matched context, keyboard result/Reading navigation, loading, disabled/provider errors/manual retry, empty index, invalid-mode fallback and unchanged Quick Search. Fixture counters confirmed zero semantic calls on typing/mode switch, one per submit/deep link and none from Quick Search. Desktop 1366px and mobile 390px were checked; a discovered 200-character unbroken-query heading overflow was fixed and reverified. Real authentication/persistence/vector semantics were verified separately by Spring Security + pgvector integration tests. No paid/external embedding call was made; live model retrieval quality remains environment-specific.

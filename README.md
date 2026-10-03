@@ -26,7 +26,7 @@ The web and API applications remain independently buildable and deployable even 
 - API: Spring Boot + Java
 - Database: PostgreSQL
 - Search for MVP: PostgreSQL Full Text Search
-- Semantic retrieval foundation: PostgreSQL 17 + pgvector; user-facing Semantic Search is next
+- Semantic retrieval: PostgreSQL 17 + pgvector; owner-only Semantic Search with explicit submit
 - Object storage: Cloudflare R2 or MinIO
 - Content format: Markdown
 - Deployment: Docker + Nginx
@@ -40,7 +40,7 @@ The web and API applications remain independently buildable and deployable even 
 - Owner Reading recognizes `[[stable-slug]]` wiki links and shows backlinks from other owned notes. Anonymous PUBLIC/UNLISTED pages never resolve these into private workspace links.
 - Owner Reading also shows up to five Related notes from current wiki links, backlinks, shared persisted tags and the same non-null Collection. Ranking is deterministic, without AI/embeddings or a dedicated relationship index; PUBLIC/UNLISTED pages never expose this owner-only list.
 - Owner-only `/graph` visualizes every current note, including isolated notes, with directed canonical wiki-link edges. Collection is a metadata/filter only; Graph supports pan, zoom, fit view, Reading navigation and direct-neighbor focus, without AI/embeddings, persisted positions or a relationship index. There is no PUBLIC/UNLISTED graph.
-- Owner-internal Semantic Retrieval Foundation stores deterministic current-Knowledge chunks and pgvector embeddings, with background backfill, atomic replacement and stale/model compatibility checks. The external provider is disabled by default; no semantic endpoint/UI or anonymous retrieval is added. FTS and existing relationships remain unchanged.
+- Owner-internal Semantic Retrieval Foundation stores deterministic current-Knowledge chunks and pgvector embeddings, with background backfill, atomic replacement and stale/model compatibility checks. `/search` now offers Keyword (default, live FTS) and Semantic (explicit submit, provider query embedding). The provider remains disabled by default; no anonymous retrieval is added. Quick Search, FTS and existing relationships remain unchanged.
 - Create/Edit persist title, summary, Markdown, visibility, collection and tags; existing notes use serialized debounced autosave.
 - PostgreSQL Full Text Search is implemented across Knowledge text and metadata. Full Search and typed Quick Search share the owner-scoped backend ranking through a focused same-origin Next.js boundary.
 - Google OAuth2/OIDC authentication is implemented with Spring Security and a server-side HTTP session. One verified allowlisted Google email may act as the stable configured `APP_OWNER_ID`; configuration alone no longer grants access. The live Google OAuth flow has been verified separately from CI.
