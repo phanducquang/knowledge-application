@@ -173,6 +173,19 @@ This owner-only GET returns compact `id`, `slug`, current `title`, nullable `sum
 
 No revisions contribute unless restored into current content. No migration, dedicated relationship index or AI/embeddings is introduced. PUBLIC/UNLISTED APIs never include owner relationships. See `../../docs/API.md` for the full contract.
 
+## Knowledge Graph example
+
+```bash
+curl -b 'JSESSIONID=<authenticated-session>' \
+  http://localhost:8080/api/knowledge/graph
+```
+
+This read-only owner endpoint returns `{ "nodes": [...], "edges": [...] }`. Every current owned note is a node, including isolated notes and all visibility states in the private workspace. Node fields are `id`, `slug`, `title`, nullable `collectionId`/`collection`, sorted `tags` and `updatedAt`; Markdown, owner UUID and bearer tokens are omitted. Nodes sort by updated time then ID descending; edges sort by source ID then target ID ascending.
+
+An edge `{ "sourceId": 1, "targetId": 2 }` exists only for a current canonical `[[target-slug]]` prose link. The existing wiki extractor excludes code, Mermaid and escaped references; repeated references deduplicate, while independent reciprocal links remain two directed edges. Self, missing, deleted and differently owned targets produce no edge. Collection/Tag metadata never creates an edge; revisions contribute only if restored into current Markdown. No schema change, dedicated relationship index, graph storage or AI/embeddings is introduced. Current-library scans remain a personal-library scaling tradeoff.
+
+Authentication is required (`401` without a session, `403` for an unauthorized identity). Owner partition is resolved server-side; clients cannot choose it. PUBLIC/UNLISTED APIs remain separate article-only read models with no graph endpoint/topology.
+
 ## Revision history examples
 
 List compact checkpoints and fetch one full Markdown snapshot:

@@ -18,6 +18,11 @@ public class KnowledgeRelationController {
         this.service = service;
     }
 
+    @GetMapping("/api/knowledge/graph")
+    public KnowledgeGraphResponse graph() {
+        return service.graph();
+    }
+
     @GetMapping("/api/knowledge/{id}/backlinks")
     public List<KnowledgeBacklinkResponse> backlinks(@PathVariable Long id) {
         return service.backlinks(id);

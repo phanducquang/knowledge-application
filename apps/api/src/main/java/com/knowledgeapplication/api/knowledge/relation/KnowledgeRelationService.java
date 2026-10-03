@@ -41,6 +41,21 @@ public class KnowledgeRelationService {
     }
 
     @Transactional(readOnly = true)
+    public KnowledgeGraphResponse graph() {
+        var notes = knowledge.findAllByOwnerIdOrderByUpdatedAtDescIdDesc(currentOwner.id());
+        var bySlug = notes.stream().collect(Collectors.toMap(Knowledge::getSlug, Knowledge::getId));
+        var nodes = notes.stream().map(KnowledgeGraphResponse.Node::from).toList();
+        var edges = notes.stream().flatMap(source -> WikiLinkExtractor.slugs(source.getContent()).stream()
+                        .map(bySlug::get)
+                        .filter(targetId -> targetId != null && !targetId.equals(source.getId()))
+                        .map(targetId -> new KnowledgeGraphResponse.Edge(source.getId(), targetId)))
+                .sorted(Comparator.comparing(KnowledgeGraphResponse.Edge::sourceId)
+                        .thenComparing(KnowledgeGraphResponse.Edge::targetId))
+                .toList();
+        return new KnowledgeGraphResponse(nodes, edges);
+    }
+
+    @Transactional(readOnly = true)
     public List<KnowledgeRelatedResponse> related(Long targetId, int limit) {
         UUID ownerId = currentOwner.id();
         var target = knowledge.findByIdAndOwnerId(targetId, ownerId)

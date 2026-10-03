@@ -158,6 +158,12 @@ Related Articles extends this derived read model through the same relation servi
 
 The compact related DTO contains only navigation/display data and ordered reasons. The server-only no-store Web transport renders a flat Related notes list after Backlinks in owner Reading and omits an empty section. External PUBLIC/UNLISTED query/DTO and presentation paths do not call this service or expose private relationships. There is no dedicated relationship index, schema migration, write-path synchronization, AI, embeddings or relation-aware search scoring; dynamic library scans are an explicit personal-library scaling tradeoff.
 
+Knowledge Graph is another read-only current-state projection of the same owner partition, exposed through `/api/knowledge/graph`. The relation service loads current owned Knowledge with the metadata entity graph, builds a stable-slug map and reuses `WikiLinkExtractor` to resolve directed source/target ID pairs. Every current owned note becomes a node, including isolated notes and all visibility states inside the owner workspace. Duplicate wiki targets collapse; self, missing, deleted and cross-owner targets are excluded. Nodes sort by updated time/ID descending, tags alphabetically (case-insensitive then exact), and edges by source/target ID ascending. Collection/Tags remain metadata only and never create edges; retained revisions do not contribute.
+
+The protected `/graph` Server Component fetches only the compact DTO through no-store server-only transport, then initializes a focused React Flow Client Component. Dagre handles presentation-only layout; no visual positions or edges are persisted. Collection-ID filtering uses the induced subgraph, while stable-slug focus emphasizes direct incoming/outgoing neighbors and their incident edges. Graph navigation uses the existing private Reading route and desktop/mobile shell. PUBLIC/UNLISTED APIs/pages never invoke this projection or expose topology. Knowledge/Collection mutations revalidate the graph route without changing authoring, sharing, revision, search or Related Articles semantics.
+
+This keeps the personal library operationally simple: dynamic Markdown scans and an in-memory browser layout, no relationship index/table, graph database, AI, embeddings or schema migration. Large-library scan/layout costs and browser interaction QA remain explicit follow-up limitations.
+
 ## 5. Visibility model
 
 ### PRIVATE
@@ -218,7 +224,7 @@ Not part of the initial implementation, but architecture should not block:
 
 - revision diffs, labels, pruning/export and collaborative audit history
 - indexed links, richer wiki-link syntax and cross-note relationship tooling beyond the first owner-only `[[stable-slug]]`/backlink slice
-- knowledge graph
+- advanced graph exploration beyond the current read-only owner graph
 - semantic search
 - Ask My Knowledge
 - automatic tagging and summaries

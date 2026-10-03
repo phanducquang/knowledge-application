@@ -32,6 +32,7 @@ function failure(error: unknown) {
 
 function revalidateCollectionViews() {
   revalidatePath("/");
+  revalidatePath("/graph");
   revalidatePath("/collections");
   revalidatePath("/collections/[id]", "page");
   revalidatePath("/search");

@@ -14,7 +14,9 @@
     "test": "node --experimental-strip-types --test src/lib/*.test.ts"
   },
   "dependencies": {
+    "@dagrejs/dagre": "3.1.1",
     "@milkdown/crepe": "7.22.1",
+    "@xyflow/react": "12.12.0",
     "highlight.js": "^11.11.2",
     "lowlight": "^3.3.0",
     "mermaid": "11.17.2",

@@ -85,6 +85,7 @@ function invalidShareInput(): KnowledgeActionResult {
 
 function revalidateKnowledgeRoutes(slug: string) {
   revalidatePath("/");
+  revalidatePath("/graph");
   revalidatePath("/search");
   revalidatePath("/collections");
   revalidatePath("/collections/[id]", "page");

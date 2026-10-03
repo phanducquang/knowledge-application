@@ -126,7 +126,7 @@ Current Markdown supports owner-workspace wiki references in the form `[[stable-
 
 The response is an array of `{ "id": 4, "title": "Source note", "slug": "source-note", "updatedAt": "2026-10-01T10:00:00Z" }` rows ordered by `updatedAt DESC`, then `id DESC`. It contains no source Markdown, owner ID or share token. Missing or differently owned targets return `404 KNOWLEDGE_NOT_FOUND`; unauthenticated requests return `401`. Source edits, restore and deletion are reflected on the next read because backlinks are derived from current Markdown rather than a separate stored edge table.
 
-The authenticated Reading Page resolves `[[slug]]` to the current title and `/knowledge/{slug}` only when that slug exists in the current owner's note list. The anonymous PUBLIC and UNLISTED readers do not resolve wiki references or receive backlinks, so the relationship feature never grants access to a private target. This first personal-workspace slice uses an owner-scoped PostgreSQL substring candidate query plus Markdown validation at read time; a dedicated link index/backfill is deferred until library size warrants it. Links are slug references, not permanent target IDs: deleting a target and later reusing its slug can rebind old references. Title-based resolution, aliases and relationship graphs are not implemented.
+The authenticated Reading Page resolves `[[slug]]` to the current title and `/knowledge/{slug}` only when that slug exists in the current owner's note list. The anonymous PUBLIC and UNLISTED readers do not resolve wiki references or receive backlinks, so the relationship feature never grants access to a private target. This first personal-workspace slice uses an owner-scoped PostgreSQL substring candidate query plus Markdown validation at read time; a dedicated link index/backfill is deferred until library size warrants it. Links are slug references, not permanent target IDs: deleting a target and later reusing its slug can rebind old references. Title-based resolution and aliases are not implemented; the current owner graph reuses these same canonical references.
 
 ## Related articles (owner workspace only)
 
@@ -155,6 +155,48 @@ Ranking uses three tiers: any explicit wiki relationship first, shared tags seco
 Relations are derived on each read from current Knowledge Markdown and metadata using the existing owner-scoped metadata entity graph, not retained revision snapshots. Editing, deleting, metadata replacement and Collection deletion are reflected on the next read; restoring a revision may reintroduce a relation only when its authoring data becomes current. No schema migration, persisted edge table, dedicated relationship index, AI or embeddings are involved. Scanning the personal library is deliberately simple and remains a scaling limitation.
 
 Only authenticated Reading renders the flat Related notes section, after Backlinks, and omits it when empty. The no-store server-only API transport preserves backend ordering. Anonymous PUBLIC/UNLISTED endpoints and `/k/{slug}` / `/s/{shareToken}` pages expose no related list, reason metadata or private workspace navigation.
+
+## Knowledge Graph (owner workspace only)
+
+| Method | Route | Result |
+| --- | --- | --- |
+| `GET` | `/api/knowledge/graph` | Compact deterministic current-library nodes and directed wiki edges |
+
+```json
+{
+  "nodes": [
+    {
+      "id": 12,
+      "slug": "spring-security",
+      "title": "Spring Security",
+      "collectionId": 3,
+      "collection": "Backend",
+      "tags": ["Security", "Spring"],
+      "updatedAt": "2026-10-03T00:00:00Z"
+    },
+    {
+      "id": 19,
+      "slug": "oauth2",
+      "title": "OAuth2",
+      "collectionId": null,
+      "collection": null,
+      "tags": [],
+      "updatedAt": "2026-10-02T00:00:00Z"
+    }
+  ],
+  "edges": [{ "sourceId": 12, "targetId": 19 }]
+}
+```
+
+`collectionId`/`collection` are null for unfiled notes. Every current owned note is included, including isolated notes and all visibility states in the authenticated workspace. Nodes sort by `updatedAt DESC`, then `id DESC`; tags sort case-insensitively with an exact-name tie-break; edges sort by `sourceId ASC`, then `targetId ASC`. An empty library returns `{ "nodes": [], "edges": [] }`.
+
+Only current canonical `[[stable-slug]]` prose references produce edges, through the shared `WikiLinkExtractor`. A source/target pair occurs once, reciprocal references produce two independent directed edges, and backlinks do not synthesize a reverse edge. Self-links, missing/deleted targets and cross-owner targets are excluded. Code fences (including Mermaid), inline/indented code and escaped references follow the existing wiki semantics. Collection/Tags are node metadata only, not graph nodes or edge types; shared metadata alone never creates an edge.
+
+No owner UUID, Markdown/revision content, bearer token, object key or authentication data is returned. Authenticated backend context selects the owner partition; no client owner ID is used. Anonymous calls receive `401`; unauthorized identities receive `403`. There are no PUBLIC/UNLISTED graph endpoints: existing anonymous routes still return only the requested article and never graph topology/counts. No graph write API, schema migration, relationship index or AI/embeddings is added.
+
+Title/visibility/Collection/Tag changes do not change slug-based wiki edges. Source edits and target deletion affect the next graph read; retained revisions alone do not contribute, while a restore can reintroduce edges when its Markdown becomes current. Related Articles ranking remains unchanged and independent of graph edge creation.
+
+The protected `/graph` page uses server-only no-store reads and a focused client canvas. Collection-ID filtering retains only nodes in that actual Collection and edges whose two endpoints remain visible. Focus by control or `/graph?focus=stable-slug` highlights the note, direct incoming/outgoing neighbors and incident edges; unknown/non-visible focus is ignored. Nodes navigate to `/knowledge/{slug}`; pan, pinch/button zoom and fit-view state remain presentation-only. The library is scanned dynamically without an edge index, an intentional scaling tradeoff for a personal workspace.
 
 ## Collection management
 

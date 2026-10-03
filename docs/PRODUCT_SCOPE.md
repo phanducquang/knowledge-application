@@ -35,12 +35,14 @@ After the core workflow is proven:
 
 - backlinks and stable-slug wiki links — first owner-only slice complete
 - related articles — complete for deterministic owner-only current relationships; no AI/embeddings
-- knowledge graph
+- knowledge graph — complete for owner-only current wiki edges, isolated notes, Collection filtering and direct-neighbor focus; no graph editing/AI
 - improved search
 
 ## AI stage
 
 Only after enough useful knowledge exists:
+
+Next milestone: **Semantic Retrieval Foundation**. It is not implemented yet.
 
 - semantic retrieval with pgvector
 - Ask My Knowledge

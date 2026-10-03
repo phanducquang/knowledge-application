@@ -22,6 +22,7 @@ Next.js application for the Knowledge Application workspace.
 - owner-scoped `/collections` management with create, rename and delete; sidebar counts include empty collections, and `/collections/{id}` filters notes without changing the approved reading/editor layout
 - owner Reading resolves `[[stable-slug]]` prose references to owned notes and lists backlinks below the article; unresolved references remain literal, and external PUBLIC/UNLISTED readers never receive owner-only navigation
 - owner Reading adds a flat Related notes list after Backlinks, with current titles/summaries and relation reasons; empty lists are omitted. The no-store owner API supplies up to five notes ranked by wiki/backlink, shared persisted tags and actual Collection, without AI/embeddings or a dedicated relationship index. External PUBLIC/UNLISTED readers never load or render it
+- private `/graph` with every current owned note (isolated notes included), directed canonical wiki edges, Collection filtering, pan/zoom/fit, click-to-read and direct-neighbor focus; no PUBLIC/UNLISTED graph
 - safe GFM rendering, dynamic H2-H4 table of contents and calculated read time
 - Full Search and typed Quick Search consume the same backend-ranked PostgreSQL search through a focused same-origin Route Handler
 - empty Quick Search continues to show recently updated owner Knowledge
@@ -68,6 +69,20 @@ Collection summaries come from the backend independently of the current note lis
 
 Interactive search calls the same-origin `/api/knowledge-search` BFF route. It is intentionally narrow: the Spring Boot base URL remains server-only, typed searches are debounced and bounded, stale requests are aborted/versioned, and API failures show an error state rather than falling back to browser-side ranking.
 The BFF forwards the incoming authenticated session and returns `401` rather than bypassing backend security when the session is absent.
+
+## Knowledge Graph
+
+`/graph` is a protected Server Component route. Its server-only, no-store transport fetches compact current Knowledge nodes and explicit directed wiki edges, then hands the DTO to a focused graph Client Component. Graph is available in the existing desktop/mobile sidebar; unrelated Library/Reading routes remain server-rendered.
+
+React Flow `12.12.0` supplies pan, pinch/button zoom, fit view, directed arrows and node interaction; Dagre `3.1.1` supplies deterministic presentation-only layout. No physics engine, persisted positions, graph editing, edge creation, database migration, relationship index, AI or embeddings is added. Collection/Tags are node metadata only, not nodes or edge signals. Tags remain available in each node's tooltip; Related Articles keeps its existing ranking unchanged.
+
+The Collection control filters by actual Collection ID, retaining only edges with both endpoints visible. Empty collections are selectable and show a restrained empty state. Unfiled notes are included in All Collections and are not related by null membership. Focus note highlights one node, its direct incoming/outgoing neighbors and incident edges, then fits them into view; unrelated nodes/edges are dimmed. Clear focus restores the full view. `/graph?focus=stable-slug` initializes focus; unknown/non-visible slugs do not reveal additional nodes. Node titles link to `/knowledge/{slug}`; a body click also navigates. The fixed-height responsive viewport and wrapping controls preserve the existing mobile drawer.
+
+The graph includes isolated notes even when the entire library has no edges; an empty library omits the canvas and shows quiet guidance. Knowledge and Collection mutations revalidate `/graph`, so the next route read reflects edits, renames, deletion and revision restore. No external PUBLIC/UNLISTED route fetches or renders graph data.
+
+Graph validation includes Node tests for filters, layout, focus, real React Flow node/edge rendering, navigation and private transport wiring. Browser QA was not executed for this milestone because browser tooling was unavailable; pan/zoom/touch and narrow-screen interaction still need a browser smoke check when tooling is enabled.
+
+Dependency audit during the graph milestone reported three pre-existing vulnerable packages: Next.js `16.3.4` (critical), brace-expansion (high, tooling) and DOMPurify (low, existing Mermaid dependency). These versions were unchanged by the graph dependency installation. A separate dependency/security patch is needed; no unrelated force upgrade was applied here.
 
 ## Public reading
 
