@@ -46,11 +46,11 @@ Semantic Retrieval Foundation is complete for owner-internal current-Knowledge c
 
 Owner-only **Semantic Search is complete** on `/search`, alongside default live Keyword FTS. Semantic requests require explicit submit and send the query to Gemini; results contain one best current compatible chunk per note. No anonymous retrieval or hybrid ranking is added.
 
-**Ask My Knowledge is complete** as an optional owner-only single-turn `/ask` workspace. One explicit question uses current compatible indexed chunks and one Gemini answer call, with limited Markdown and note-level Reading sources; no context means no generation. Both Gemini features default off, share a backend-only key and have persistent configurable quota guards. No chat/history, tools, public AI access or per-claim citation verification. Private text leaves the application when enabled; review current Google terms, especially Free Tier usage. Next milestone: **Source-linked Answers**.
+**Ask My Knowledge and Source-linked Answers are complete** as an optional owner-only single-turn `/ask` workspace. One explicit question uses current compatible indexed chunks and one Gemini structured answer call. Each answer block has backend-validated chunk citations and compact exact evidence, with accessible controls and Reading links. No context means no generation/citations. This verifies source identity/evidence existence, not logical claim entailment or factual correctness. Exact scroll-to-chunk is deferred. Both Gemini features default off, share a backend-only key and preserve persistent quotas; no chat/history, tools or public AI access. Private text leaves the application when enabled; review Google terms, especially Free Tier usage. Automatic metadata remains future work; a small quota-retention reliability milestone is recommended first.
 
 - semantic search using the pgvector foundation — complete
 - Ask My Knowledge — complete
-- Source-linked Answers — next, precise citations beyond note-level sources
+- Source-linked Answers — complete for block-linked current chunk identity/evidence and Reading navigation
 - automatic tags
 - automatic summaries
 - similar-knowledge suggestions

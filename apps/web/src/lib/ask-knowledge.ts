@@ -1,7 +1,9 @@
 export const MAX_QUESTION_CHARS = 2000;
 export type AskErrorCode = "ASK_DISABLED" | "ASK_RETRIEVAL_UNAVAILABLE" | "ASK_UNAVAILABLE" | "VALIDATION_ERROR" | "UNAUTHENTICATED" | "ACCESS_DENIED";
-export interface AskSource { id: number; title: string; slug: string; excerpt: string }
-export interface AskResult { status: "ANSWERED" | "NO_CONTEXT"; answer: string | null; sources: AskSource[] }
+export interface AskSource { id: number; title: string; slug: string }
+export interface AskCitation { id: string; source: AskSource; chunkIndex: number; evidence: string }
+export interface AskAnswerData { blocks: { markdown: string; citationIds: string[] }[] }
+export interface AskResult { status: "ANSWERED" | "NO_CONTEXT"; answer: AskAnswerData | null; citations: AskCitation[] }
 export function askErrorCode(code: unknown): AskErrorCode {
   return ["ASK_DISABLED", "ASK_RETRIEVAL_UNAVAILABLE", "VALIDATION_ERROR", "UNAUTHENTICATED", "ACCESS_DENIED"].includes(String(code))
     ? code as AskErrorCode : "ASK_UNAVAILABLE";
@@ -12,19 +14,40 @@ export class AskError extends Error {
 }
 function record(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null; }
 export function mapAskResponse(body: unknown): AskResult {
-  if (!record(body) || !["ANSWERED", "NO_CONTEXT"].includes(String(body.status)) || !Array.isArray(body.sources) || body.sources.length > 30
-    || (body.status === "ANSWERED" && (typeof body.answer !== "string" || !body.answer.trim() || body.answer.length > 65536 || body.sources.length === 0))
-    || (body.status === "NO_CONTEXT" && (body.answer !== null || body.sources.length !== 0))) throw new AskError("ASK_UNAVAILABLE");
-  const ids = new Set<number>();
-  const sources = body.sources.map((source: unknown): AskSource => {
-    if (!record(source) || !Number.isSafeInteger(source.id) || Number(source.id) <= 0 || ids.has(Number(source.id))
+  const invalid = () => { throw new AskError("ASK_UNAVAILABLE"); };
+  if (!record(body) || !["ANSWERED", "NO_CONTEXT"].includes(String(body.status)) || !Array.isArray(body.citations) || body.citations.length > 100) return invalid();
+  if (body.status === "NO_CONTEXT") {
+    if (body.answer !== null || body.citations.length !== 0) return invalid();
+    return { status: "NO_CONTEXT", answer: null, citations: [] };
+  }
+  if (!record(body.answer) || !Array.isArray(body.answer.blocks) || !body.answer.blocks.length || body.answer.blocks.length > 24 || !body.citations.length) return invalid();
+  const chunks = new Set<string>(); const notes = new Map<number, AskSource>();
+  const citations = body.citations.map((citation: unknown, index: number): AskCitation => {
+    if (!record(citation) || citation.id !== `C${index + 1}` || !record(citation.source) || !Number.isSafeInteger(citation.chunkIndex) || Number(citation.chunkIndex) < 0
+      || typeof citation.evidence !== "string" || !citation.evidence.trim() || citation.evidence.length > 400) return invalid();
+    const source = citation.source;
+    if (!Number.isSafeInteger(source.id) || Number(source.id) <= 0
       || typeof source.title !== "string" || !source.title.trim() || source.title.length > 255
-      || typeof source.slug !== "string" || source.slug.length > 255 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.slug)
-      || typeof source.excerpt !== "string" || source.excerpt.length > 600) throw new AskError("ASK_UNAVAILABLE");
-    ids.add(Number(source.id));
-    return { id: Number(source.id), title: source.title, slug: source.slug, excerpt: source.excerpt };
+      || typeof source.slug !== "string" || source.slug.length > 255 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(source.slug)) return invalid();
+    const key = `${source.id}:${citation.chunkIndex}`; const previous = notes.get(Number(source.id));
+    if (chunks.has(key) || (previous && (previous.title !== source.title || previous.slug !== source.slug))) return invalid();
+    chunks.add(key); const safe = { id: Number(source.id), title: source.title, slug: source.slug }; notes.set(safe.id, safe);
+    return { id: String(citation.id), source: safe, chunkIndex: Number(citation.chunkIndex), evidence: citation.evidence };
   });
-  return { status: body.status as AskResult["status"], answer: body.answer as string | null, sources };
+  const known = new Set(citations.map(citation => citation.id)); const seen = new Set<string>();
+  let chars = 0, occurrences = 0;
+  const blocks = body.answer.blocks.map((block: unknown) => {
+    if (!record(block) || typeof block.markdown !== "string" || !block.markdown.trim() || block.markdown.length > 8192
+      || !Array.isArray(block.citationIds) || !block.citationIds.length || block.citationIds.length > citations.length
+      || new Set(block.citationIds).size !== block.citationIds.length) return invalid();
+    const ids: string[] = [];
+    for (const id of block.citationIds) { if (typeof id !== "string" || !known.has(id)) return invalid(); ids.push(id); seen.add(id); }
+    chars += block.markdown.length; occurrences += ids.length;
+    if (chars > 65536 || occurrences > 128) return invalid();
+    return { markdown: block.markdown, citationIds: ids };
+  });
+  if (seen.size !== citations.length || [...seen].some((id, index) => id !== citations[index].id)) return invalid();
+  return { status: "ANSWERED", answer: { blocks }, citations };
 }
 export function askSourceHref(source: AskSource) { return `/knowledge/${source.slug}`; }
 export async function fetchAskKnowledge(question: string, signal?: AbortSignal, fetcher: typeof fetch = fetch): Promise<AskResult> {

@@ -211,7 +211,7 @@ Semantic Retrieval Foundation — implemented:
 
 - PostgreSQL 17 with pgvector, enabled by Flyway V8; unconstrained chunk-level vectors, cascading composite Knowledge/owner FK and no ANN index
 - only current title/summary/Markdown, not revisions, attachments or Collection/Tags; all visibility states remain owner-internal
-- disabled-by-default backend-only official Gemini Java GenAI SDK `1.70.0` behind `EmbeddingClient`; deterministic fake/native-SDK loopback mocks in tests
+- disabled-by-default backend-only official Gemini Java GenAI SDK `1.75.0` behind `EmbeddingClient`; deterministic fake/native-SDK loopback mocks in tests
 - bounded scheduled backfill and reindex, with session advisory locking, no provider call in authoring transactions, complete atomic replacement and source recheck
 - authoritative SHA-256 freshness includes model/dimension/provider/chunker version/settings; stale or incomplete sets cannot enter the centralized owner-scoped exact cosine query
 - no public embedding/vector DTO; see [`SEMANTIC_RETRIEVAL.md`](SEMANTIC_RETRIEVAL.md) for configuration, privacy and operational constraints
@@ -222,7 +222,7 @@ Semantic Search — implemented: authenticated `GET /api/search/knowledge/semant
 
 Future:
 
-- Precise source-linked/per-claim citations beyond the current note-level sources
+- Grounding-quality evaluation; source existence alone does not prove logical claim entailment
 
 Ask My Knowledge — implemented: authenticated, CSRF-protected `POST /api/ask` accepts only a question. `AskService` calls the existing query embedding boundary once, then `findRagChunks` uses the shared `CURRENT_SET` predicate and exact cosine ordering. Per-note chunk limits precede the global limit in SQL. Deterministic JSON context includes at most 8 chunks, 2 per note, 6 sources and 24000 serialized characters; Unicode-safe final trimming accounts for escaped text/metadata. No current context returns `NO_CONTEXT` with zero generation calls. Otherwise `KnowledgeAnswerClient` makes one native Gemini generation call with untrusted question/reference data separate from system grounding instructions. Both calls occur outside DB transactions/connections; edits after the retrieval snapshot are an explicit concurrency limitation.
 
@@ -231,6 +231,10 @@ The provider-specific adapters/configuration isolate SDK DTOs. Shared backend-on
 Flyway V9 adds only `ai_quota_usage`. Short advisory-locked PostgreSQL transactions reserve fixed-minute RPM/estimated-input-TPM and timezone-aware RPD immediately before each SDK request. Background embedding must satisfy global plus smaller background limits; Semantic Search/Ask query embeddings share only the global limit. Generation has independent counters. Reservations persist across restarts/replicas and count failed calls conservatively. Local denial/provider 429 yields a safe unavailable state; indexing stops that cycle. SDK/transport retries are disabled. These operational ceilings are not Gemini's authoritative model/project quotas; see [`ASK_MY_KNOWLEDGE.md`](ASK_MY_KNOWLEDGE.md) for rate configuration, privacy and fixed-window limitations.
 
 Protected `/ask` uses a focused question-only no-store POST BFF, existing session/CSRF forwarding and Host/Origin checks. Typing/mount never calls AI; only explicit button/Cmd-Ctrl Enter submits, with duplicate suppression and abort/latest-response guards. Questions never enter URLs, browser storage or chat persistence. Answer Markdown disallows active links/images/HTML/Mermaid; structured note sources alone link to Reading. No public/shared retrieval, tool execution, web search, rewrites, reranking or agent loop is introduced.
+
+Source-linked Answers — implemented: `KnowledgeAnswerClient` returns ordinary Java `AnswerDraft` blocks with Markdown/sourceRefs; only the Gemini adapter handles SDK/native JSON schema and strict JSON parsing. `AskContext` assigns deterministic request-local `S1` references to one exact current RagChunk plus its included text, including any final context trimming. `AnswerCitations` validates all refs/structure/bounds atomically, derives compact exact evidence from that text and maps backend-owned title/slug/id/chunkIndex. Response `C1` IDs follow first answer occurrence, deduplicate reused chunks and are attached to blocks; citations are the sole authoritative structure for Web grouping. Invalid output returns safe `ASK_UNAVAILABLE`, not partially accepted citations.
+
+Generation still makes one request; schema/prompt overhead is included in estimated TPM. SDK stays 1.75.0, no continuation/tools/retries or quota/embedding strategy changes. No V10, citation persistence, extra SQL/provider verification call or row locks during generation. `/ask` citation buttons focus evidence, grouped by note with Reading links; Markdown cannot manufacture active citation controls. Exact chunk/heading navigation is deferred rather than guessing fragments. Evidence existed in the current retrieval snapshot; later edits are allowed and citation validation does not establish factual/logical entailment.
 
 ## 8. Authentication
 
@@ -246,7 +250,7 @@ Not part of the initial implementation, but architecture should not block:
 - indexed links, richer wiki-link syntax and cross-note relationship tooling beyond the first owner-only `[[stable-slug]]`/backlink slice
 - advanced graph exploration beyond the current read-only owner graph
 - hybrid/large-library semantic retrieval beyond current exact cosine search
-- precise source-linked answers beyond the single-turn Ask foundation
+- reliable exact-location source navigation and grounding evaluation beyond validated chunk evidence
 - automatic tagging and summaries
 
 ## 10. Architectural principles

@@ -62,7 +62,7 @@ class AskIntegrationTest {
         ep=embeddingProps(true); strategy=new EmbeddingStrategy(ep,1); embedding=mock(EmbeddingClient.class);
         when(embedding.embed(anyList())).thenAnswer(inv->{ assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse();
             assertThat(TransactionSynchronizationManager.getResourceMap()).isEmpty(); return List.of(new float[]{1,0,0}); });
-        answer=new DeterministicAnswerClient() { @Override public String answer(Request request) {
+        answer=new DeterministicAnswerClient() { @Override public AnswerDraft answer(Request request) {
             assertThat(TransactionSynchronizationManager.isActualTransactionActive()).isFalse(); assertThat(TransactionSynchronizationManager.getResourceMap()).isEmpty();
             return super.answer(request); } };
         service=new AskService(owner,askProps(true),ep,strategy,provider(EmbeddingClient.class,embedding),provider(KnowledgeAnswerClient.class,answer),repository,new ObjectMapper());
@@ -91,7 +91,7 @@ class AskIntegrationTest {
         var chunks=repository.findRagChunks(OWNER,strategy,new float[]{1,0,0},4,2);
         assertThat(chunks).extracting(KnowledgeEmbeddingRepository.RagChunk::id).containsExactly(a.getId(),a.getId(),b.getId(),c.getId());
         assertThat(chunks).extracting(KnowledgeEmbeddingRepository.RagChunk::chunkIndex).containsExactly(0,1,0,0);
-        assertThat(service.ask("q").sources()).extracting(AskResponse.Source::id).containsExactly(a.getId(),b.getId(),c.getId());
+        assertThat(service.ask("q").citations().stream().map(citation -> citation.source().id()).distinct()).containsExactly(a.getId(),b.getId(),c.getId());
         assertThat(answer.requests).hasSize(1); verify(embedding).embed(List.of("q"));
     }
     @Test void currentSetExcludesForeignModelDimensionVersionHashAndIncompleteBeforeDistance() {
@@ -108,7 +108,7 @@ class AskIntegrationTest {
                 default -> "DELETE FROM knowledge_embedding_chunk WHERE knowledge_id=:id AND chunk_index=1";
             }; jdbc.sql(sql).param("id",note.getId()).update();
         }
-        assertThat(service.ask("q").sources()).extracting(AskResponse.Source::id).containsExactly(current.getId());
+        assertThat(service.ask("q").citations()).extracting(citation -> citation.source().id()).containsExactly(current.getId());
         assertThat(answer.requests.get(0).referenceData()).doesNotContain("foreign private");
     }
     @Test void editRestoreAndDeleteUseOnlyCurrentIndexedStateAndNeverPersistQuestionAnswer() {
@@ -125,14 +125,16 @@ class AskIntegrationTest {
     }
     @Test void allVisibilityStatesRemainPrivateWorkspaceContext() {
         for(var visibility:Visibility.values()) { var note=knowledge.create(visibility.name(),null,"Current "+visibility,visibility,null,List.of()); persist(note); }
-        assertThat(service.ask("q").sources()).hasSize(3);
+        assertThat(service.ask("q").citations()).hasSize(3);
     }
     @Test void httpSessionCsrfQuestionValidationUnknownFieldsDisabledAndHealth() throws Exception {
         var note=create("HTTP"); persist(note);
         http.perform(post("/api/ask").with(login()).with(csrf()).contentType("application/json").content("{\"question\":\" How? \"}"))
                 .andExpect(status().isOk()).andExpect(header().string("Cache-Control","private, no-store, max-age=0"))
-                .andExpect(jsonPath("$.status").value("ANSWERED")).andExpect(jsonPath("$.sources[0].id").value(note.getId()))
-                .andExpect(jsonPath("$.sources[0].ownerId").doesNotExist()).andExpect(jsonPath("$.sources[0].distance").doesNotExist());
+                .andExpect(jsonPath("$.status").value("ANSWERED")).andExpect(jsonPath("$.citations[0].source.id").value(note.getId()))
+                .andExpect(jsonPath("$.citations[0].source.ownerId").doesNotExist()).andExpect(jsonPath("$.citations[0].distance").doesNotExist())
+                .andExpect(jsonPath("$.answer.blocks[0].citationIds[0]").value("C1"))
+                .andExpect(jsonPath("$.citations[0].evidence").value(note.getContent()));
         http.perform(post("/api/ask").with(anonymous()).contentType("application/json").content("{\"question\":\"q\"}")).andExpect(status().isUnauthorized());
         http.perform(post("/api/ask").with(login()).contentType("application/json").content("{\"question\":\"q\"}")).andExpect(status().isForbidden());
         for(String question:List.of("","  ","x".repeat(2001))) http.perform(post("/api/ask").with(login()).with(csrf())
@@ -153,7 +155,7 @@ class AskIntegrationTest {
     @Test void safeHttpRetrievalAndGenerationFailuresAndNoContext() throws Exception {
         var note=create("Failure");
         http.perform(post("/api/ask").with(login()).with(csrf()).contentType("application/json").content("{\"question\":\"q\"}"))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("NO_CONTEXT")).andExpect(jsonPath("$.sources").isEmpty());
+                .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("NO_CONTEXT")).andExpect(jsonPath("$.citations").isEmpty());
         when(embedding.embed(anyList())).thenThrow(new EmbeddingQuotaUnavailableException());
         http.perform(post("/api/ask").with(login()).with(csrf()).contentType("application/json").content("{\"question\":\"q\"}"))
                 .andExpect(status().isServiceUnavailable()).andExpect(jsonPath("$.code").value("ASK_RETRIEVAL_UNAVAILABLE"));
@@ -261,5 +263,33 @@ class AskIntegrationTest {
         clock.now=clock.now.plusSeconds(60); indexer.indexOnce(); indexer.indexOnce();
         assertThat(calls.get()).isEqualTo(4); assertThat(repository.findPending(OWNER,next,10,0)).isEmpty();
         assertThat(jdbc.sql("SELECT request_count FROM ai_quota_usage WHERE quota_key='embedding-global-day'").query(Long.class).single()).isEqualTo(4);
+    }
+    @Test void citationsPreserveExactPgvectorChunkIdentityAndNoExtraProviderCalls() {
+        var note=create("Evidence");
+        persist(note.getId(),OWNER,strategy,List.of("Chunk zero evidence.","Chunk one evidence."),Collections.nCopies(2,new float[]{1,0,0}));
+        answer.output=new AnswerDraft(List.of(new AnswerDraft.Block("First",List.of("S2","S1")),new AnswerDraft.Block("Again",List.of("S2"))));
+        var result=service.ask("q");
+        assertThat(result.citations()).extracting(AskResponse.Citation::chunkIndex).containsExactly(1,0);
+        assertThat(result.citations()).extracting(AskResponse.Citation::evidence).containsExactly("Chunk one evidence.","Chunk zero evidence.");
+        assertThat(result.citations()).extracting(c -> c.source().slug()).containsOnly(note.getSlug());
+        assertThat(result.answer().blocks().get(1).citationIds()).containsExactly("C1");
+        verify(embedding,times(1)).embed(List.of("q")); assertThat(answer.requests).hasSize(1);
+        answer.output=new AnswerDraft(List.of(new AnswerDraft.Block("Known plus forged",List.of("S1","S999"))));
+        assertThatThrownBy(()->service.ask("q")).isInstanceOfSatisfying(AskUnavailableException.class,ex -> assertThat(ex.code()).isEqualTo("ASK_UNAVAILABLE"));
+        assertThat(answer.requests).hasSize(2); verify(embedding,times(2)).embed(List.of("q"));
+    }
+    @Test void concurrentEditDuringGenerationPreservesExplicitRetrievedSnapshotWithoutRowLock() {
+        var note=create("Snapshot"); persist(note);
+        KnowledgeAnswerClient generator=request -> {
+            assertThat(TransactionSynchronizationManager.getResourceMap()).isEmpty();
+            knowledge.update(note.getId(),"New title",null,"New current content",Visibility.PRIVATE,null,List.of());
+            return new AnswerDraft(List.of(new AnswerDraft.Block("Snapshot statement",List.of("S1"))));
+        };
+        var snapshotService=new AskService(owner,askProps(true),ep,strategy,provider(EmbeddingClient.class,embedding),provider(KnowledgeAnswerClient.class,generator),repository,new ObjectMapper());
+        var response=snapshotService.ask("q");
+        assertThat(response.citations().get(0).source().title()).isEqualTo("Snapshot");
+        assertThat(response.citations().get(0).evidence()).isEqualTo("Current Snapshot");
+        assertThat(service.ask("q").status()).isEqualTo(AskResponse.Status.NO_CONTEXT);
+        assertThat(jdbc.sql("SELECT count(*) FROM information_schema.tables WHERE table_name IN ('ask_citation','answer_block','ask_evidence')").query(Long.class).single()).isZero();
     }
 }

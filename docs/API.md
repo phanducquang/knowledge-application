@@ -397,25 +397,31 @@ Successful responses (`200`, private/no-store):
 ```json
 {
   "status": "ANSWERED",
-  "answer": "The current notes record a five-second response timeout.",
-  "sources": [
+  "answer": { "blocks": [
+    { "markdown": "The current notes record a five-second response timeout.", "citationIds": ["C1"] }
+  ] },
+  "citations": [
     {
-      "id": 12,
-      "title": "WebClient timeouts",
-      "slug": "webclient-timeouts",
-      "excerpt": "responseTimeout(Duration.ofSeconds(5)) …"
+      "id": "C1",
+      "source": { "id": 12, "title": "WebClient timeouts", "slug": "webclient-timeouts" },
+      "chunkIndex": 2,
+      "evidence": "responseTimeout(Duration.ofSeconds(5))"
     }
   ]
 }
 ```
 
 ```json
-{ "status": "NO_CONTEXT", "answer": null, "sources": [] }
+{ "status": "NO_CONTEXT", "answer": null, "citations": [] }
 ```
 
-One query embedding uses the same `EmbeddingClient`/strategy/vector checks as Semantic Search. Retrieval uses owner-scoped current complete compatible chunks only, exact cosine, deterministic distance/Knowledge ID/chunk index/row ID ties. The default cap of 2 chunks per note is applied **before** the global 8 chunks, then context assembly caps 6 unique notes and 24000 serialized characters including escaped metadata/text. It preserves whole chunks when possible and safely trims the final chunk. Note sources deduplicate in first-appearance order; excerpts max 600 units. Revisions are excluded unless restored into current content and reindexed. All owner visibility states are allowed; no sharing token/owner/hash/model/vector/distance is returned.
+One query embedding uses the same `EmbeddingClient`/strategy/vector checks as Semantic Search. Retrieval uses owner-scoped current complete compatible chunks only, exact cosine, deterministic distance/Knowledge ID/chunk index/row ID ties. The default cap of 2 chunks per note is applied **before** the global 8 chunks, then context assembly caps 6 unique notes and 24000 serialized characters including escaped metadata/text. It preserves whole chunks when possible and safely trims the final chunk. Each included chunk gets one deterministic request-local `S1` sourceRef, mapping server-side to its exact RagChunk and included text. These refs are not permanent IDs and never persisted/exposed in the API. Revisions are excluded unless restored into current content and reindexed. All owner visibility states are allowed; no sharing token/owner/hash/model/vector/distance is returned.
 
-No context means no generation request. Otherwise one `KnowledgeAnswerClient` native Gemini generation call uses current reference JSON and question as untrusted data, separate from system grounding instructions. Both provider calls are outside DB transactions/connections. No synchronous indexing, automatic retry, Keyword fallback, web search, query rewrite, rerank, tools, agent loop or chat persistence. Sources are **note-level context**, not verified citations for each assertion. Context is current at the SQL snapshot; edits/deletion after that snapshot may occur before the answer arrives. Empty corpus means no compatible indexed context, not a calibrated semantic relevance cutoff.
+No context means no generation request. Otherwise one `KnowledgeAnswerClient` native Gemini structured-output call returns a provider-neutral draft `{blocks:[{markdown,sourceRefs}]}`. Each block requires ≥1 known ref; backend validates every ref and the whole structure atomically. Unknown/empty/duplicate refs within a block, malformed JSON/extra forged metadata, blank/oversized Markdown or excessive complexity produce `ASK_UNAVAILABLE`, never partially accepted citations. Limits: 24 blocks, 8192 units/block, 65536 total Markdown units, 128 reference occurrences, unique citations ≤the actual included chunks (max configured 100). Native generation requires a complete STOP candidate; no continuation/retry for truncated output.
+
+`C1`, `C2` response IDs are backend-assigned in first answer-reference occurrence order. Repeated citations to the same Knowledge+chunk reuse the ID across blocks; each distinct chunk remains separate even if it belongs to the same note. `source` metadata/chunkIndex comes only from the retrieved snapshot. `evidence` is a backend-derived exact prefix of the included chunk text, surrounding whitespace trimmed, maximum 400 UTF-16 units with Unicode-safe truncation and no fabricated ellipsis. It is checked as a literal substring of that chunk, not fuzzily/semantically matched. The API does not trust provider-returned quotes/IDs/slugs. Citations are the authoritative source contract; the old answer string/separate sources array is replaced, requiring matching API/Web deployment.
+
+Both provider calls are outside DB transactions/connections. Citation validation uses zero extra SQL/provider calls. No synchronous indexing, automatic retry, Keyword fallback, web search, query rewrite, rerank, tools, continuation, agent loop or chat persistence. Citation identity/evidence existence **does not prove logical claim entailment or factual correctness**. Context is current at the SQL snapshot; edits/deletion after that snapshot may occur before the answer arrives. Empty corpus means no compatible indexed context, not a calibrated semantic relevance cutoff.
 
 | HTTP | Code | Meaning |
 | --- | --- | --- |
@@ -428,7 +434,7 @@ No context means no generation request. Otherwise one `KnowledgeAnswerClient` na
 
 API errors retain `{code,message,fieldErrors}` with constant sanitized messages, no upstream body/cause/secret. Gemini embedding and Ask default off; configured model IDs/dimensions/limits remain server-owned. Shared `GEMINI_API_KEY` never reaches DTOs or browser JavaScript. Persistent quota reservations count attempted calls conservatively, with global/background embedding budgets and independent generation budgets. See [`ASK_MY_KNOWLEDGE.md`](ASK_MY_KNOWLEDGE.md) for exact defaults, privacy, model-change responsibility and quota limits.
 
-Protected `/ask` calls only a focused same-origin `/api/ask-my-knowledge` POST BFF with session/CSRF forwarding, bounded question-only body and Host/Origin validation. Typing/mount do not call AI; button/Cmd-Ctrl Enter explicitly submits; regular Enter adds a newline. No question URL/storage/history. Limited answer Markdown cannot render active arbitrary links/images/HTML/Mermaid; only structured source links navigate to `/knowledge/{slug}`. Cancel/obsolete response guards protect UI state, not guaranteed cancellation/refund of already-running provider work.
+Protected `/ask` calls only a focused same-origin `/api/ask-my-knowledge` POST BFF with session/CSRF forwarding, bounded question-only body and Host/Origin validation. Typing/mount do not call AI; button/Cmd-Ctrl Enter explicitly submits; regular Enter adds a newline. No question URL/storage/history. Limited answer Markdown cannot render active arbitrary links/images/HTML/Mermaid or manufacture citation controls. Structured `[1]` controls beside each block focus its evidence item; Sources / Evidence groups notes once with their cited chunk items and Open note links to `/knowledge/{slug}`. Exact in-document chunk/heading jumps are deferred; no guessed fragments/Reading anchor changes. Cancel/obsolete response guards protect UI state, not guaranteed cancellation/refund of already-running provider work.
 
 ## Ownership and authorization
 

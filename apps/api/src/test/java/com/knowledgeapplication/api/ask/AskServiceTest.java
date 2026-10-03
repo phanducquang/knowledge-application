@@ -38,7 +38,7 @@ class AskServiceTest {
     @Test void oneEmbeddingOneGenerationOwnerContextAndAllowlistedResponse() {
         var response=service.ask("  How?  ");
         assertThat(response.status()).isEqualTo(AskResponse.Status.ANSWERED);
-        assertThat(response.sources()).extracting(AskResponse.Source::slug).containsExactly("timeout");
+        assertThat(response.citations()).extracting(c -> c.source().slug()).containsExactly("timeout");
         verify(embedding,times(1)).embed(List.of("How?")); assertThat(answer.requests).hasSize(1);
         verify(owner).id();
         var json=new ObjectMapper().writeValueAsString(response);
@@ -74,7 +74,7 @@ class AskServiceTest {
         assertThatThrownBy(()->service.ask("q")).isInstanceOfSatisfying(AskUnavailableException.class,ex->assertThat(ex.code()).isEqualTo("ASK_UNAVAILABLE")).hasNoCause();
         answer.failure=new AskUnavailableException(AskUnavailableException.Reason.GENERATION);
         assertThatThrownBy(()->service.ask("q")).isInstanceOf(AskUnavailableException.class);
-        answer.failure=null; answer.output=" "; assertThatThrownBy(()->service.ask("q")).isInstanceOf(AskUnavailableException.class);
+        answer.failure=null; answer.output=new AnswerDraft(List.of()); assertThatThrownBy(()->service.ask("q")).isInstanceOf(AskUnavailableException.class);
         assertThat(answer.requests).hasSize(3); verify(embedding,times(3)).embed(List.of("q"));
     }
     @Test void contextIsDeterministicBoundedDeduplicatedAndUnicodeSafe() {
@@ -82,7 +82,8 @@ class AskServiceTest {
         String text="\"\n😀".repeat(2000);
         var chunks=List.of(new RagChunk(2,"Second","second",0,"First chunk"),new RagChunk(2,"Second","second",1,text),new RagChunk(1,"First","first",0,"Never reached"));
         var context=AskContext.assemble(chunks,bounds,new ObjectMapper());
-        assertThat(context.data()).hasSizeLessThanOrEqualTo(1024); assertThat(context.sources()).extracting(AskResponse.Source::id).containsExactly(2L);
+        assertThat(context.data()).hasSizeLessThanOrEqualTo(1024);
+        assertThat(context.sourceMap().values().stream().map(s -> s.chunk().id()).distinct()).containsExactly(2L);
         assertThat(context.data()).isEqualTo(AskContext.assemble(chunks,bounds,new ObjectMapper()).data());
         String last=new ObjectMapper().readTree(context.data()).get(1).path("text").asString();
         assertThat(Character.isHighSurrogate(last.charAt(last.length()-1))).isFalse();

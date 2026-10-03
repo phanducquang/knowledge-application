@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { AskSession, MAX_QUESTION_CHARS, askSourceHref, type AskErrorCode } from "@/lib/ask-knowledge";
-import { AskAnswer } from "./ask-answer";
+import { AskSession, MAX_QUESTION_CHARS, type AskErrorCode } from "@/lib/ask-knowledge";
+import { SourceLinkedAnswer } from "./source-linked-answer";
 
 const errors: Record<AskErrorCode, string> = {
   ASK_DISABLED: "Ask My Knowledge is disabled. Enable Gemini generation on the backend to use it.",
@@ -52,18 +52,6 @@ export function AskKnowledge() {
         <p className="mt-2 text-[14px] leading-6 text-[var(--text-muted)]">No compatible indexed notes are available yet. New or recently edited notes may still be indexing. No answer generation was requested.</p>
       </div>}
     </div>
-    {state.result?.status === "ANSWERED" && <div className="border-t border-[var(--border)] pt-6">
-      <section aria-labelledby="ask-answer-heading"><h2 id="ask-answer-heading" className="text-[20px] font-semibold tracking-[-0.02em]">Answer</h2>
-        <AskAnswer answer={state.result.answer ?? ""} />
-      </section>
-      <section className="mt-8 border-t border-[var(--border)] pt-5" aria-labelledby="ask-sources-heading">
-        <h2 id="ask-sources-heading" className="text-[18px] font-medium">Sources</h2>
-        <p className="mt-2 text-[12px] leading-5 text-[var(--text-subtle)]">Notes used as context, not verified per-claim citations. Generated answers can still be incorrect.</p>
-        <ul className="mt-4 divide-y divide-[var(--border)]">{state.result.sources.map(source => <li key={source.id} className="py-4 [overflow-wrap:anywhere]">
-          <Link href={askSourceHref(source)} className="text-[15px] font-medium text-[var(--accent-strong)] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">{source.title}</Link>
-          <p className="mt-2 whitespace-pre-line text-[13px] leading-6 text-[var(--text-muted)]">{source.excerpt}</p>
-        </li>)}</ul>
-      </section>
-    </div>}
+    {state.result?.status === "ANSWERED" && state.result.answer && <SourceLinkedAnswer answer={state.result.answer} citations={state.result.citations} />}
   </div>;
 }

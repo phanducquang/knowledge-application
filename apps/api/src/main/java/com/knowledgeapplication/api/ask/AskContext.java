@@ -7,17 +7,22 @@ import java.util.*;
 /** Total budget includes JSON escaping/metadata; select whole chunks where possible, trim the final chunk safely. */
 public final class AskContext {
     private AskContext() {}
-    private record Reference(String source, String title, String slug, int chunkIndex, String text) {}
-    public record Assembled(String data, List<AskResponse.Source> sources) {}
+    private record Reference(String sourceRef, String title, String slug, int chunkIndex, String text) {}
+    public record Selected(RagChunk chunk, String includedText) {}
+    public record Assembled(String data, Map<String,Selected> sourceMap) {
+        @Override public String toString() { return "AskContext[redacted]"; }
+    }
     public static Assembled assemble(List<RagChunk> chunks, AskProperties props, ObjectMapper mapper) {
         List<Reference> refs=new ArrayList<>();
-        Map<Long, AskResponse.Source> sources=new LinkedHashMap<>();
+        Map<String,Selected> sourceMap=new LinkedHashMap<>();
+        Set<Long> notes=new HashSet<>();
         Map<Long,Integer> counts=new HashMap<>();
         for (var chunk : chunks) {
             if (refs.size()>=props.maxChunks()) break;
             if (chunk.chunkText().isBlank() || counts.getOrDefault(chunk.id(),0)>=props.maxChunksPerKnowledge()) continue;
-            if (!sources.containsKey(chunk.id()) && sources.size()>=props.maxSources()) continue;
-            String source="note-" + chunk.id();
+            if (!notes.contains(chunk.id()) && notes.size()>=props.maxSources()) continue;
+            if (sourceMap.values().stream().anyMatch(s -> s.chunk().id()==chunk.id() && s.chunk().chunkIndex()==chunk.chunkIndex())) continue;
+            String source="S" + (refs.size()+1);
             String text=chunk.chunkText();
             var ref=new Reference(source,chunk.title(),chunk.slug(),chunk.chunkIndex(),text);
             var candidate=new ArrayList<>(refs); candidate.add(ref);
@@ -35,14 +40,13 @@ public final class AskContext {
                 ref=new Reference(source,chunk.title(),chunk.slug(),chunk.chunkIndex(),text); truncated=true;
             }
             refs.add(ref); counts.merge(chunk.id(),1,Integer::sum);
-            sources.putIfAbsent(chunk.id(),new AskResponse.Source(chunk.id(),chunk.title(),chunk.slug(),excerpt(text)));
+            notes.add(chunk.id()); sourceMap.put(source,new Selected(chunk,text));
             if (truncated) break;
         }
-        return new Assembled(mapper.writeValueAsString(refs),List.copyOf(sources.values()));
+        return new Assembled(mapper.writeValueAsString(refs),Collections.unmodifiableMap(sourceMap));
     }
     private static String prefix(String text,int length) {
         if (length>0 && length<text.length() && Character.isHighSurrogate(text.charAt(length-1)) && Character.isLowSurrogate(text.charAt(length))) length--;
         return text.substring(0,length);
     }
-    private static String excerpt(String text) { return text.length()<=600 ? text : prefix(text,599)+"…"; }
 }

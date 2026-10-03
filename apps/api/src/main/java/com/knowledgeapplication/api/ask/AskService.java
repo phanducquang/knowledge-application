@@ -40,12 +40,10 @@ public class AskService {
         try {
             context=AskContext.assemble(repository.findRagChunks(ownerId,strategy,vector,properties.maxChunks(),properties.maxChunksPerKnowledge()),properties,mapper);
         } catch (RuntimeException ex) { throw new AskUnavailableException(RETRIEVAL); }
-        if (context.sources().isEmpty()) return new AskResponse(AskResponse.Status.NO_CONTEXT,null,List.of());
-        String answer;
+        if (context.sourceMap().isEmpty()) return new AskResponse(AskResponse.Status.NO_CONTEXT,null,List.of());
         try {
-            answer=answerClients.getObject().answer(new KnowledgeAnswerClient.Request(question,context.data()));
-            if (answer==null || answer.isBlank() || answer.length()>65536) throw new AskUnavailableException(GENERATION);
+            var draft=answerClients.getObject().answer(new KnowledgeAnswerClient.Request(question,context.data()));
+            return AnswerCitations.validate(draft,context);
         } catch (RuntimeException ex) { throw new AskUnavailableException(GENERATION); }
-        return new AskResponse(AskResponse.Status.ANSWERED,answer.trim(),context.sources());
     }
 }

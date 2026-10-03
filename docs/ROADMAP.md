@@ -56,7 +56,7 @@ The Share Dialog is now wired from both Reading and Edit. It persists visibility
 
 Revision history now records a CREATE snapshot, interval-limited pre-edit checkpoints, and a mandatory pre-restore safety snapshot. Owner-scoped list/detail/restore APIs and the protected History screen restore authoring fields while preserving slug, visibility, publication state and UNLISTED bearer credentials.
 
-Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation, Semantic Search and Gemini-powered Ask My Knowledge are complete; Source-linked Answers is next. Generic files and image processing remain separate work.
+Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a grace period, current and retained-revision references protect objects, Knowledge deletion preserves keys in a durable queue, and storage failures retry safely. Collection management/navigation is complete with owner-scoped CRUD, empty-collection visibility, filtered note lists and safe unfiling on deletion. Owner-only wiki links, backlinks, Related Articles and Knowledge Graph use current persisted content/metadata and stable slugs. Related notes retain deterministic ranking, while Graph contains only explicit wiki edges and includes isolated notes. Neither exposes owner relationships on PUBLIC/UNLISTED pages or uses AI/embeddings/a dedicated edge index. Semantic Retrieval Foundation, Semantic Search, Gemini-powered Ask My Knowledge and Source-linked Answers are complete. Generic files and image processing remain separate work.
 
 ## Phase 2 — Sharing and authoring quality
 
@@ -77,12 +77,15 @@ Revision-safe attachment lifecycle cleanup is complete: fresh uploads receive a 
 
 ## Phase 4 — AI-assisted retrieval
 
-Semantic Retrieval Foundation, owner-only Semantic Search and **Gemini-powered Ask My Knowledge** are complete; next milestone: **Source-linked Answers**. Embedding/generation remain disabled unless explicitly enabled with a backend-only key. `/search` offers explicit-submit Semantic alongside default 180ms live Keyword FTS; Quick Search stays FTS. `/ask` adds one question/answer with current note-level sources, not chat or verified per-claim citations. PostgreSQL quota reservations protect global/background embeddings and independent generation; configuration changes automatically stale/reindex old vectors. No hybrid ranking or anonymous AI access is added.
+Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask My Knowledge and Source-linked Answers** are complete. Embedding/generation remain disabled unless explicitly enabled with a backend-only key. `/search` offers explicit-submit Semantic alongside default 180ms live Keyword FTS; Quick Search stays FTS. `/ask` adds one structured answer with backend-validated current chunk citations/evidence and Reading navigation, not chat or proof of logical claim entailment. PostgreSQL quota reservations protect global/background embeddings and independent generation; model/strategy changes still automatically stale/reindex old vectors. SDK stays 1.75.0 without continuation. No hybrid ranking or anonymous AI access is added.
 
 - PostgreSQL 17 + pgvector — complete
 - embedding provider/storage infrastructure — complete
 - current Knowledge chunk indexing/backfill and freshness detection — complete
 - semantic search — complete
 - Ask My Knowledge — complete for single-turn Gemini answers and note-level sources
-- Source-linked Answers — next, precise citations and source navigation
-- auto tagging/summarization
+- Source-linked Answers — complete for structured blocks, exact current chunk/evidence validation, citation reuse and Reading navigation
+- quota usage retention — recommended next small reliability milestone; safely prune expired windows without weakening active/persistent RPD accounting
+- auto tagging/summarization — future, requires separate review after reliability work
+
+Exact scroll-to-chunk/heading-aware source jumps remain deferred until Reading has a reliable deterministic anchor contract. Grounding evaluation and evidence-to-claim correctness remain explicit limitations, not claims of factual proof.

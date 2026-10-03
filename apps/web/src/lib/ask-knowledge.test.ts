@@ -4,12 +4,14 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AskAnswer } from "../components/ask/ask-answer.ts";
+import { SourceLinkedAnswer, focusCitationEvidence } from "../components/ask/source-linked-answer.ts";
 import { AskError, AskSession, fetchAskKnowledge, mapAskResponse, askSourceHref, type AskResult } from "./ask-knowledge.ts";
 import { AskRequestError, readAskQuestion } from "./ask-request.ts";
 import { buildBackendHeaders, isStateChangingMethod } from "./backend-auth.ts";
 
-const result: AskResult = { status: "ANSWERED", answer: "Use `responseTimeout`.", sources: [{ id: 1, title: "Timeouts", slug: "timeouts", excerpt: "<script>literal note text</script>" }] };
-const noContext: AskResult = { status: "NO_CONTEXT", answer: null, sources: [] };
+const result: AskResult = { status: "ANSWERED", answer: { blocks: [{ markdown: "Use `responseTimeout`.", citationIds: ["C1"] }] },
+  citations: [{ id: "C1", source: { id: 1, title: "Timeouts", slug: "timeouts" }, chunkIndex: 2, evidence: "<script>literal note text</script>" }] };
+const noContext: AskResult = { status: "NO_CONTEXT", answer: null, citations: [] };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 test("Ask POST is same-origin no-store, one question body, never a question URL", async () => {
   let calls = 0;
@@ -21,14 +23,17 @@ test("Ask POST is same-origin no-store, one question body, never a question URL"
   assert.deepEqual(actual, result); assert.equal(calls, 1);
 });
 test("maps allowlisted answer/sources and drops vector, secret and provider fields", () => {
-  const safe = mapAskResponse({ ...result, apiKey: "secret", context: "private", sources: [{ ...result.sources[0], ownerId: "other", distance: 0, embedding: [1], model: "internal" }] });
-  assert.deepEqual(safe, result); assert.equal(askSourceHref(safe.sources[0]), "/knowledge/timeouts");
+  const safe = mapAskResponse({ ...result, apiKey: "secret", context: "private", citations: [{ ...result.citations[0], source: { ...result.citations[0].source, ownerId: "other" }, distance: 0, embedding: [1], model: "internal" }] });
+  assert.deepEqual(safe, result); assert.equal(askSourceHref(safe.citations[0].source), "/knowledge/timeouts");
   assert.deepEqual(mapAskResponse(noContext), noContext);
 });
 test("rejects invalid status/empty answer, source duplicates, unsafe navigation and response bounds", () => {
-  for (const invalid of [null, {}, { ...result, status: "CHAT" }, { ...result, answer: " " }, { ...result, answer: "x".repeat(65537) },
-    { ...result, sources: [] }, { ...result, sources: [result.sources[0], result.sources[0]] }, { ...noContext, answer: "hallucination" },
-    { ...result, sources: [{ ...result.sources[0], slug: "javascript:bad" }] }, { ...result, sources: [{ ...result.sources[0], excerpt: "x".repeat(601) }] }])
+  for (const invalid of [null, {}, { ...result, status: "CHAT" }, { ...result, answer: "old string contract" },
+    { ...result, answer: { blocks: [{ markdown: " ", citationIds: ["C1"] }] } },
+    { ...result, answer: { blocks: [{ markdown: "x".repeat(8193), citationIds: ["C1"] }] } },
+    { ...result, citations: [] }, { ...result, citations: [result.citations[0], result.citations[0]] }, { ...noContext, answer: "hallucination" },
+    { ...result, citations: [{ ...result.citations[0], source: { ...result.citations[0].source, slug: "javascript:bad" } }] },
+    { ...result, citations: [{ ...result.citations[0], evidence: "x".repeat(401) }] }])
     assert.throws(() => mapAskResponse(invalid), AskError);
 });
 test("disabled/retrieval/generation/auth errors are sanitized without retry", async () => {
@@ -93,7 +98,7 @@ test("private route/UI/server transport wires CSRF, plain excerpts and explicit 
   const source = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
   const page = source("../app/ask/page.tsx"); assert.match(page, /await requireCurrentUser\(\)/); assert.match(page, /force-dynamic/);
   const client = source("../components/ask/ask-knowledge.tsx"); assert.match(client, /event.metaKey \|\| event.ctrlKey/);
-  assert.match(client, /onSubmit/); assert.match(client, /disabled=\{loading/); assert.match(client, /\{source.excerpt\}/); assert.match(client, /askSourceHref\(source\)/);
+  assert.match(client, /onSubmit/); assert.match(client, /disabled=\{loading/); assert.match(client, /SourceLinkedAnswer/);
   assert.doesNotMatch(client, /KnowledgeMarkdown|Mermaid|dangerouslySetInnerHTML|setTimeout|localStorage|sessionStorage|pushState|replaceState/);
   const api = source("api/ask-knowledge.ts"); assert.match(api, /import "server-only"/); assert.match(api, /backendRequest<unknown>/); assert.match(api, /method: "POST"/);
   const transport = source("api/backend.ts"); assert.match(transport, /isStateChangingMethod\(init\?\.method\) \? await csrfToken\(cookieHeader\)/);
@@ -102,4 +107,35 @@ test("private route/UI/server transport wires CSRF, plain excerpts and explicit 
   assert.equal(headers.get("Cookie"), "JSESSIONID=test-session"); assert.equal(headers.get("X-CSRF-TOKEN"), "test-token");
   const bff = source("../app/api/ask-my-knowledge/route.ts"); assert.match(bff, /private, no-store/); assert.match(bff, /readAskQuestion/);
   assert.doesNotMatch(bff, /NEXT_PUBLIC|GEMINI_API_KEY|KNOWLEDGE_API_BASE_URL/);
+});
+test("structured citation mapping rejects unknown, orphaned, non-deterministic and duplicate chunk linkage", () => {
+  const citation = result.citations[0];
+  const blocks = (citationIds: unknown[]) => ({ blocks: [{ markdown: "Answer", citationIds }] });
+  for (const invalid of [
+    { ...result, answer: blocks([]) }, { ...result, answer: blocks(["C999"]) }, { ...result, answer: blocks(["C1", "C1"]) },
+    { ...result, citations: [{ ...citation, id: "C9" }] }, { ...result, citations: [{ ...citation, chunkIndex: -1 }] },
+    { ...result, citations: [{ ...citation, evidence: " " }] }, { ...noContext, citations: [citation] },
+    { ...result, citations: [citation, { ...citation, id: "C2" }] },
+    { ...result, citations: [citation, { ...citation, id: "C2", chunkIndex: 3 }] },
+    { ...result, answer: blocks(["C2", "C1"]), citations: [citation, { ...citation, id: "C2", chunkIndex: 3 }] },
+    { ...result, answer: { blocks: Array(25).fill({ markdown: "x", citationIds: ["C1"] }) } },
+    { ...result, answer: { blocks: Array(9).fill({ markdown: "x".repeat(8192), citationIds: ["C1"] }) } },
+  ]) assert.throws(() => mapAskResponse(invalid), AskError);
+});
+test("inline citations reuse numbering, group a note once and render exact evidence safely", () => {
+  const citations = [result.citations[0], { ...result.citations[0], id: "C2", chunkIndex: 5, evidence: "Second exact chunk" }];
+  const answer = { blocks: [{ markdown: "**First** [fake source](https://evil.example) [99]", citationIds: ["C1", "C2"] }, { markdown: "Again", citationIds: ["C1"] }] };
+  const html = renderToStaticMarkup(createElement(SourceLinkedAnswer, { answer, citations }));
+  assert.equal((html.match(/aria-label="Source 1: Timeouts"/g) ?? []).length, 2);
+  assert.match(html, /aria-controls="ask-evidence-C1"/); assert.match(html, /id="ask-evidence-C1" tabindex="-1"/);
+  assert.equal((html.match(/aria-label="Open note: Timeouts"/g) ?? []).length, 1);
+  assert.match(html, /href="\/knowledge\/timeouts"/); assert.match(html, /&lt;script&gt;literal note text&lt;\/script&gt;/);
+  assert.match(html, /Second exact chunk/); assert.doesNotMatch(html, /https:\/\/evil|<script/);
+  assert.equal((html.match(/<button/g) ?? []).length, 3); // Markdown [99] is inert, not a citation control.
+});
+test("citation activation focuses accessible evidence without URL/history mutation", () => {
+  const actions: string[] = [];
+  const fake = { getElementById: (id: string) => { actions.push(id); return { focus: () => actions.push("focus"), scrollIntoView: () => actions.push("scroll") } as unknown as HTMLElement; } };
+  focusCitationEvidence("C1", fake); assert.deepEqual(actions, ["ask-evidence-C1", "focus", "scroll"]);
+  focusCitationEvidence("C2", { getElementById: () => null });
 });

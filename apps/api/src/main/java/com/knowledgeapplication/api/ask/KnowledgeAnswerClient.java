@@ -5,5 +5,5 @@ public interface KnowledgeAnswerClient {
     record Request(String question, String referenceData) {
         @Override public String toString() { return "AnswerRequest[redacted]"; }
     }
-    String answer(Request request);
+    AnswerDraft answer(Request request);
 }
