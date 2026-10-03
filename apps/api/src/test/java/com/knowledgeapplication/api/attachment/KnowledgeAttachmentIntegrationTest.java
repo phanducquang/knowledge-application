@@ -26,7 +26,6 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -65,9 +64,7 @@ class KnowledgeAttachmentIntegrationTest {
     static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17-alpine");
 
     @Container
-    static final GenericContainer<?> MINIO = new GenericContainer<>(
-            DockerImageName.parse("quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z")
-    )
+    static final GenericContainer<?> MINIO = new GenericContainer<>(TestContainerImages.MINIO)
             .withEnv("MINIO_ROOT_USER", "minio-test")
             .withEnv("MINIO_ROOT_PASSWORD", "minio-test-secret")
             .withCommand("server", "/data")

@@ -86,8 +86,8 @@ jobs:
           set -euo pipefail
 
           tag="RELEASE.2025-04-22T22-12-26Z"
-          primary="quay.io/minio/minio:$tag"
-          fallback="minio/minio:$tag"
+          primary="ghcr.io/coollabsio/minio:$tag"
+          fallback="coollabsio/minio:$tag"
           pulled=false
 
           for attempt in 1 2 3; do
@@ -103,7 +103,7 @@ jobs:
           done
 
           if [ "$pulled" != "true" ]; then
-            echo "::warning::Quay pull failed after 3 attempts; falling back to Docker Hub"
+            echo "::warning::GHCR pull failed after 3 attempts; falling back to Coollabs Docker Hub mirror"
             docker pull "$fallback"
             docker tag "$fallback" "$primary"
           fi
