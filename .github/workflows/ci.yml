@@ -80,6 +80,36 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Pre-pull MinIO test image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="RELEASE.2025-04-22T22-12-26Z"
+          primary="quay.io/minio/minio:$tag"
+          fallback="minio/minio:$tag"
+          pulled=false
+
+          for attempt in 1 2 3; do
+            echo "Pulling $primary (attempt $attempt/3)"
+            if docker pull "$primary"; then
+              pulled=true
+              break
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              sleep $((attempt * 10))
+            fi
+          done
+
+          if [ "$pulled" != "true" ]; then
+            echo "::warning::Quay pull failed after 3 attempts; falling back to Docker Hub"
+            docker pull "$fallback"
+            docker tag "$fallback" "$primary"
+          fi
+
+          docker image inspect "$primary" >/dev/null
+
       - name: Build and test
         shell: bash
         run: |
