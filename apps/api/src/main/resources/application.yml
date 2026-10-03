@@ -34,6 +34,14 @@ app:
   owner-id: ${APP_OWNER_ID:00000000-0000-0000-0000-000000000001}
   gemini:
     api-key: ${GEMINI_API_KEY:}
+  ai:
+    quota-cleanup:
+      enabled: ${AI_QUOTA_CLEANUP_ENABLED:true}
+      minute-retention: ${AI_QUOTA_MINUTE_RETENTION:P2D}
+      daily-retention: ${AI_QUOTA_DAILY_RETENTION:P30D}
+      interval: ${AI_QUOTA_CLEANUP_INTERVAL:PT6H}
+      initial-delay: ${AI_QUOTA_CLEANUP_INITIAL_DELAY:PT10M}
+      batch-size: ${AI_QUOTA_CLEANUP_BATCH_SIZE:1000}
   embedding:
     enabled: ${EMBEDDING_ENABLED:false}
     base-url: ${EMBEDDING_BASE_URL:https://generativelanguage.googleapis.com}

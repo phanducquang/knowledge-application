@@ -85,7 +85,8 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - semantic search — complete
 - Ask My Knowledge — complete for single-turn Gemini answers and note-level sources
 - Source-linked Answers — complete for structured blocks, exact current chunk/evidence validation, citation reuse and Reading navigation
-- quota usage retention — recommended next small reliability milestone; safely prune expired windows without weakening active/persistent RPD accounting
+- quota usage retention — complete for configurable bounded expired-window cleanup, active/DST safety and non-blocking cross-replica coordination; persistent reservation semantics unchanged
+- retrieval quality evaluation — recommended next, starting with a synthetic/offline corpus and separately approved live checks
 - auto tagging/summarization — future, requires separate review after reliability work
 
 Exact scroll-to-chunk/heading-aware source jumps remain deferred until Reading has a reliable deterministic anchor contract. Grounding evaluation and evidence-to-claim correctness remain explicit limitations, not claims of factual proof.

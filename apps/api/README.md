@@ -354,6 +354,27 @@ V9 adds PostgreSQL quota counters only. Defaults: embeddings global `80 RPM / 24
 
 Gemini receives private text/questions when enabled. Free Tier/unpaid handling may differ from paid terms and permit product improvement/human review. Review [Google terms](https://ai.google.dev/gemini-api/terms) and [pricing](https://ai.google.dev/gemini-api/docs/pricing) before enabling. See [`../../docs/ASK_MY_KNOWLEDGE.md`](../../docs/ASK_MY_KNOWLEDGE.md) for full configuration, cost/retention boundaries and limitations. Tests explicitly disable production AI and clear its key; zero external Gemini calls.
 
+## AI quota usage retention
+
+Historical quota rows are cleaned automatically; this is local housekeeping, **not a Gemini quota reset/refund**. No new migration, reset endpoint, payload storage or provider call. `AiQuotaLimiter`, SDK `1.75.0` and current-window enforcement are unchanged.
+
+All settings live under `app.ai.quota-cleanup` and are listed in `.env.example`:
+
+```bash
+AI_QUOTA_CLEANUP_ENABLED=true
+AI_QUOTA_MINUTE_RETENTION=P2D
+AI_QUOTA_DAILY_RETENTION=P30D
+AI_QUOTA_CLEANUP_INTERVAL=PT6H
+AI_QUOTA_CLEANUP_INITIAL_DELAY=PT10M
+AI_QUOTA_CLEANUP_BATCH_SIZE=1000
+```
+
+One scheduled run deletes at most **batch-size total** minute/day rows, oldest eligible unlocked PK first. Eligibility is strict persisted `window_end < now - retention` **and** `window_end < now`; equality/active/future windows remain. `*-minute`/`*-day` determine retention, not duration (Pacific DST daily windows can be 23/25 hours); unknown suffixes remain. Instant/UTC cutoffs do not use JVM local dates. PostgreSQL counters still survive restarts/replicas; keep clocks/configuration consistent.
+
+A separate non-blocking transaction advisory lock skips another replica's active cycle. Reservation locks are never acquired. Bounded JdbcClient CTE deletion uses `FOR UPDATE SKIP LOCKED`, an independent 30-second transaction timeout, aggregate counts and sanitized logs; locked history/backlogs resume later. Existing scheduling/Clock are reused, without synchronous startup cleanup or a drain loop. `AI_QUOTA_CLEANUP_ENABLED=false` registers no scheduler, makes service calls no-ops and leaves health/reservation unchanged.
+
+Enabled bounds: retention 1ms–36500 days, interval 10s–365 days, initial delay 0–365 days, batch 1–10000; disabled values need only remain parseable. Do not manually delete active counters. Old inspection history disappears when eligible batches reach it, not at an exact deadline. No retention index is added without measured need; normal PostgreSQL autovacuum handles deleted rows. Full contract: [quota operations](../../docs/ASK_MY_KNOWLEDGE.md#ai-quota-usage-retention).
+
 ## Validate
 
 ```bash
