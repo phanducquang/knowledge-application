@@ -4,7 +4,7 @@ Owner-only, optional **single-turn** answers grounded in current indexed Knowled
 
 ## Provider and configuration
 
-Production uses the official GA [Google Java GenAI SDK `1.70.0`](https://github.com/googleapis/java-genai/releases/tag/v1.70.0), Maven `com.google.genai:google-genai:1.70.0`. SDK types are isolated in `ai/gemini`; services depend on existing `EmbeddingClient` and the small `KnowledgeAnswerClient`. The old compatible embedding adapter is removed; no runtime provider switch or new framework.
+Production uses the official GA [Google Java GenAI SDK `1.75.0`](https://github.com/googleapis/java-genai/releases/tag/v1.75.0), Maven `com.google.genai:google-genai:1.75.0`. SDK types are isolated in `ai/gemini`; services depend on existing `EmbeddingClient` and the small `KnowledgeAnswerClient`. The old compatible embedding adapter is removed; no runtime provider switch or new framework.
 
 Exact default API model IDs, verified against official model pages:
 
