@@ -375,6 +375,16 @@ A separate non-blocking transaction advisory lock skips another replica's active
 
 Enabled bounds: retention 1ms–36500 days, interval 10s–365 days, initial delay 0–365 days, batch 1–10000; disabled values need only remain parseable. Do not manually delete active counters. Old inspection history disappears when eligible batches reach it, not at an exact deadline. No retention index is added without measured need; normal PostgreSQL autovacuum handles deleted rows. Full contract: [quota operations](../../docs/ASK_MY_KNOWLEDGE.md#ai-quota-usage-retention).
 
+## Offline retrieval evaluation
+
+```bash
+./gradlew retrievalEval
+```
+
+Requires Java 17 and Docker, not a running API/database, OAuth or Gemini key. One isolated PostgreSQL/pgvector Testcontainer loads 24 synthetic notes/40 queries with explicit note/section ground truth. Test-only controlled vocabulary embeddings call the actual production Semantic/RAG repository queries, not copied ranking SQL. Reports include HitRate/Recall@K, bounded MRR, separate chunk coverage, diversity and per-query/category/language diagnostics; **provider semantic quality NOT measured**.
+
+Reports: `build/reports/retrieval-eval/report.txt` and `report.json` (ignored, never commit). Fixed fixture IDs/timestamps plus repeated-run comparisons verify determinism excluding report timestamp. Owner/stale/model/dimension/incomplete decoys and long-note cap regressions are included. The full evaluator also runs in ordinary tests; the dedicated task always reruns. Production AI is disabled and Gemini/Google keys cleared in all Gradle Test tasks; no external Gemini calls. SDK stays 1.75.0, schema V1–V9 and production ranking/chunking/API/Web are unchanged. Fixture/metrics/schema/limits and observed misses: [Retrieval evaluation](../../docs/RETRIEVAL_EVALUATION.md).
+
 ## Validate
 
 ```bash

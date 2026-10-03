@@ -44,6 +44,7 @@ The web and API applications remain independently buildable and deployable even 
 - Gemini now powers optional embeddings (`gemini-embedding-2`, 768 dimensions) and owner-only single-turn Ask My Knowledge at `/ask` (`gemini-3.5-flash-lite`). Both default off and use one backend-only `GEMINI_API_KEY`. PostgreSQL-backed global/background embedding and separate generation quotas bound usage. Model/strategy changes automatically stale and reindex old vectors. Ask uses current indexed notes, limited Markdown and structured Reading sources; no saved questions/chat or public AI access. Enabling sends private text to Google; review provider terms and actual AI Studio limits first.
 - Source-linked Answers is complete: structured answer blocks reference backend-validated current chunks, with compact exact evidence, deterministic citation reuse and accessible evidence controls grouped by note. Open note navigates to Reading; exact scroll-to-chunk is deferred. Citation identity/evidence existence is verified, not logical claim correctness. SDK remains `1.75.0`; single-turn calls, quota/privacy boundaries and no-storage behavior are unchanged.
 - AI quota usage retention is complete: configurable housekeeping removes only old expired minute/day counters (defaults 2/30 days), in bounded batches with a non-blocking replica guard. Active/future windows and unknown window types remain protected. This does not reset Gemini quotas or alter reservations; see [quota operations](docs/ASK_MY_KNOWLEDGE.md#ai-quota-usage-retention).
+- Offline retrieval quality evaluation is complete: 24 synthetic notes/40 declared queries exercise the actual Semantic and RAG PostgreSQL/pgvector queries, with independent note/chunk metrics and deterministic text/JSON reports. No external Gemini calls or production ranking changes; **provider semantic quality is not measured**. Run `./gradlew retrievalEval` in `apps/api`; see [evaluation](docs/RETRIEVAL_EVALUATION.md).
 - Create/Edit persist title, summary, Markdown, visibility, collection and tags; existing notes use serialized debounced autosave.
 - PostgreSQL Full Text Search is implemented across Knowledge text and metadata. Full Search and typed Quick Search share the owner-scoped backend ranking through a focused same-origin Next.js boundary.
 - Google OAuth2/OIDC authentication is implemented with Spring Security and a server-side HTTP session. One verified allowlisted Google email may act as the stable configured `APP_OWNER_ID`; configuration alone no longer grants access. The live Google OAuth flow has been verified separately from CI.
@@ -76,6 +77,7 @@ Read these before implementing features:
 - [`docs/ATTACHMENT_LIFECYCLE.md`](docs/ATTACHMENT_LIFECYCLE.md)
 - [`docs/SEMANTIC_RETRIEVAL.md`](docs/SEMANTIC_RETRIEVAL.md)
 - [`docs/ASK_MY_KNOWLEDGE.md`](docs/ASK_MY_KNOWLEDGE.md)
+- [`docs/RETRIEVAL_EVALUATION.md`](docs/RETRIEVAL_EVALUATION.md)
 - [`docs/DESIGN.md`](docs/DESIGN.md)
 - [`docs/AI_CODING_GUIDELINES.md`](docs/AI_CODING_GUIDELINES.md)
 - [`docs/REFERENCE_SCREENS.md`](docs/REFERENCE_SCREENS.md)

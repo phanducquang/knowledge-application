@@ -40,10 +40,24 @@ dependencies {
     testImplementation 'org.testcontainers:testcontainers'
 }
 
-tasks.named('test') {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
     // Never inherit an enabled production embedding provider into integration tests.
     systemProperty 'app.embedding.enabled', 'false'
     systemProperty 'app.ask.enabled', 'false'
     systemProperty 'app.gemini.api-key', ''
+    environment 'GEMINI_API_KEY', ''
+    environment 'GOOGLE_API_KEY', ''
+    environment 'EMBEDDING_ENABLED', 'false'
+    environment 'ASK_ENABLED', 'false'
+    systemProperty 'retrieval.eval.report-directory', layout.buildDirectory.dir('reports/retrieval-eval').get().asFile.absolutePath
+}
+
+tasks.register('retrievalEval', Test) {
+    description = 'Evaluate synthetic offline retrieval through real PostgreSQL/pgvector and write reports.'
+    group = 'verification'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    filter { includeTestsMatching 'com.knowledgeapplication.api.retrieval.eval.RetrievalEvaluationIntegrationTest' }
+    outputs.upToDateWhen { false }
 }

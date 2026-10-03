@@ -86,7 +86,9 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - Ask My Knowledge — complete for single-turn Gemini answers and note-level sources
 - Source-linked Answers — complete for structured blocks, exact current chunk/evidence validation, citation reuse and Reading navigation
 - quota usage retention — complete for configurable bounded expired-window cleanup, active/DST safety and non-blocking cross-replica coordination; persistent reservation semantics unchanged
-- retrieval quality evaluation — recommended next, starting with a synthetic/offline corpus and separately approved live checks
+- retrieval quality evaluation — complete for an offline synthetic corpus, actual PostgreSQL/pgvector Semantic/RAG queries, independent note/chunk metrics and deterministic reports; [details and observed misses](RETRIEVAL_EVALUATION.md)
+- source-chunk coverage/relevance evaluation — recommended next, based on long-note configuration/paraphrase diagnostics; no tuning or automatic provider checks started
+- live Gemini retrieval evaluation — future/manual, requires explicit operator approval; real-model semantic quality not evaluated by the offline harness
 - auto tagging/summarization — future, requires separate review after reliability work
 
 Exact scroll-to-chunk/heading-aware source jumps remain deferred until Reading has a reliable deterministic anchor contract. Grounding evaluation and evidence-to-claim correctness remain explicit limitations, not claims of factual proof.
