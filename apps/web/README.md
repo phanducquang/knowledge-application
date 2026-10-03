@@ -4,7 +4,7 @@ Next.js application for the Knowledge Application workspace.
 
 ## Stack
 
-- Next.js 16.3.4
+- Next.js 16.3.8
 - React 19.2.8
 - TypeScript
 - App Router
@@ -82,7 +82,19 @@ The graph includes isolated notes even when the entire library has no edges; an 
 
 Graph validation includes Node tests for filters, layout, focus, real React Flow node/edge rendering, navigation and private transport wiring. Browser QA was not executed for this milestone because browser tooling was unavailable; pan/zoom/touch and narrow-screen interaction still need a browser smoke check when tooling is enabled.
 
-Dependency audit during the graph milestone reported three pre-existing vulnerable packages: Next.js `16.3.4` (critical), brace-expansion (high, tooling) and DOMPurify (low, existing Mermaid dependency). These versions were unchanged by the graph dependency installation. A separate dependency/security patch is needed; no unrelated force upgrade was applied here.
+## Dependency security maintenance
+
+The 2026-10-03 audit reported eight vulnerable package entries (one critical, six high, one low), including transitive tooling parents. Minimal compatible patches were applied without changing React/ReactDOM `19.2.8`, graph dependencies or application behavior:
+
+| Dependency / path | Before → after | Advisory / scope |
+| --- | --- | --- |
+| `next`; paired `eslint-config-next` | `16.3.4` → `16.3.8` | [GHSA-vcvr-r3jv-pc5j](https://github.com/advisories/GHSA-vcvr-r3jv-pc5j), critical runtime; affected Next `>=16.2.0 <16.3.6`, patched from `16.3.6` |
+| Mermaid / Milkdown → `dompurify` | `3.4.15` → `3.4.16` | [GHSA-p98j-92pf-mc4p](https://github.com/advisories/GHSA-p98j-92pf-mc4p), low runtime; affected `3.4.13–3.4.15`, patched `3.4.16` |
+| ESLint / typescript-eslint → minimatch → `brace-expansion` | `1.1.18` / `5.0.9` → `1.1.21` / `5.0.12` | Dev-only DoS: [GHSA-q2hr-2g5m-vwhr](https://github.com/advisories/GHSA-q2hr-2g5m-vwhr) (moderate), [GHSA-qhr7-859c-m2p7](https://github.com/advisories/GHSA-qhr7-859c-m2p7) and [GHSA-6j4f-fj2g-mc7p](https://github.com/advisories/GHSA-6j4f-fj2g-mc7p) (high); both installed branches now patched |
+
+`npm audit --omit=dev` now reports **zero runtime vulnerabilities**. Full `npm audit` still reports **five high dev-only entries**, all from the single unpatched [GHSA-vfj7-8cjw-p6xm / CVE-2026-93687](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm): `eslint-config-next → @next/eslint-plugin-next → fast-glob → micromatch → braces@3.0.3`. All published braces versions through `3.0.3` are affected and no patched version is available. npm's proposed force fix downgrades Next's ESLint configuration to `14.2.35`; this breaking downgrade was deliberately not applied. This path handles tooling file patterns, not runtime Knowledge input; monitor upstream for a compatible patch.
+
+The application does not use `next/og` Node `ImageResponse`, `next/image`, custom image loaders or `remotePatterns`. Attachment delivery forwards raw access-scoped backend responses; it does not invoke Next image generation/optimization. The framework was patched despite non-use of that advisory's affected surface. Application code defines no DOMPurify `IN_PLACE`/node-removal hooks, but Mermaid and Milkdown use DOMPurify transitively and received the patch. Owner session/CSRF forwarding, anonymous PUBLIC/UNLISTED reads, no-store behavior and the production webpack build remain unchanged.
 
 ## Public reading
 
