@@ -61,3 +61,19 @@ tasks.register('retrievalEval', Test) {
     filter { includeTestsMatching 'com.knowledgeapplication.api.retrieval.eval.RetrievalEvaluationIntegrationTest' }
     outputs.upToDateWhen { false }
 }
+
+// Deliberately NOT a Test task or a dependency of test/check/build/CI.
+tasks.register('retrievalEvalLive', JavaExec) {
+    description = 'Explicitly approved manual Gemini embedding evaluation on isolated synthetic fixtures only.'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.knowledgeapplication.api.retrieval.eval.LiveRetrievalMain'
+    systemProperty 'retrieval.eval.live-task', 'true'
+    systemProperty 'retrieval.eval.report-directory', layout.buildDirectory.dir('reports/retrieval-eval').get().asFile.absolutePath
+    doFirst {
+        if (System.getenv('RETRIEVAL_EVAL_LIVE') != 'true') {
+            throw new GradleException('Manual live evaluation requires RETRIEVAL_EVAL_LIVE=true; no provider calls made.')
+        }
+    }
+}

@@ -195,8 +195,75 @@ Executed locally for this milestone:
 
 The harness directly constructs only the offline embedding fake; no Gemini adapter or generation client is constructed, even when ambient credentials exist. **Zero external Gemini calls**; the isolated evaluation database's persistent quota counter remains empty. No real user notes are used. No browser QA or live provider evaluation was performed. An existing local `application.yml` change was preserved unchanged and excluded from the milestone commit.
 
+## Manual live Gemini retrieval evaluation
+
+The opt-in `retrievalEvalLive` JavaExec is independent of Test/check/build/CI. It requires both the dedicated-task JVM marker and `RETRIEVAL_EVAL_LIVE=true`, then valid existing backend Gemini settings. No Spring application context, normal datasource, OAuth, attachment storage, answer client or generation request is constructed. Only classpath synthetic fixtures can be loaded; the database helper has no caller-supplied connection string and owns its PostgreSQL/pgvector Testcontainer.
+
+```bash
+cd apps/api
+RETRIEVAL_EVAL_LIVE=true ./gradlew retrievalEvalLive
+```
+
+Existing Spring environment/YAML credential resolution is reused, with no `.env` loader or new key file. The user's intentionally modified `application.yml` remains local, byte-preserved and excluded from commits; never display its diff or dump Binder/provider exceptions. No SDK HTTP payload/auth logging. The CLI prints only model/dimensions, synthetic counts, budgets and sanitized outcomes. Do not share local build artifacts containing local configuration.
+
+The configured model/dimensions and **4000/200 baseline** are mandatory; only the official Gemini origin is accepted. Manual adapter validation is enabled in memory without changing runtime flags. Documents use actual `EmbeddingSource.input`, queries actual query text; the production `GeminiEmbeddingClient` alone adds its existing symmetric task prefix. Each unique input is sent once via native batches at the configured size. Run-local vector caches have no provider fallback. Documents reserve global/background quotas; queries global quotas in the isolated DB. Normal application quota rows are untouched, although real provider account quota is consumed.
+
+Preflight checks planned requests/estimated tokens, including task-prefix overhead and per-batch rounding; each batch is guarded again. Hard ceilings: **20 requests / 60000 estimated input tokens**, reducible through `RETRIEVAL_EVAL_LIVE_MAX_REQUESTS` / `RETRIEVAL_EVAL_LIVE_MAX_ESTIMATED_INPUT_TOKENS`. These are safety limits, not Google entitlements. Native batching may span fixture notes, preserving independent per-chunk title/summary/content inputs. Counts are adapter request attempts (one SDK batch request each with retries disabled), with successful counts separately recorded.
+
+Only local minute exhaustion can wait: `RETRIEVAL_EVAL_LIVE_MAX_WAIT_SECONDS` defaults to **180 total**, allowed 0–600. Read-only prechecks inspect the same quota windows/estimator; the adapter still atomically reserves. Sleep advances to the next minute, is interruptible, without tight polling. Single-batch oversize or daily exhaustion fails immediately. Any provider 429/rate boundary, timeout/5xx or bad/missing/mismatched vectors stops permanently; **no provider retry**. A 429 and final local reservation denial share the existing sanitized production exception, so reports preserve that ambiguity. Incomplete runs replace only live reports with sanitized status/usage, no partial quality metrics or raw error body.
+
+After embeddings, **12** local-only configurations (limits 6/8/10/12 × caps 1/2/3) reuse live vectors. Production SQL supplies all ranks. Semantic note metrics and RAG note/chunk metrics retain category/language, conditional recall, note-hit/chunk-miss, diversity/cap pressure, long-note positions and actual AskContext budgets. `q-playbook`, `q-unmapped`, all ground truth and en/vi/en→vi/vi→en cases remain unchanged. Negative nearest-note/distance/rank diagnostics remain unscored; no threshold or quality-score build gate is invented.
+
+Separate ignored `live-report.json` / `.txt` record status, corpus/chunk/query identity, provider/model/dimensions/strategy, batch size, hard budgets, document/query attempts/inputs, successful calls, estimated tokens and duration; live and freshly measured **same-expanded-corpus** offline baselines/12 variants are included. Offline files are not overwritten. Compare ranks/ground-truth metrics, **never absolute cosine distance scales** across models. Context/indexing diagnostics retain the default-2.5-char/token proxy; live request usage uses the configured quota estimator. No credentials, raw vectors or real Knowledge appear in reports.
+
+**Measurement only:** no production model/dimensions/chunker/cap/limit/ranking/quota changes, migration, SDK upgrade, CI live task, generation/UI/hybrid/reranking/query rewrite/ANN. A successful synthetic run is not proof of answer grounding or private-corpus quality. Production tuning requires a separate reviewed milestone.
+
+### Approved live run — observed results
+
+One approved run succeeded using **`gemini-embedding-2`, 768 dimensions**, SDK **1.75.0**, **28 synthetic notes / 55 baseline chunks / 60 queries** (58 positive, 2 negative, 53 chunk-scored). Chunking stayed **4000/200**. Exactly **55 document inputs + 60 distinct query inputs** were embedded once, in native batches of **16**: **4 document + 4 query requests = 8 successful requests**. Estimated input tokens, including task-prefix overhead/per-batch rounding, were **33455**, below the hard **20-request/60000-token** ceilings. Ephemeral persistent day counters independently matched **8 global / 4 background requests / 33455 global estimated tokens**. Two bounded local-minute waits occurred, no provider failures/retries or generation calls. Evaluator duration **121000ms**; Gradle task **2m3s**. Database discarded afterward; normal application data/quota rows never accessed.
+
+Same-expanded-corpus macro comparison (Semantic MRR@20; RAG MRR@8):
+
+| Path / provider | HitRate@1 / @3 / @5 / @8 | Recall@1 / @3 / @5 / @8 | MRR |
+| --- | --- | --- | ---: |
+| Semantic — LIVE GEMINI | .7241 / .9483 / 1.0000 / — | .6178 / .9483 / 1.0000 / — | .8397 |
+| Semantic — OFFLINE SYNTHETIC | .7414 / .9828 / .9828 / — | .6552 / .9770 / .9828 / — | .8546 |
+| RAG notes — LIVE GEMINI | .7241 / .9310 / .9828 / 1.0000 | .6178 / .9310 / .9828 / 1.0000 | .8368 |
+| RAG notes — OFFLINE SYNTHETIC | .7414 / 1.0000 / 1.0000 / 1.0000 | .6552 / .9885 / 1.0000 / 1.0000 | .8563 |
+| RAG chunks — LIVE GEMINI | .6604 / .9057 / .9623 / .9811 | .6415 / .8774 / .9528 / .9717 | .7931 |
+| RAG chunks — OFFLINE SYNTHETIC | .6604 / .9245 / .9245 / .9245 | .6226 / .8962 / .9057 / .9057 | .7767 |
+
+Gemini improves larger-K coverage, not every rank metric: Semantic Recall@1/MRR and RAG note MRR are lower here than the controlled fake. Conditional supporting recall is **.9717 live vs .9057 offline**, with 53 eligible queries/60 expected chunks; note-hit/chunk-miss falls **6→2**. Source diversity **.8667 vs .8604**; live baseline averages 6.9333 distinct notes, 43 repeated-note cases and 1.0667 notes at cap. Raw context mean/p50/p95/max: **7419.2 / 7937 / 10513 / 11579** chars, estimated mean tokens **2968.1**; assembled mean **7733.5** chars / **3093.8** tokens. Included-marker recall .9717: assembly adds no further declared-evidence miss at baseline.
+
+`q-playbook`: expected `webclient-playbook#4` is **within-note rank1/global rank1**, selected by **all twelve live variants**, including cap1/2. Offline within-note rank3/cap2 exclusion is not a general Gemini defect; cap3 is no longer needed for this query. `q-unmapped`: expected `redis-ttl` is **Semantic rank1/RAG chunk rank1**, versus **Semantic rank15** offline on this same corpus. No fixtures, queries, vocabulary or ground truth changed after observing results.
+
+Remaining baseline misses: **`q-postgres-performance-combined`** (late chunk5 within-note rank3, cap2 exclusion) and **`q-playbook-late`** (late chunk7 within-note rank6, cap2/3 exclusion). All relevant notes are present. Long-note coverage: early **10/10**, middle **7/7**, late **7/9**, versus offline 6/10, 5/7, 8/9. Overall gains do not eliminate late-section gaps. Cap3 recovers PostgreSQL's late section, not playbook chunk7; a larger total limit cannot admit cap-excluded evidence. This is declared-fixture evidence, not a universal later-position failure.
+
+All twelve configurations reused vectors, with **zero additional Gemini calls**. Representative rows; full reports preserve every variant/K/category/language/rank/exclusion:
+
+| Limit / cap | Chunk Recall@8 | Conditional recall (full limit) | Note-hit/chunk-miss | Diversity | Mean raw chars |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 6 / 1 | .9151 | .9151 | 7 | 1.0000 | 4823.5 |
+| 8 / 1 | .9151 | .9151 | 7 | 1.0000 | 6186.7 |
+| 6 / 2 | .9717 | .9717 | 2 | .8611 | 5864.9 |
+| **8 / 2 — BASELINE** | **.9717** | **.9717** | **2** | **.8667** | **7419.2** |
+| 12 / 2 | .9717 | .9717 | 2 | .8819 | 10455.3 |
+| 6 / 3 | .9811 | .9811 | 1 | .7833 | 6154.9 |
+| 8 / 3 | .9811 | .9811 | 1 | .7813 | 8232.6 |
+| 12 / 3 | .9811 | .9811 | 1 | .7986 | 11798.6 |
+
+Limit6 `@8` is censored at6. Best chunk-recall rows use cap3, improving just one additional section with diversity loss. At limit8, cap3 adds **11.0% raw / 13.1% assembled characters** (assembled mean 8748.6); limit12/cap2 adds **40.9% raw characters** without recall gain. **No production defaults changed**, even for cheaper limit6 rows. Measurement is not tuning approval.
+
+Language highlights: en has **51 positive + 1 negative** queries, Semantic Recall@5 1.0, RAG chunk Recall@8 **.9674**. vi has **2 positive + 1 negative**, en→vi **2 positive**, vi→en **3 positive**; those seven positive cases achieve Semantic/RAG note/chunk HitRate/Recall at every K **1.0**. Tiny groups do not establish general bilingual quality. Category highlights: configuration (16) chunk Recall@8 **1.0 vs .875 offline**; multi-topic (9 queries, 8 chunk-scored) **.9375 vs .7500**; code (6) **1.0**, MRR **.7556 vs .5278**. Paraphrase (7 queries, 6 chunk-scored) Recall@8 stays **.8333**; late playbook remains missing. Exact-keyword (10) and technical-synonym (3) chunk Recall@8 are 1.0; ambiguous (2) is note-only, not fabricated chunk scoring. Full group counts/metrics remain in JSON.
+
+Negative nearest diagnostics: `q-garden` → `docker-multistage`, rank1, cosine distance **.3363**; `q-travel` → `minio-uploads`, rank1, **.3250**. They remain unscored; no rejection threshold or numerical fake-distance comparison is inferred.
+
+Before live: **331 API tests, zero failures/errors/skips** (`./gradlew test` **3m21s**, `./gradlew clean build` **3m46s**); `./gradlew retrievalEval` **1m29s**, successful deterministic offline legacy/matrix reports; **87 Web tests**, lint/build and diff check successful. Normal commands made **zero external Gemini calls**. The 21 new offline tests cover gates/config/budgets, one-time embeddings/vector reuse, failures/429/bad vectors, reports, real pgvector selection and persistent quota pacing/interruption. One prolonged interrupted full-suite attempt lost a PostgreSQL socket; final rerun/clean build passed. Flag=false dedicated task failed before provider creation as intended. No browser-visible behavior changed; browser QA not required.
+
+**Next: focused long-note supporting-chunk selection/context-cost evaluation**, separately reviewed before tuning. Note coverage is strong on this tiny corpus; actionable gaps are two late-section cases, not evidence for immediate Hybrid Search or indiscriminate cap growth. Review fixture semantics, within-note ranking and source/context tradeoffs first. No further live run, fixture alteration or production tuning is authorized automatically. Generation grounding, private-corpus quality, calibrated thresholds and multilingual generalization remain unmeasured.
+
 ## Limitations and next recommendation
 
 Small synthetic technical examples plus a vocabulary fake cannot predict Gemini semantic/paraphrase/bilingual quality, private-corpus performance or production latency. Exact cosine retrieval has no relevance cutoff; metadata prefixes, tie-breaks, chunk overlap and per-note caps affect outcomes. This is not answer generation, citation entailment, security authorization endpoint testing, live token accounting or end-to-end generation evaluation. Actual AskContext selection/character budgets are exercised, but token figures remain estimates. Existing owner/security/quota/API regression suites cover their established contracts separately.
 
-Recommended next: **Manual Live Gemini Retrieval Evaluation**, only with explicit operator approval, synthetic-only bounded inputs, named model/dimensions/strategy, backend-only credentials, quota/cost protection and reports separate from offline scores. This milestone implements **no** live mode/key handling and makes zero external Gemini calls. Token-aware/heading-aware chunking, hybrid/reranking, calibrated thresholds, exact source navigation and auto tagging/summarization remain future work, not automatically started. Controlled vocabulary, marker location/overlap, closed declared relevance and very small position/topic groups limit generalization; neither answer correctness nor per-claim entailment is measured.
+The approved **Manual Live Gemini Retrieval Evaluation is complete for this synthetic corpus**, not production/private Knowledge. Next is the separately reviewed focused supporting-chunk evaluation above; no further live run/tuning is automatically authorized. Token-aware/heading-aware chunking, hybrid/reranking, calibrated thresholds, exact source navigation and auto tagging/summarization remain future work. Offline controlled vocabulary, marker location/overlap, closed declared relevance and small topic/position groups limit generalization; no answer correctness/per-claim entailment measured. Isolated counters cannot know other clients' real Gemini project usage; run ceilings/no-retry remain essential. Token figures are estimates, not provider billing/tokenizer measurements. Live model results can vary over time; no live CI quality gate exists.

@@ -55,7 +55,8 @@ final class RetrievalEvaluation {
         this.repository = repository; this.strategy = strategy; this.embeddings = embeddings;
         this.owner = owner; this.corpus = corpus; this.slugs = slugs; this.chunks = chunks;
         this.ragLimit = ragLimit; this.perNote = perNote;
-        if (strategy.properties().dimensions() != OfflineEmbeddingClient.DIMENSIONS || SEMANTIC_LIMIT < 5
+        if (strategy.properties().dimensions() < 1 || strategy.properties().dimensions() > 3072 || SEMANTIC_LIMIT < 5
+                || (OfflineEmbeddingClient.NAME.equals(strategy.properties().model()) && strategy.properties().dimensions()!=OfflineEmbeddingClient.DIMENSIONS)
                 || ragLimit < 1 || ragLimit > 100 || perNote < 1 || perNote > 10
                 || chunks.values().stream().mapToInt(List::size).sum() > 100) {
             throw new IllegalArgumentException("Impossible evaluation configuration / distance diagnostic horizon");
@@ -63,6 +64,10 @@ final class RetrievalEvaluation {
     }
 
     Report evaluate(Instant timestamp, int decoys) {
+        return evaluate(timestamp, decoys, "offline", "binary controlled vocabulary/synonyms, L2 normalized; unknown bias 0.05",
+                "Retrieval correctness under controlled embeddings; provider semantic quality NOT measured; no answer generation/entailment scoring");
+    }
+    Report evaluate(Instant timestamp, int decoys, String provider, String algorithm, String scope) {
         var semantic = new ArrayList<CaseResult>(); var rag = new ArrayList<CaseResult>();
         for (var query : corpus.queries()) {
             float[] vector = embeddings.embed(List.of(query.query())).get(0);
@@ -89,10 +94,10 @@ final class RetrievalEvaluation {
                         (int) corpus.queries().stream().filter(RetrievalCorpus.Query::negative).count(),
                         (int) corpus.queries().stream().filter(q -> !q.relevantChunks().isEmpty()).count(),
                         chunks.values().stream().mapToInt(List::size).sum(), decoys),
-                new Configuration("offline", p.model(), p.dimensions(), "binary controlled vocabulary/synonyms, L2 normalized; unknown bias 0.05",
+                new Configuration(provider, p.model(), p.dimensions(), algorithm,
                         strategy.chunkerVersion(), p.maxChunkChars(), p.overlapChars(), strategy.marker(),
                         SEMANTIC_LIMIT, ragLimit, perNote, SEMANTIC_K, RAG_K,
-                        "Retrieval correctness under controlled embeddings; provider semantic quality NOT measured; no answer generation/entailment scoring",
+                        scope,
                         "Negatives excluded from recall/MRR means; nearest results and cosine distances are diagnostics, not no-result expectations",
                         "Declared markers resolve to ALL actual default-chunker chunks containing the marker; missing chunk truth is unscored",
                         "Semantic deduplicated before rank metrics; MRR@20. RAG note coverage uses raw chunk positions with unique relevant hits; RR horizon "

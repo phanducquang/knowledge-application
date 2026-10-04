@@ -387,6 +387,26 @@ Reports: `build/reports/retrieval-eval/report.txt` and `report.json` (ignored, n
 
 The same task also writes `build/reports/retrieval-eval/chunk-selection-report.txt` / `.json`: **48 configurations** (caps 1/2/3, limits 6/8/10/12, chunk/overlap 2000/150, 3000/200, 4000/200, 4000/400) on an extended 28-note/60-query corpus with four additional six-section guides. It reuses one isolated pgvector environment and immutable strategy-scoped diagnostics, but every limited retrieval still executes production SQL. Conditional chunk coverage, note-hit/chunk-miss IDs, cap/global-cutoff causes, long-only position breakdowns, raw/assembled context chars and reindex proxies are reported, with baseline deltas. `AskContext` is exercised without generation, keeping its 6-source/24000-character budgets. Decision **KEEP BASELINE**: production 4000/200, limit8/cap2 and all quota settings remain unchanged by this milestone. Full matrix runs twice in ordinary tests too; no external Gemini calls, evaluation UI or schema/dependency changes. [Comparison and tradeoffs](../../docs/RETRIEVAL_EVALUATION.md#rag-chunk-selection-matrix).
 
+## Manual live Gemini retrieval evaluation
+
+Only after explicit operator approval, from `apps/api`:
+
+```bash
+RETRIEVAL_EVAL_LIVE=true ./gradlew retrievalEvalLive
+```
+
+This separate **JavaExec**, not a Test task, also checks the dedicated task marker and existing valid Spring Gemini configuration. An ambient key alone cannot enable it. It reads existing backend `app.gemini` / `app.embedding` / embedding quota settings, including environment overrides; no second credential system, full application startup, normal datasource, generation client or indexing scheduler is used. Optional production flags remain unchanged; only manual adapter validation is enabled in memory.
+
+Only the existing **28 synthetic notes / 60 queries**, baseline **4000/200** chunks, and an ephemeral PostgreSQL/pgvector Testcontainer are used. Each unique document/query input is embedded once through the production Gemini native-batch adapter; identical vectors serve Semantic Search and **12 retrieval-only** limit/cap variants. No alternate live chunking/model/dimension comparisons, private data or generation calls.
+
+Hard bounds: `RETRIEVAL_EVAL_LIVE_MAX_REQUESTS=20`, `RETRIEVAL_EVAL_LIVE_MAX_ESTIMATED_INPUT_TOKENS=60000`; overrides may reduce, not raise, these ceilings. Estimates include the adapter's symmetric task prefix. Global/background PostgreSQL RPM/estimated TPM/RPD reservations remain enabled in the disposable DB. Local minute exhaustion may wait up to `RETRIEVAL_EVAL_LIVE_MAX_WAIT_SECONDS=180` total (allowed 0–600); impossible batches/daily exhaustion fail immediately. **Provider 429, timeout, 5xx or bad vectors stop without retries**. Usage separates document/query and attempted/successful requests; incomplete reports contain no quality metrics.
+
+Reports: ignored `build/reports/retrieval-eval/live-report.txt` / `.json`; offline reports are not overwritten. Normal `test`, `retrievalEval`, `clean build` and CI never invoke the live entry point; automated harness tests use capturing fakes. Real Gemini on synthetic data does not prove production retrieval or answer quality. No browser-visible behavior changes. See [live contract/results](../../docs/RETRIEVAL_EVALUATION.md#manual-live-gemini-retrieval-evaluation).
+
+**Local secret discipline:** an intentional uncommitted `application.yml` key must never be staged, printed, reverted or copied into tracked files/reports. Use explicit Git paths, never `git add .` / `git add -A`. No key appears in the invocation above. Build resources/reports remain ignored; don't distribute local build artifacts containing local configuration.
+
+One approved synthetic run completed: **`gemini-embedding-2` / 768**, 55 document + 60 query inputs, **4 + 4 successful requests**, **33455 estimated tokens**, task **2m3s**, with bounded local-minute waits and no retries/generation. Baseline Semantic Recall@5=1.0, RAG chunk/conditional recall=.9717, note-hit/chunk-miss=2 (offline 6). Production defaults remain unchanged. Next: separately reviewed long-note supporting-chunk/context-cost evaluation; [full observations](../../docs/RETRIEVAL_EVALUATION.md#approved-live-run--observed-results).
+
 ## Validate
 
 ```bash

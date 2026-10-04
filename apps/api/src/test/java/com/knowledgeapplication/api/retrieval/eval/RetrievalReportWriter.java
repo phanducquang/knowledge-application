@@ -50,7 +50,7 @@ final class RetrievalReportWriter {
         }
         Files.writeString(directory.resolve("chunk-selection-report.txt"),out);
     }
-    private static void mode(StringBuilder out, String label, RetrievalEvaluation.Mode mode) {
+    static void mode(StringBuilder out, String label, RetrievalEvaluation.Mode mode) {
         out.append('\n').append(label).append('\n');
         summary(out, "overall", mode.overall());
         mode.byCategory().forEach((name, stats) -> summary(out, "category=" + name, stats));
