@@ -1,0 +1,698 @@
+{
+  "version": "metadata-eval-v2",
+  "metricsVersion": "metadata-metrics-v2",
+  "reportVersion": "metadata-report-v3",
+  "baseCorpusFingerprint": "9f64eb96cf6b55b4ef62261ae755dff4a7b9895c5dec36c5bc8a1e4124b7d1db",
+  "decisions": [
+    {
+      "id": "C001",
+      "caseId": "netty-pool",
+      "type": "TAG_ALIAS",
+      "target": "Timeout",
+      "value": "Timeouts",
+      "evidence": "pendingAcquireTimeout",
+      "reason": "Explicit singular/plural equivalence of the same timeout concept; no fuzzy pluralization.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C002",
+      "caseId": "nginx",
+      "type": "TAG_ALIAS",
+      "target": "Timeout",
+      "value": "Timeouts",
+      "evidence": "proxy_read_timeout",
+      "reason": "Explicit singular/plural equivalence of the same timeout concept; no fuzzy pluralization.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C003",
+      "caseId": "long-early-late",
+      "type": "TAG_ALIAS",
+      "target": "Timeout",
+      "value": "Timeouts",
+      "evidence": "response timeout",
+      "reason": "Explicit singular/plural equivalence of the same timeout concept; no fuzzy pluralization.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C004",
+      "caseId": "oidc",
+      "type": "TAG_ALIAS",
+      "target": "CSRF",
+      "value": "Cross-Site Request Forgery",
+      "evidence": "CSRF token",
+      "reason": "Conventional expansion of CSRF; equivalent protection concept, not Authentication or Security.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C005",
+      "caseId": "postgres-index",
+      "type": "REMOVE_TAG_ALIAS",
+      "target": "Composite Index",
+      "value": "Indexing",
+      "evidence": "chỉ mục ghép",
+      "reason": "Indexing does not specify a multi-column/composite index; retain as broader diagnostic only, never strict equivalence.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C006",
+      "caseId": "long-middle",
+      "type": "REMOVE_TAG_ALIAS",
+      "target": "Composite Index",
+      "value": "Indexing",
+      "evidence": "chỉ mục ghép",
+      "reason": "Indexing does not specify a multi-column/composite index; retain as broader diagnostic only, never strict equivalence.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C007",
+      "caseId": "nginx",
+      "type": "CONCEPT_PHRASE",
+      "target": "read-gap",
+      "value": "between read operations",
+      "evidence": "gaps between reads",
+      "reason": "Read operations are reads; this bounded phrase expresses the inter-read gap, not total response duration.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C008",
+      "caseId": "nginx",
+      "type": "CONCEPT_PHRASE",
+      "target": "read-gap",
+      "value": "gaps between read operations",
+      "evidence": "gaps between reads",
+      "reason": "Explicit inter-read-gap wording variant; no loose standalone word or semantic judge.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C009",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "lab",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C010",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "lab notes",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C011",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "lab notebook",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C012",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "checklist",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C013",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "background context",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C014",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "synthetic operations",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C015",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "Configuration",
+      "evidence": "Cross-cutting operational labels",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C016",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "Performance",
+      "evidence": "Cross-cutting operational labels",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C017",
+      "caseId": "*",
+      "type": "GENERIC_TAG_ADDITION",
+      "target": "genericTags",
+      "value": "Security",
+      "evidence": "Cross-cutting operational labels",
+      "reason": "Evaluation-only nondiscriminative lab/context or coarse operational label; genericness is orthogonal to topical relevance and never production policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C018",
+      "caseId": "spring-health",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Health Probe",
+      "evidence": "readiness probe",
+      "reason": "A health probe can be readiness or liveness; it is less specific than this readiness decision.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C019",
+      "caseId": "spring-health",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Management Endpoints",
+      "evidence": "management endpoints private",
+      "reason": "Management endpoint privacy is explicitly discussed, distinct from required Actuator/readiness labels.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C020",
+      "caseId": "webclient-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Java",
+      "evidence": "HttpClient.create()",
+      "reason": "The Java code language is broader than WebClient/Netty timeout mechanisms.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C021",
+      "caseId": "webclient-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Networking",
+      "evidence": "phản hồi upstream",
+      "reason": "Upstream connection/response work is networking, but lacks the named timeout specificity.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C022",
+      "caseId": "netty-pool",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Load Testing",
+      "evidence": "load test",
+      "reason": "The source explicitly describes a load test.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C023",
+      "caseId": "netty-pool",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Performance",
+      "evidence": "Measure queue depth",
+      "reason": "Pool saturation measurement is performance work; this broad label does not replace pool/timeout concepts.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C024",
+      "caseId": "postgres-index",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Database Index",
+      "evidence": "chỉ mục ghép",
+      "reason": "Database index is the superclass of composite index, not an exact alias.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C025",
+      "caseId": "postgres-index",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Indexing",
+      "evidence": "chỉ mục ghép",
+      "reason": "Indexing alone does not identify the multi-column index.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C026",
+      "caseId": "postgres-index",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Query Optimization",
+      "evidence": "hỗ trợ đường đọc",
+      "reason": "Supporting a filter/sort read path and comparing EXPLAIN plans is query optimization, not the exact index type.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C027",
+      "caseId": "pgvector",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "SQL",
+      "evidence": "ORDER BY embedding",
+      "reason": "The fixture supplies an SQL ordering expression.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C028",
+      "caseId": "pgvector",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "PostgreSQL",
+      "evidence": "pgvector",
+      "reason": "pgvector is the PostgreSQL vector extension; the host database label is broader than vector retrieval.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C029",
+      "caseId": "redis-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Caching",
+      "evidence": "lưu kết quả đọc",
+      "reason": "Read-result caching is broader than invalidation on update.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C030",
+      "caseId": "redis-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Database",
+      "evidence": "bản ghi",
+      "reason": "Records/source-of-truth discussion is database-related but under-specific.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C031",
+      "caseId": "redis-vi",
+      "type": "TAG_TIER",
+      "target": "IRRELEVANT_UNSUPPORTED",
+      "value": "Performance",
+      "evidence": "lưu kết quả đọc",
+      "reason": "The fixture states expiry/invalidation/staleness, not measured performance gains; this coarse benefit inference needs human review.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C032",
+      "caseId": "kafka",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Consumer Offsets",
+      "evidence": "committing its offset",
+      "reason": "Offset commit timing is explicit, independent of delivery/idempotency required concepts.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C033",
+      "caseId": "nginx",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Configuration",
+      "evidence": "two settings distinct",
+      "reason": "The settings are configuration, but this label omits proxy and timeout mechanisms.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C034",
+      "caseId": "nginx",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Upstream",
+      "evidence": "upstream connection",
+      "reason": "The upstream connection/streaming boundary is explicit.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C035",
+      "caseId": "docker-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Container",
+      "evidence": "container",
+      "reason": "Container is broader than Docker volume lifecycle.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C036",
+      "caseId": "docker-vi",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "PostgreSQL",
+      "evidence": "PostgreSQL",
+      "reason": "The named volume explicitly preserves PostgreSQL data.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C037",
+      "caseId": "kubernetes",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Startup Probe",
+      "evidence": "Startup probes",
+      "reason": "Startup probes are explicitly described, not equivalent to readiness/liveness.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C038",
+      "caseId": "kubernetes",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "container management",
+      "evidence": "restart its container",
+      "reason": "Container management is broader than the precise probe distinction.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C039",
+      "caseId": "oidc",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Authentication",
+      "evidence": "danh tính đã xác minh",
+      "reason": "Identity verification is authentication; this does not recover CSRF or session cookie mechanisms.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C040",
+      "caseId": "oidc",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Security",
+      "evidence": "CSRF token",
+      "reason": "CSRF protection is a security mechanism; the umbrella label lacks required specificity.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C041",
+      "caseId": "oidc",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Session Management",
+      "evidence": "giữ phiên",
+      "reason": "Session management is broader than the required HttpOnly session-cookie mechanism.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C042",
+      "caseId": "oidc",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Access Control",
+      "evidence": "allowlist",
+      "reason": "The email allowlist/owner permission decision is explicit and distinct from authentication/session/CSRF.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C043",
+      "caseId": "flyway",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "PostgreSQL",
+      "evidence": "disposable PostgreSQL",
+      "reason": "The fresh/upgrade paths explicitly use PostgreSQL.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C044",
+      "caseId": "flyway",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Schema validation",
+      "evidence": "ddl-auto=validate",
+      "reason": "Mapping/schema validation is explicit and distinct from the provider/tool names.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C045",
+      "caseId": "actions",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Node.js",
+      "evidence": "Node 22",
+      "reason": "The Web job explicitly uses Node 22.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C046",
+      "caseId": "actions",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Java",
+      "evidence": "Java 17",
+      "reason": "The API job explicitly uses Java 17.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C047",
+      "caseId": "actions",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Gradle",
+      "evidence": "Gradle clean build",
+      "reason": "The API job explicitly uses Gradle.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C048",
+      "caseId": "minio",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Storage",
+      "evidence": "private bucket",
+      "reason": "Storage is broader than S3 object storage or attachment lifecycle.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C049",
+      "caseId": "minio",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Markdown",
+      "evidence": "Markdown",
+      "reason": "Stable references in Markdown are explicit.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C050",
+      "caseId": "minio",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Security",
+      "evidence": "authorizes the parent note",
+      "reason": "Authorization is security-related, but this label does not recover attachment lifecycle.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C051",
+      "caseId": "minio",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Attachments",
+      "evidence": "attachment references",
+      "reason": "Attachments are broader than revision-safe orphan cleanup.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C052",
+      "caseId": "nextjs",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Authentication",
+      "evidence": "Cookie phiên",
+      "reason": "Session cookie forwarding is authentication-related; exact authentication details require human interpretation.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C053",
+      "caseId": "nextjs",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Caching",
+      "evidence": "no-store",
+      "reason": "The explicit no-store decision is a cache policy.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C054",
+      "caseId": "testcontainers",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "Flyway",
+      "evidence": "Flyway",
+      "reason": "Schema initialization explicitly uses Flyway.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C055",
+      "caseId": "testcontainers",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Database",
+      "evidence": "persisted rows",
+      "reason": "Database is broader than PostgreSQL integration-testing specifics.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C056",
+      "caseId": "long-early",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "queue depth",
+      "evidence": "Queue depth",
+      "reason": "Queue depth is the explicitly prescribed operational metric.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C057",
+      "caseId": "long-early",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "pendingAcquireTimeout",
+      "evidence": "pendingAcquireTimeout",
+      "reason": "The explicitly named waiting control is a useful additional label, not a pool synonym.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C058",
+      "caseId": "long-middle",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "database indexing",
+      "evidence": "chỉ mục ghép",
+      "reason": "Indexing omits the composite multi-column specificity.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C059",
+      "caseId": "long-middle",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Database Index",
+      "evidence": "chỉ mục ghép",
+      "reason": "Database index remains broader than composite index.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C060",
+      "caseId": "long-middle",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "Indexing",
+      "evidence": "chỉ mục ghép",
+      "reason": "Removed exact alias is retained only as broader.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C061",
+      "caseId": "long-middle",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "performance optimization",
+      "evidence": "so sánh kế hoạch đọc",
+      "reason": "Comparing read plans is optimization-related, but this label omits the mechanism.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C062",
+      "caseId": "long-middle",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "lab notes",
+      "evidence": "Tài liệu lab",
+      "reason": "Generic lab context, not a substitute for PostgreSQL/index decisions.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C063",
+      "caseId": "long-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "synthetic operations",
+      "evidence": "Synthetic operations appendix",
+      "reason": "Visible repeated synthetic operational background only; no recovery of invisible Kafka decisions.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C064",
+      "caseId": "long-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "lab notebook",
+      "evidence": "lab notebook",
+      "reason": "Visible appendix context only; not evidence of Kafka recovery.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C065",
+      "caseId": "long-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "checklist",
+      "evidence": "checklist",
+      "reason": "Visible appendix scaffolding only; generic and under-specific.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C066",
+      "caseId": "long-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "background context",
+      "evidence": "background context",
+      "reason": "Visible appendix explicitly labels itself background, not a design decision.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C067",
+      "caseId": "long-early-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_ADDITIONAL",
+      "value": "upstream",
+      "evidence": "upstream",
+      "reason": "The early visible upstream call boundary is explicit.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C068",
+      "caseId": "long-early-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "lab",
+      "evidence": "phòng lab",
+      "reason": "Generic visible lab context, not a Circuit Breaker or Resilience4j substitute.",
+      "confidence": "HIGH"
+    },
+    {
+      "id": "C069",
+      "caseId": "long-early-late",
+      "type": "TAG_TIER",
+      "target": "RELEVANT_BUT_BROADER",
+      "value": "checklist",
+      "evidence": "Checklist",
+      "reason": "Repeated appendix scaffolding is generic, not the invisible late decision.",
+      "confidence": "HIGH"
+    }
+  ]
+}

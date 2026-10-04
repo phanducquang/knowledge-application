@@ -53,7 +53,7 @@ Owner-only **Semantic Search is complete** on `/search`, alongside default live 
 - Source-linked Answers — complete for block-linked current chunk identity/evidence and Reading navigation
 - RAG chunk-selection evaluation — complete offline (48 configurations); one manual live Gemini evaluation is complete for the synthetic corpus only, production defaults retained
 - explicit AI summary/tag suggestions — complete for existing owner notes; user requests/reviews/applies, disabled by default ([contract](AI_METADATA_SUGGESTIONS.md))
-- metadata suggestion quality benchmark — tooling/offline synthetic evaluation complete; approved live attempt incomplete (17/20 valid cases), full synthetic baseline pending; real/private-corpus quality remains unevaluated ([contract/evidence](METADATA_EVALUATION.md))
+- metadata suggestion quality benchmark — 20/20 v1 composite synthetic live baseline complete; separate review-assisted v2 offline calibration reuses the same outputs, human scoring pending; real/private-corpus quality remains unevaluated ([contract/evidence](METADATA_EVALUATION.md))
 - automatic tags/background summaries — deferred, separate opt-in privacy/product review
 - similar-knowledge suggestions
 

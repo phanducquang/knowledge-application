@@ -154,3 +154,76 @@ Language observations: English fixtures received English summaries; both Vietnam
 **Human review still pending**: all rubric ratings remain blank. Synthetic repeated appendices are position probes, not representative real/private notes. The report combines two invocations, not one uninterrupted run; prefix omission and closed ground truth constrain interpretation. No production tuning, source/Gradle changes, model/prompt/schema/input-strategy/quota changes, background generation, migration or other AI calls. Execution validation used read-only `metadataEvalResumeCheck`, the single approved live command, provenance/usage/protected-file checks and `git diff --check`; full test/build suites were not rerun for documentation-only edits. Original reports, frozen corpus and local secret-bearing `application.yml` remain unchanged/uncommitted.
 
 **Recommended next direction:** review the blank human rubric and separately scope/version benchmark taxonomy/alias calibration; preserve this frozen complete composite baseline. Real/private notes remain unevaluated. No further live run, quality tuning or automatic metadata generation is authorized by this execution milestone.
+
+## Metadata benchmark calibration v2 — offline only
+
+The v1 completed composite baseline above is **frozen historical evidence**. Its `corpus.json`, generation outputs, aliases/phrases/forbidden lists and fingerprint `9f64eb96cf6b55b4ef62261ae755dff4a7b9895c5dec36c5bc8a1e4124b7d1db` remain unchanged. A regression test pins that fingerprint. Calibration is a new evaluation, not a new generation: **the same 20 suggestions** from the existing complete report were re-scored offline, reproducing v1 metrics before applying v2.
+
+`apps/api/src/test/resources/metadata-eval/calibration-v2.json` is a versioned overlay, not a duplicate set of note contents or an in-place v1 edit. It materializes **metadata-eval-v2**, preserving all note inputs/current tags, canonical required tags, full/visible evidence, late concepts and forbidden diagnostics. V2 corpus fingerprint: `51006485302757badca90f9d3c0f2c0b8f5ea594c78d3a219833ee4ee26c997a`. Evaluation fingerprint: `236b0367d1312f256463871682978accbd077c78d3461fb0856ecc377df2271f`, covering the materialized corpus, decision/rule data and explicitly versioned scorer semantics. Metrics are **metadata-metrics-v2**; comparison/review schema **metadata-report-v3**. Generation identity remains v1 / gemini-3.5-flash-lite / SDK 1.75.0 / unchanged prompt, schema, prefix-32000 and output limits. Generation and evaluation identities are separate fields, never relabeled as v2 generation.
+
+### Methodology and decision audit
+
+All 20 outputs were inspected against authored fixture content and the deterministic synthetic appendices. **69 individually identified decisions** include type, fixture/target/value, evidence, rationale and confidence. They are review assistance, not human quality ratings. Every case-specific rule must reference evidence present in the fixture; duplicate/ambiguous tiers and strict/tier overlap are rejected. Global genericness rules are explicitly evaluation policy, not factual assertions about every note.
+
+- **4 alias additions:** explicit `Timeouts` plural for netty-pool, nginx and long-early-late (webclient already had it), plus conventional `Cross-Site Request Forgery` expansion for OIDC's CSRF. These are semantic equivalents, not arbitrary strings accepted because a model generated them. Existing abbreviation/product aliases remain explicit; no stemming/fuzzy matching.
+- **2 alias removals:** `Indexing` is removed from Composite Index in postgres-index and long-middle. Indexing is broader than a multi-column index. Neither `Indexing`, `Database Index` nor `database indexing` becomes exact credit; tests demonstrate that v2 can lower scores for the removed broad alias even though these frozen outputs did not use it.
+- **2 concept phrase additions:** nginx read-gap accepts `between read operations` and `gaps between read operations`, independently equivalent to the fixture's gaps-between-reads decision. No loose standalone words, embeddings, entailment judge or LLM scoring.
+- **9 generic-list additions, no removals:** `lab`, `lab notes`, `lab notebook`, `checklist`, `background context`, `synthetic operations`, `Configuration`, `Performance`, `Security`. These identify nondiscriminative lab scaffolding or coarse cross-cutting labels for this small technical corpus, not a universal blacklist or production normalization rule. Genericness is orthogonal to topical relevance.
+- **52 source-backed tier rules:** broad labels (Database Index, Authentication/Security/Session Management, Caching, Networking/Java in the timeout fixture, etc.) do not replace required specifics; additional labels (Consumer Offsets, Startup Probe, Management Endpoints, Flyway/Schema validation, named CI tools, queue depth/pendingAcquireTimeout, etc.) may be useful without being required recall targets. Context matters: Java is a broader code-language label for WebClient, but an explicit additional runtime label for the CI fixture. Redis's Performance label is conservatively unsupported/unreviewed because that fixture specifies expiry/invalidation/staleness, not performance evidence; human judgment may disagree.
+
+### Strict metrics versus separate review diagnostics
+
+Five tiers are **EXACT_CANONICAL**, **ACCEPTED_EQUIVALENT**, **RELEVANT_BUT_BROADER**, **RELEVANT_ADDITIONAL**, **IRRELEVANT_UNSUPPORTED**. Strict precision/recall/F1 keep v1's unique required-concept credit over returned tag count/expected **new** tags; only canonical or explicit equivalents count. Multiple equivalent labels cannot inflate recovery. Existing tags are removed by unchanged production normalization before frozen-output validation, and existing canonical/alias concepts remain excluded from the required new-tag denominator; production does not gain semantic alias removal.
+
+Separate macro diagnostics count label-level source relevance, broader, additional and unsupported/unreviewed rates; canonical/equivalent/broader/additional all count as source-related there. **RelevantTagRate is NOT accuracy, strict precision, a usefulness score or human approval**: generic/background tags may be related to source yet poor navigation labels. Unknown labels default unsupported/unreviewed, not proven irrelevant. This bounded case-specific taxonomy is incomplete, calibrated in-sample and not a general semantic tag classifier.
+
+Review-assistance findings distinguish alias/phrase calibration, visible required-tag misses, broader/additional labels, unsupported/unreviewed labels, input-limit exclusions and human-review needs. Late-only evidence does not produce a model-miss/under-specific diagnosis. An ASCII-only summary on a Vietnamese/mixed fixture is merely `LANGUAGE_MISMATCH_CANDIDATE`; it is not language detection, an automatic correctness verdict or a prompt change. The known mixed Next.js output remains English, requiring human language-fit judgment; other observed English/Vietnamese behavior is unchanged.
+
+### Re-score invocation and input safety
+
+```bash
+cd apps/api
+METADATA_EVAL_BASELINE_REPORT=build/reports/metadata-eval/live-runs/53844290c9090428fd06a7d36b76b2ad1196409a79f9a95f3c0327510f0ee6a9/live-report.json \
+./gradlew metadataEvalCalibrate
+```
+
+An **explicit** completed local synthetic report is mandatory; no discovery, reconstruction, live fallback or regeneration. Bounded strict JSON and existing generation identity/fixture/input/output validation require 20 current valid suggestions and COMPLETE status. Stored metrics are untrusted and recomputed. Missing/incompatible/duplicate/invalid inputs fail safely with no raw exception/cause/path/credential dump. Source report is never overwritten. The task never reads application.yml, constructs a Gemini adapter/Spring context/database or reserves quota, even with enabled ambient AI flags/keys; subprocess loopback tests exercise that boundary. Normal tests use generated fake reports, not committed live outputs.
+
+Ignored deterministic outputs: `build/reports/metadata-eval/calibration-v2.json`, `calibration-v2.txt`, `calibration-review.md`. Each case contains unchanged summary/tags, v1/v2 expected aliases/concepts/matches/coverage, separate broader/additional/unreviewed tiers, decisions/reasons, metric deltas and blank HUMAN_ONLY rubric. The source-output fingerprint is `f9da02bbb9399bad8d331c060edadf2c828ef5ea847b8e00bce7463cbc549821`; it ties both scorer views to the identical suggestions. Repeated runs are deterministic; generated reports remain uncommitted.
+
+### Observed same-output v1/v2 comparison
+
+| Macro metric | Frozen v1 | Calibrated v2 | Benchmark delta |
+| --- | ---: | ---: | ---: |
+| Strict tag precision | .446667 | .456667 | +.010000 |
+| Strict tag recall | .750000 | .766667 | +.016667 |
+| Strict tag F1 | .558095 | .570595 | +.012500 |
+| Visible strict precision | .470175 | .480702 | +.010526 |
+| Visible strict recall | .824561 | .842105 | +.017544 |
+| Visible strict F1 | .593484 | .606642 | +.013158 |
+| Full-note concept coverage | .891667 | .916667 | +.025000 |
+| Visible concept coverage | .973684 | 1 | +.026316 |
+| Generic-tag rate | 0 | .137500 | +.137500 |
+| Forbidden tags / claims | 0 / 0 | 0 / 0 | unchanged |
+
+**Every delta is benchmark calibration, NOT model improvement.** Strict/coverage changes occur only in nginx: plural-equivalent Timeout recognition moves P/R/F1 .4/.666667/.5 → .6/1/.75; explicit read-gap phrase moves full/visible coverage .5 → 1. Alias removal and the other additions do not change strict scores for these particular frozen outputs. Generic diagnostics change only netty-pool, redis-vi, nginx, oidc, minio, long-middle, long-late, long-early-late due to the nine explicit list additions; no model output changed.
+
+Separate v2 diagnostics: source-related label rate **.990000**, broader rate **.311667**, additional-relevant rate **.221667**, unsupported/unreviewed rate **.010000**, all macro per-case rates. Across 92 returned labels the tiers are **38 canonical, 5 equivalent, 28 broader, 20 additional, 1 unsupported/unreviewed**; 12 generic-list matches. Pooled counts differ from macro rates. Strict misses in OIDC (CSRF/session), Redis (invalidation), CI, MinIO lifecycle and composite-index specificity remain, even when broad/additional labels are useful. Zero forbidden flags still do not prove zero hallucination; phrase matching is not factuality/entailment certification.
+
+Long-note coverage is unchanged: early **1/1** full/visible, middle **1/1**, late **0/N/A**, early+late **1/3 / 1**. Late full-note concepts were not removed to improve scores. Broad/generic scaffolding diagnostics now flag all four late-only tags and two early+late tags, but cannot recover unseen Kafka/Circuit Breaker/Resilience4j facts or establish model quality on excluded input.
+
+### Human worksheet and limitations
+
+**Human rubric scoring remains PENDING USER REVIEW.** Generated review fields are null/blank for factuality, coverage, conciseness, usefulness, language fit, tag specificity/usefulness/consistency and human notes. Machine review-assistance classifications are stored separately and never converted into 1–5 scores.
+
+Persistent blank [JSON worksheet](metadata-review-template-v2.json) contains all 20 case IDs under `metadata-human-review-v1`, corpusVersion metadata-eval-v2, generationCorpusVersion metadata-eval-v1. Copy it to a secure long-term local file **outside build and Git**, fill evaluation/output fingerprints from the report, and only a human may supply integers 1–5 or null and notes. Future import can key by corpusVersion/caseId plus those fingerprints; **no importer or UI is implemented**. Regenerated build worksheets are not durable storage for completed human ratings.
+
+Remaining limitations: observed-output in-sample calibration, bounded/unexhaustive taxonomy and inherited alias assumptions, exact-list genericness, substring/negation false positives, heuristic language cues, synthetic repetitive appendices and unsigned local report provenance. Redis Performance, coarse security/authentication labels, broader index names and the mixed Next.js language choice still need human judgment. Real/private notes are not evaluated. This milestone makes **ZERO external Gemini calls** and changes no production source, model, prompt/schema/input strategy, quota/defaults, SDK, migrations, background behavior or Web source. Model comparison, prompt tuning and input-strategy tuning are **NOT STARTED**; background metadata remains FUTURE.
+
+Recommended next milestone: user-supplied human rubric review, then separately scoped held-out benchmark review if needed; preserve both v1 and v2 histories. Do not start generation, model comparisons or production tuning automatically.
+
+### Executed offline validation
+
+`./gradlew test` and `./gradlew clean build` both passed; the final clean-build XML results contain **502 tests, zero failures/errors/skips**, including **29 calibration tests**. `./gradlew metadataEval metadataEvalCalibrate` passed against the explicit completed local report after clean: 20 fake offline cases and the same 20 frozen generated suggestions respectively, with zero external calls/quota reservations. The three regenerated calibration artifacts are byte-identical to their pre-clean versions. The v1 corpus, original/completed live reports and local `application.yml` remain byte-identical; live reports and generated calibration artifacts stay ignored/uncommitted.
+
+Web validation also passed: `npm test` **97/97**, `npm run lint`, `npm run build`. `git diff --check` passed. Production and Web sources are unchanged. No `metadataEvalLive`, external Gemini request, CI monitoring or human rubric scoring was performed for this milestone.

@@ -1,0 +1,331 @@
+{
+  "version": "metadata-human-review-v1",
+  "authority": "HUMAN_ONLY",
+  "corpusVersion": "metadata-eval-v2",
+  "generationCorpusVersion": "metadata-eval-v1",
+  "evaluationFingerprint": null,
+  "outputFingerprint": null,
+  "instructions": "Copy this template locally. Fill fingerprints from calibration-v2.json. Only a human supplies integer 1–5 ratings or null (unreviewed), plus notes. Import tooling is deferred; do not overwrite a completed worksheet with generated reports.",
+  "cases": [
+    {
+      "caseId": "spring-health",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "webclient-vi",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "netty-pool",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "postgres-index",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "pgvector",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "redis-vi",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "kafka",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "nginx",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "docker-vi",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "kubernetes",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "oidc",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "flyway",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "actions",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "minio",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "nextjs",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "testcontainers",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "long-early",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "long-middle",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "long-late",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    },
+    {
+      "caseId": "long-early-late",
+      "summary": {
+        "factuality": null,
+        "coverage": null,
+        "conciseness": null,
+        "usefulness": null,
+        "languageFit": null
+      },
+      "tags": {
+        "specificity": null,
+        "usefulness": null,
+        "consistency": null
+      },
+      "humanNotes": null
+    }
+  ]
+}

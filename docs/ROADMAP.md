@@ -94,7 +94,10 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - Metadata Suggestion Quality Evaluation — tooling and **20/20 synthetic live baseline COMPLETE (composite/resumed)**: 17 prior valid outputs reused unchanged plus one separately approved three-call resume; model/contract frozen, no retries/tuning; tag P/R/F1 .446667/.750000/.558095, full/visible concept coverage .891667/.973684, human review pending ([evidence](METADATA_EVALUATION.md))
 - real/private-corpus metadata quality — not evaluated
 - Metadata Evaluation Reliability — complete: evaluation-only monotonic rolling-RPM spacing, bounded pre-reservation waits, typed safe diagnostics, explicit v1/v2 resume with new-only budgets/provenance and preserved reports; zero external Gemini calls/no live resume in this milestone
-- next metadata evaluation direction — human rubric review and separately scoped/versioned taxonomy/alias calibration; preserve the frozen composite baseline, no automatic rerun or production tuning; the single resume authorization is consumed
+- Metadata Benchmark Calibration V2 — COMPLETE offline: separate versioned overlay/metrics/report, 69 evidence/reason decisions, same 20 frozen outputs re-scored, strict vs broader/additional diagnostics, v1 history preserved; zero Gemini calls ([comparison](METADATA_EVALUATION.md#metadata-benchmark-calibration-v2--offline-only))
+- Human rubric scoring — PENDING USER REVIEW; machine review assistance is not human validation
+- next metadata evaluation direction — user rubric review and separately scoped held-out benchmark review; preserve v1/v2 histories, no automatic rerun or production tuning; the single resume authorization is consumed
+- metadata model comparison / prompt tuning / input-strategy tuning — NOT STARTED
 - prompt/input strategy tuning — future, only after adequate evidence and separate review
 - automatic/background tagging/summarization — future, separate explicit opt-in review required
 

@@ -53,6 +53,7 @@ tasks.withType(Test).configureEach {
     environment 'ASK_ENABLED', 'false'
     environment 'AI_METADATA_ENABLED', 'false'
     systemProperty 'retrieval.eval.report-directory', layout.buildDirectory.dir('reports/retrieval-eval').get().asFile.absolutePath
+    systemProperty 'metadata.eval.test-classpath', sourceSets.test.runtimeClasspath.asPath
 }
 
 tasks.register('retrievalEval', Test) {
@@ -115,6 +116,22 @@ tasks.register('metadataEvalResumeCheck', JavaExec) {
     environment 'GEMINI_API_KEY', ''
     environment 'GOOGLE_API_KEY', ''
     systemProperty 'app.gemini.api-key', ''
+}
+
+// Always offline, explicit frozen baseline path only; never constructs a live adapter/context/DB.
+tasks.register('metadataEvalCalibrate', JavaExec) {
+    description = 'Re-score the same completed synthetic metadata outputs with versioned v1/v2 evaluation; zero provider calls.'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.knowledgeapplication.api.metadata.eval.MetadataEvalCalibrateMain'
+    environment 'GEMINI_API_KEY', ''
+    environment 'GOOGLE_API_KEY', ''
+    environment 'AI_METADATA_ENABLED', 'false'
+    systemProperty 'app.gemini.api-key', ''
+    systemProperty 'app.ai.metadata.enabled', 'false'
+    systemProperty 'metadata.eval.report-directory', layout.buildDirectory.dir('reports/metadata-eval').get().asFile.absolutePath
+    outputs.upToDateWhen { false }
 }
 
 // Manual JavaExec only: NEVER wired into test/check/build/CI.
