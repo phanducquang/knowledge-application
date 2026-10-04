@@ -77,16 +77,18 @@ Read-only compatibility/count check (no key/config/provider/DB, no report writes
 METADATA_EVAL_RESUME_FROM=build/reports/metadata-eval/live-report.json ./gradlew metadataEvalResumeCheck
 ```
 
-The existing v1 report was checked offline: **17 reusable / 3 outstanding**. Fake resume and isolated quota tests establish exactly three new calls/reservations and zero additional cost for those 17 cases. The following is a **future command only, NOT executed in this reliability milestone; requires new user approval**:
+The original v1 report was checked offline: **17 reusable / 3 outstanding**. Fake resume and isolated quota tests established exactly three new calls/reservations and zero additional cost for those 17 cases. Following separate approval, the execution milestone used this command **once** to complete the baseline (not during the reliability milestone):
 
 ```bash
 METADATA_EVAL_LIVE=true \
 METADATA_EVAL_RESUME_FROM=build/reports/metadata-eval/live-report.json \
 METADATA_EVAL_LIVE_MAX_REQUESTS=3 \
+METADATA_EVAL_LIVE_MAX_RPM=10 \
+METADATA_EVAL_LIVE_PACING_SAFETY_MS=250 \
 ./gradlew metadataEvalLive
 ```
 
-Any later resume must explicitly select its prior report path (including a v2 run directory if appropriate). Normal tasks never invoke live/resume live.
+That one-run authorization is now consumed; do not rerun the original incomplete report. Any future live work requires new approval and must explicitly select its report/configuration. The completed v2 report is under the run directory recorded below. Normal tasks never invoke live/resume live.
 
 ## Future model/contract comparison
 
@@ -97,6 +99,8 @@ Any later resume must explicitly select its prior report path (including a v2 ru
 5. Review human rubric before approving/rejecting a production model/strategy change. This milestone measures one baseline, not a calibrated threshold or real/private-corpus quality claim.
 
 ## Baseline and validation evidence
+
+### Original incomplete attempt (historical)
 
 One approved run on **2026-10-04** used **gemini-3.5-flash-lite**, SDK **1.75.0**, unchanged prompt/schema/prefix/output budget. **INCOMPLETE**: 18 conservative attempted requests, 17 validated outputs, 39071 estimated input tokens attempted (66027 planned for all 20). The run stopped at `long-middle` without retry; both after-32k cases were never attempted. Sanitized [identity/usage attempt record](metadata-evaluation-attempt.json) is intentionally committed; generated reports/outputs remain ignored. This is **not a completed full-corpus quality baseline** and cannot be compared as one.
 
@@ -110,4 +114,43 @@ Original quality-evaluation milestone validation: `./gradlew test`, `./gradlew c
 
 Reliability milestone validation: `./gradlew test`, `./gradlew metadataEval`, `./gradlew clean build` passed; final clean build **473 API tests**, **65 additional test cases**, zero failures/errors/skipped. Coverage includes rolling/minute-boundary pacing, cumulative wait/interruption, typed SDK failures/no retry, resume identity/output rejection, deterministic rescoring/provenance, exactly three fake calls for 17 reused cases, actual isolated PostgreSQL reservations and incomplete accounting diagnostics. Web **97/97 tests**, lint/build and `git diff --check` passed. Read-only v1 resume compatibility confirmed 17 reusable/3 outstanding. Protected-file SHA checks confirmed original live reports survive `clean` byte-for-byte, frozen corpus unchanged and local `application.yml` untouched. No Web source/browser QA, migration or dependency change.
 
-Reliability tooling now includes rolling pacing, typed safe diagnostics and explicit resume. **ZERO external Gemini calls and NO live resume in this reliability milestone.** The corpus/aliases/forbidden lists, prompt/schema, model/input strategy, SDK 1.75.0 and production quota defaults remain frozen. Taxonomy/alias calibration (including the Nginx false negative) is deferred. The full synthetic live baseline is **still pending**, real/private notes unevaluated. **Recommended next direction: obtain separate approval for the bounded three-case resume, then review the explicitly composite complete report.** Do not tune quality or enable background metadata from the incomplete run. Background generation and prompt/input-strategy tuning remain future, separately reviewed work.
+Reliability tooling includes rolling pacing, typed safe diagnostics and explicit resume. **ZERO external Gemini calls and NO live resume occurred in the reliability implementation milestone.** Its separate execution milestone is recorded below.
+
+### Completed synthetic baseline — one approved resume
+
+On **2026-10-04**, one separately approved bounded resume accepted the original v1 report and completed **20/20 VALID**, **COMPLETE**, **composite/resumed**. Model **gemini-3.5-flash-lite**, SDK **1.75.0**, corpus **metadata-eval-v1**, prompt **metadata-prompt-v1**, schema **metadata-schema-v1**, input **prefix-32000-v1**, output budget **600**; all generation identity/fingerprints remain unchanged. Report **metadata-report-v2**, metrics **metadata-metrics-v1**. Run ID: `53844290c9090428fd06a7d36b76b2ad1196409a79f9a95f3c0327510f0ee6a9`, timestamp `2026-10-04T14:03:56.997626Z`.
+
+Ignored local JSON/text/human-review files are in `apps/api/build/reports/metadata-eval/live-runs/<runId>/`. The original three live files were not overwritten. **17 reused suggestions are byte-equivalent as serialized suggestion values to the original valid outputs**; only `long-middle`, `long-late`, `long-early-late` were generated. Exactly **3 new SDK generation attempts, 3 persisted quota reservations, 40440 estimated new input tokens**, no failures/retries/second invocation. Effective pacing **10 RPM**, spacing **6250ms** (250ms margin), isolated quota-only PostgreSQL Testcontainer, no real/private Knowledge or application database.
+
+New structured-output validity **3/3 = 100%**; final valid case count 20 includes historical reuse, not 20 new requests. Current generation/pacing duration **13.946s**, Gradle task **23s**. New-case latencies: middle **2304.88ms**, late **1377.63ms**, early+late **1351.64ms**; mean/p50/p95 **1678.05/1377.63/2304.88ms**, not all-20 historical latency. Recorded historical attempts **18 + 3 = 21**, including the original failed attempt; estimated historical attempted tokens **39071 + 40440 = 79511**. Reused valid-output historical cost **25587** plus new **40440** equals **66027** for the 20 valid cases. These estimates/recorded attempts are not actual billing or provider token usage; historical costs do not reserve new quota.
+
+Full-corpus deterministic macro metrics (not human quality scores):
+
+| Metric | Completed composite result |
+| --- | ---: |
+| Tag precision / recall / F1 | .446667 / .750000 / .558095 |
+| Visible tag precision / recall / F1 | .470175 / .824561 / .593484 |
+| Generic-tag rate / forbidden-tag count | 0 / 0 |
+| Required/full-note concept coverage | .891667 |
+| Visible concept coverage | .973684 |
+| Mean visible required-concept fraction | .916667 |
+| Forbidden-claim count | 0 |
+
+Visible metrics exclude N/A sets (19 applicable cases); full-note metrics include all 20. Means are per-case macro values, not pooled concept counts. Zero diagnostics are not proof of no hallucinations or generic tags: the frozen generic-tag list does not flag labels such as `lab`, `checklist`, `background context`. Mean summary length **226.05** UTF-16 units, p50/p95 **218/284**; mean returned tags **4.6**.
+
+All four long cases are VALID with a 32000-unit visible prefix:
+
+| Case | Provenance | Full / visible concept coverage | Tag recall | Observation |
+| --- | --- | --- | --- | --- |
+| long-early | Reused | 1 / 1 | 1 | Visible pool cap, waiting and queue facts covered. |
+| long-middle | New | 1 / 1 | 2/3 | Middle PostgreSQL index/owner/EXPLAIN facts are inside the prefix and recovered; `database indexing` does not match frozen Composite Index aliases. |
+| long-late | New | 0 / N/A | 0 | All declared Kafka/delivery/idempotency facts are after 32k; output summarizes visible lab background. This is input exclusion, not failure to recover supplied Kafka facts. |
+| long-early-late | New | 1/3 / 1 | 1/3 (visible 1) | Visible response timeout 3 seconds recovered; Circuit Breaker/Resilience4j facts are outside the prefix. |
+
+Language observations: English fixtures received English summaries; both Vietnamese fixtures and six of seven mixed-technical fixtures received Vietnamese prose with technical terms. The mixed Next.js fixture received English, a language-fit observation, not a prompt change. Newly generated middle/early+late outputs retained Vietnamese; late remained English. Language-group concept coverage en/vi/mixed is **.863636/1/.904762**, based on phrase matching, not automated language correctness or representative population estimates.
+
+**Benchmark-calibration candidates, not score overrides:** Nginx's supported “time between read operations” phrase is outside frozen concept aliases (.5 coverage); `Timeouts` is not the accepted `Timeout` tag. `Database Index`/`database indexing` versus Composite Index in postgres-index/long-middle deserves a taxonomy-granularity review, but broader terms must not automatically become equivalent. Useful unlisted operational tags (e.g. Consumer Offsets, queue depth, pendingAcquireTimeout) can reduce closed-list precision. Conversely, omitted CSRF/Session Cookie, Cache Invalidation, CI and Attachment Lifecycle tags may be genuine specificity/coverage gaps; do not relabel every miss as a benchmark defect. No aliases/expected tags/forbidden lists or metrics were edited after observing results.
+
+**Human review still pending**: all rubric ratings remain blank. Synthetic repeated appendices are position probes, not representative real/private notes. The report combines two invocations, not one uninterrupted run; prefix omission and closed ground truth constrain interpretation. No production tuning, source/Gradle changes, model/prompt/schema/input-strategy/quota changes, background generation, migration or other AI calls. Execution validation used read-only `metadataEvalResumeCheck`, the single approved live command, provenance/usage/protected-file checks and `git diff --check`; full test/build suites were not rerun for documentation-only edits. Original reports, frozen corpus and local secret-bearing `application.yml` remain unchanged/uncommitted.
+
+**Recommended next direction:** review the blank human rubric and separately scope/version benchmark taxonomy/alias calibration; preserve this frozen complete composite baseline. Real/private notes remain unevaluated. No further live run, quality tuning or automatic metadata generation is authorized by this execution milestone.

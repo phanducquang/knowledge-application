@@ -91,10 +91,10 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - Manual Live Gemini Retrieval Evaluation — complete for the synthetic corpus: one approved `gemini-embedding-2`/768 run, 28 notes/55 chunks/60 queries, eight native embedding requests, bounded quota pacing and twelve vector-reusing retrieval variants; no generation/CI execution/production tuning
 - focused long-note supporting-chunk selection/context-cost evaluation — deferred; separate review before tuning/additional live requests
 - AI metadata suggestions — complete for explicit Summary/new-Tag suggestions on existing owner notes, preview/apply via ordinary autosave, structured JSON and independent quotas; no background enrichment
-- Metadata Suggestion Quality Evaluation tooling — complete for 20 synthetic notes, deterministic offline metrics, versioned reports/human rubric and bounded opt-in live mode; one approved attempt stopped after 17 valid outputs/18 attempts, so **full synthetic live baseline is INCOMPLETE**, not complete ([evidence](METADATA_EVALUATION.md))
+- Metadata Suggestion Quality Evaluation — tooling and **20/20 synthetic live baseline COMPLETE (composite/resumed)**: 17 prior valid outputs reused unchanged plus one separately approved three-call resume; model/contract frozen, no retries/tuning; tag P/R/F1 .446667/.750000/.558095, full/visible concept coverage .891667/.973684, human review pending ([evidence](METADATA_EVALUATION.md))
 - real/private-corpus metadata quality — not evaluated
 - Metadata Evaluation Reliability — complete: evaluation-only monotonic rolling-RPM spacing, bounded pre-reservation waits, typed safe diagnostics, explicit v1/v2 resume with new-only budgets/provenance and preserved reports; zero external Gemini calls/no live resume in this milestone
-- next metadata evaluation direction — separately approve the bounded three-case resume (17 prior valid cases reusable offline), then review the explicitly composite complete baseline with frozen corpus/contract; no automatic rerun, taxonomy calibration or quality tuning
+- next metadata evaluation direction — human rubric review and separately scoped/versioned taxonomy/alias calibration; preserve the frozen composite baseline, no automatic rerun or production tuning; the single resume authorization is consumed
 - prompt/input strategy tuning — future, only after adequate evidence and separate review
 - automatic/background tagging/summarization — future, separate explicit opt-in review required
 
