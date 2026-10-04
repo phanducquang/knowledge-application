@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.function.ToDoubleFunction;
 
 final class MetadataEvaluation {
-    static final String REPORT_VERSION="metadata-report-v1", METRICS_VERSION="metadata-metrics-v1";
+    static final String REPORT_VERSION="metadata-report-v2", METRICS_VERSION="metadata-metrics-v1";
     record Identity(String reportVersion,String metricsVersion,String corpusVersion,String corpusFingerprint,String provider,String model,String sdkVersion,
             String promptVersion,String promptFingerprint,String schemaVersion,String schemaFingerprint,String inputStrategyVersion,int contentLimit,int summaryLimit,
             int tagCountLimit,int tagLengthLimit,int maxOutputTokens,String evaluatedAt) {
@@ -24,7 +24,17 @@ final class MetadataEvaluation {
             int fullContentChars,int visibleContentChars,boolean truncated,String status,Double latencyMs,
             long estimatedInputTokens,MetadataSuggestion suggestion,MetadataMetrics.Result metrics,
             List<MetadataCorpus.Concept> conceptGroundTruth,List<MetadataCorpus.Tag> tagGroundTruth,
-            List<String> existingTags,String rationale) {}
+            List<String> existingTags,String rationale,String provenance,String sourceReportFingerprint,String sourceEvaluatedAt,
+            String generationRunId,String inputFingerprint) {
+        Case(String id,String title,String language,String category,String lengthGroup,String position,int fullContentChars,
+                int visibleContentChars,boolean truncated,String status,Double latencyMs,long estimatedInputTokens,
+                MetadataSuggestion suggestion,MetadataMetrics.Result metrics,List<MetadataCorpus.Concept> conceptGroundTruth,
+                List<MetadataCorpus.Tag> tagGroundTruth,List<String> existingTags,String rationale) {
+            this(id,title,language,category,lengthGroup,position,fullContentChars,visibleContentChars,truncated,status,latencyMs,
+                    estimatedInputTokens,suggestion,metrics,conceptGroundTruth,tagGroundTruth,existingTags,rationale,
+                    "GENERATED_THIS_RUN",null,null,null,null);
+        }
+    }
     record Aggregate(int cases,double precision,double recall,double f1,Double visiblePrecision,Double visibleRecall,
             Double visibleF1,double genericTagRate,int forbiddenTagCount,double meanSuggestedTagCount,
             double requiredConceptCoverage,Double visibleConceptCoverage,double expectedCoverageCeiling,
@@ -32,45 +42,94 @@ final class MetadataEvaluation {
             Double meanLatencyMs,Double p50LatencyMs,Double p95LatencyMs) {}
     record Usage(int plannedCases,int attemptedCases,int validOutputs,int providerRequests,int fakeCalls,
             long plannedEstimatedInputTokens,long attemptedEstimatedInputTokens,double validStructuredOutputRate,
-            Double durationMs) {}
-    record Report(Identity identity,String status,String failure,Usage usage,Aggregate metrics,
-            Map<String,Map<String,Aggregate>> groups,List<Case> cases) {}
+            Double durationMs,int reusedValidCases,int newCallsPlanned,int newValidOutputs,long corpusEstimatedInputTokens,
+            long reusedEstimatedHistoricalTokens,int quotaReservations,long quotaEstimatedInputTokens) {}
+    record Failure(MetadataFailureCategory category,String caseId,int attemptedCaseNumber,Integer httpStatus) {}
+    record Report(Identity identity,String status,Failure failure,Usage usage,Aggregate metrics,
+            Map<String,Map<String,Aggregate>> groups,List<Case> cases,String runId,boolean composite) {
+        Report(Identity identity,String status,Failure failure,Usage usage,Aggregate metrics,Map<String,Map<String,Aggregate>> groups,List<Case> cases) {
+            this(identity,status,failure,usage,metrics,groups,cases,MetadataResume.hashIdentity(identity),false);
+        }
+        Report accounting(int providerAttempts,int reservations,long reservedTokens) {
+            var u=usage;
+            return new Report(identity,status,failure,new Usage(u.plannedCases(),u.attemptedCases(),u.validOutputs(),providerAttempts,u.fakeCalls(),
+                    u.plannedEstimatedInputTokens(),u.attemptedEstimatedInputTokens(),u.validStructuredOutputRate(),u.durationMs(),u.reusedValidCases(),
+                    u.newCallsPlanned(),u.newValidOutputs(),u.corpusEstimatedInputTokens(),u.reusedEstimatedHistoricalTokens(),reservations,reservedTokens),
+                    metrics,groups,cases,runId,composite);
+        }
+        Report accountingFailure() {
+            return new Report(identity,"INCOMPLETE",new Failure(MetadataFailureCategory.UNKNOWN_SAFE,null,usage.attemptedCases(),null),
+                    usage,null,Map.of(),cases,runId,composite);
+        }
+    }
     interface Pacer { void await(long inputChars); }
     static long preflight(MetadataCorpus corpus,int limit,AiQuotaProperties quota,int requestBudget,long tokenBudget) {
+        return preflight(corpus,limit,quota,requestBudget,tokenBudget,Set.of());
+    }
+    static long preflight(MetadataCorpus corpus,int limit,AiQuotaProperties quota,int requestBudget,long tokenBudget,Set<String> reused) {
         corpus.validate();
-        if(corpus.fixtures().size()>requestBudget) throw new IllegalArgumentException("Corpus exceeds live request budget");
+        if(!corpus.fixtures().stream().map(MetadataCorpus.Fixture::id).collect(java.util.stream.Collectors.toSet()).containsAll(reused))
+            throw new MetadataUnavailableException(MetadataFailureCategory.CONFIGURATION);
+        if(corpus.fixtures().size()-reused.size()>requestBudget) throw new MetadataUnavailableException(MetadataFailureCategory.SAFETY_BUDGET);
         long tokens=0;
         for(var fixture:corpus.fixtures()) {
+            if(reused.contains(fixture.id())) continue;
             long cost=quota.estimate(GeminiKnowledgeMetadataSuggestionClient.estimatedInputChars(fixture.input(limit)));
-            if(cost>quota.inputTokensPerMinute()) throw new IllegalArgumentException("A case exceeds the configured minute token quota");
+            if(cost>quota.inputTokensPerMinute()) throw new MetadataUnavailableException(MetadataFailureCategory.SAFETY_BUDGET);
             tokens=Math.addExact(tokens,cost);
         }
-        if(tokens>tokenBudget || corpus.fixtures().size()>quota.requestsPerDay()) throw new IllegalArgumentException("Corpus exceeds live token/day budget");
+        if(tokens>tokenBudget || corpus.fixtures().size()-reused.size()>quota.requestsPerDay()) throw new MetadataUnavailableException(MetadataFailureCategory.SAFETY_BUDGET);
         return tokens;
     }
     static Report run(MetadataCorpus corpus,KnowledgeMetadataSuggestionClient provider,Identity identity,AiQuotaProperties quota,
             Pacer pacer,boolean live,int requestBudget,long tokenBudget) {
-        long planned=preflight(corpus,identity.contentLimit(),quota,requestBudget,tokenBudget),start=System.nanoTime(),used=0;
-        var results=new ArrayList<Case>(); int attempted=0,valid=0; String failure=null;
+        return run(corpus,provider,identity,quota,pacer,live,requestBudget,tokenBudget,MetadataResume.Plan.empty());
+    }
+    static Report run(MetadataCorpus corpus,KnowledgeMetadataSuggestionClient provider,Identity identity,AiQuotaProperties quota,
+            Pacer pacer,boolean live,int requestBudget,long tokenBudget,MetadataResume.Plan resume) {
+        long planned=preflight(corpus,identity.contentLimit(),quota,requestBudget,tokenBudget,resume.reused().keySet()),start=System.nanoTime(),used=0,corpusTokens=0,historical=0;
+        var results=new ArrayList<Case>(); int attempted=0,valid=0,providerAttempts=0; Failure failure=null;
+        String runId=MetadataResume.hashIdentity(identity);
         for(var fixture:corpus.fixtures()) {
             var input=fixture.input(identity.contentLimit());
             long chars=GeminiKnowledgeMetadataSuggestionClient.estimatedInputChars(input),tokens=quota.estimate(chars),caseStart=System.nanoTime();
-            MetadataSuggestion suggestion=null; MetadataMetrics.Result metrics=null; String status="VALID";
-            try {
-                pacer.await(chars); caseStart=System.nanoTime(); attempted++; used+=tokens;
-                suggestion=provider.suggest(input).validated(input.currentTags());
+            corpusTokens+=tokens;
+            var reused=resume.reused().get(fixture.id());
+            MetadataSuggestion suggestion=null; MetadataMetrics.Result metrics=null; String status="UNATTEMPTED",provenance="UNATTEMPTED";
+            Double latency=null;
+            boolean invoked=false;
+            if(reused!=null) {
+                suggestion=reused.suggestion(); metrics=MetadataMetrics.score(fixture,suggestion,corpus.genericTags(),identity.contentLimit());
+                valid++; historical+=reused.estimatedInputTokens(); status="VALID"; provenance="REUSED_FROM_PRIOR_RUN";
+            } else if(failure==null) try {
+                pacer.await(chars); caseStart=System.nanoTime(); invoked=true; attempted++; providerAttempts++; used+=tokens; provenance="GENERATED_THIS_RUN";
+                var draft=provider.suggest(input);
+                if(draft==null) throw new MetadataUnavailableException(MetadataFailureCategory.OUTPUT_VALIDATION);
+                suggestion=draft.validated(input.currentTags()); status="VALID";
                 metrics=MetadataMetrics.score(fixture,suggestion,corpus.genericTags(),identity.contentLimit()); valid++;
-            } catch(RuntimeException ex) { status="FAILED"; failure="Provider, quota, invalid output or pacing failure; stopped without retries."; }
+                latency=live?(System.nanoTime()-caseStart)/1_000_000.0:null;
+            } catch(RuntimeException ex) {
+                status="FAILED"; provenance="FAILED_THIS_RUN";
+                var category=ex instanceof MetadataUnavailableException safe?safe.category():MetadataFailureCategory.UNKNOWN_SAFE;
+                if(category==MetadataFailureCategory.LOCAL_QUOTA && invoked) { providerAttempts--; used-=tokens; }
+                failure=new Failure(category,fixture.id(),invoked?attempted:attempted+1,
+                        ex instanceof MetadataUnavailableException safe?safe.httpStatus():null);
+                latency=live?(System.nanoTime()-caseStart)/1_000_000.0:null; suggestion=null; metrics=null;
+            }
             results.add(new Case(fixture.id(),fixture.title(),fixture.language(),fixture.category(),fixture.lengthGroup(),fixture.position(),
-                    fixture.markdown().length(),input.content().length(),input.contentTruncated(),status,live?(System.nanoTime()-caseStart)/1_000_000.0:null,
-                    tokens,suggestion,metrics,fixture.concepts(),fixture.expectedTags(),fixture.existingTags(),fixture.notes()));
-            if(failure!=null) break;
+                    fixture.markdown().length(),input.content().length(),input.contentTruncated(),status,latency,
+                    tokens,suggestion,metrics,fixture.concepts(),fixture.expectedTags(),fixture.existingTags(),fixture.notes(),provenance,
+                    reused==null?null:resume.fingerprint(),reused==null?null:reused.evaluatedAt(),
+                    reused==null?(status.equals("VALID")?runId:null):reused.generationRunId(),MetadataResume.inputFingerprint(input)));
         }
-        var usage=new Usage(corpus.fixtures().size(),attempted,valid,live?attempted:0,live?0:attempted,planned,used,
-                MetadataMetrics.ratio(valid,attempted),live?(System.nanoTime()-start)/1_000_000.0:null);
+        int newValid=valid-resume.reused().size();
+        var usage=new Usage(corpus.fixtures().size(),attempted,valid,live?providerAttempts:0,live?0:attempted,planned,used,
+                MetadataMetrics.ratio(newValid,attempted),live?(System.nanoTime()-start)/1_000_000.0:null,resume.reused().size(),
+                corpus.fixtures().size()-resume.reused().size(),newValid,corpusTokens,historical,0,0);
         // Partial cases remain reviewable, but no aggregate quality claim for incomplete runs.
-        return new Report(identity,failure==null?"COMPLETE":"INCOMPLETE",failure,usage,failure==null?aggregate(results):null,
-                failure==null?groups(results):Map.of(),List.copyOf(results));
+        boolean complete=valid==corpus.fixtures().size();
+        return new Report(identity,complete?"COMPLETE":"INCOMPLETE",failure,usage,complete?aggregate(results):null,
+                complete?groups(results):Map.of(),List.copyOf(results),runId,!resume.reused().isEmpty());
     }
     static KnowledgeMetadataSuggestionClient fake(MetadataCorpus corpus,int limit) {
         var iterator=corpus.fixtures().iterator();

@@ -11,7 +11,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.ResourcePropertySource;
 
 /** Existing secure local configuration only. No Spring application context/datasource is started. */
-record MetadataLiveSettings(MetadataProperties metadata,GeminiProperties credentials,int maxRequests,long maxTokens,int maxWaitSeconds) {
+record MetadataLiveSettings(MetadataProperties metadata,GeminiProperties credentials,int maxRequests,long maxTokens,int maxWaitSeconds,
+        int maxRpm,long safetyMillis,String resumeFrom) {
+    MetadataLiveSettings(MetadataProperties metadata,GeminiProperties credentials,int maxRequests,long maxTokens,int maxWaitSeconds) {
+        this(metadata,credentials,maxRequests,maxTokens,maxWaitSeconds,10,250,null);
+    }
     static void gates(boolean dedicatedTask,String flag) {
         if(!dedicatedTask || !"true".equals(flag)) throw new IllegalArgumentException("Dedicated live task and exact true flag required");
     }
@@ -24,6 +28,7 @@ record MetadataLiveSettings(MetadataProperties metadata,GeminiProperties credent
                 || !(origin.getPath().isEmpty() || origin.getPath().equals("/"))) throw new IllegalArgumentException("Official Gemini origin required for live evaluation");
         if(maxRequests<1 || maxRequests>20 || maxTokens<1 || maxTokens>150000 || maxWaitSeconds<0 || maxWaitSeconds>600)
             throw new IllegalArgumentException("Evaluation safety bounds exceeded");
+        if(maxRpm<1 || maxRpm>60000 || safetyMillis<1 || safetyMillis>10000) throw new IllegalArgumentException("Invalid pacing configuration");
     }
     static MetadataLiveSettings load() throws java.io.IOException {
         gates(Boolean.getBoolean("metadata.eval.live-task"),System.getenv("METADATA_EVAL_LIVE"));
@@ -41,7 +46,10 @@ record MetadataLiveSettings(MetadataProperties metadata,GeminiProperties credent
                 binder.bind("app.gemini",GeminiProperties.class).orElseThrow(()->new IllegalArgumentException("Gemini configuration required")),
                 Integer.parseInt(environment.getProperty("METADATA_EVAL_LIVE_MAX_REQUESTS","20")),
                 Long.parseLong(environment.getProperty("METADATA_EVAL_LIVE_MAX_ESTIMATED_INPUT_TOKENS","150000")),
-                Integer.parseInt(environment.getProperty("METADATA_EVAL_LIVE_MAX_WAIT_SECONDS","180")));
+                Integer.parseInt(environment.getProperty("METADATA_EVAL_LIVE_MAX_WAIT_SECONDS","180")),
+                Integer.parseInt(environment.getProperty("METADATA_EVAL_LIVE_MAX_RPM","10")),
+                Long.parseLong(environment.getProperty("METADATA_EVAL_LIVE_PACING_SAFETY_MS","250")),
+                environment.getProperty("METADATA_EVAL_RESUME_FROM"));
     }
     @Override public String toString() { return "MetadataLiveSettings[redacted]"; }
 }

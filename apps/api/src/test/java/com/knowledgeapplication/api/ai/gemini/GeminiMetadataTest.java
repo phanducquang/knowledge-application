@@ -73,4 +73,62 @@ class GeminiMetadataTest {
         assertThat(new MetadataSuggestion(" Summary ",List.of(" #Spring   Boot ","spring boot","Docker","DOCKER")).validated(List.of("Spring Boot")))
                 .isEqualTo(new MetadataSuggestion("Summary",List.of("Docker")));
     }
+    @ParameterizedTest @ValueSource(ints={429,500,503,401,504}) void safeTypedHttpDiagnosticsRetainNoPayloadOrCause(int code) {
+        status=code;
+        try(var client=client(2000)) {
+            assertThatThrownBy(()->client.suggest(input())).isInstanceOf(MetadataUnavailableException.class).hasNoCause()
+                    .satisfies(ex->{ var safe=(MetadataUnavailableException)ex;
+                        assertThat(safe.httpStatus()).isEqualTo(code);
+                        assertThat(safe.category()).isEqualTo(code==429?MetadataFailureCategory.PROVIDER_RATE_LIMIT:
+                                code==504?MetadataFailureCategory.PROVIDER_TIMEOUT:MetadataFailureCategory.PROVIDER_UNAVAILABLE);
+                    });
+        }
+        assertThat(calls.get()).isEqualTo(1);
+    }
+    @Test void typedResourceExhaustedAndTimeoutClassificationNeverUsesRawMessages() {
+        var exhausted=GeminiKnowledgeMetadataSuggestionClient.transportFailure(new com.google.genai.errors.ApiException(400,"RESOURCE_EXHAUSTED","raw API key and body MUST NOT escape"));
+        assertThat(exhausted.category()).isEqualTo(MetadataFailureCategory.PROVIDER_RATE_LIMIT); assertThat(exhausted).hasNoCause();
+        assertThat(exhausted.getMessage()).doesNotContain("raw API key");
+        var timeout=GeminiKnowledgeMetadataSuggestionClient.transportFailure(new com.google.genai.errors.GenAiIOException("raw networking detail",new java.net.SocketTimeoutException("secret URI")));
+        assertThat(timeout.category()).isEqualTo(MetadataFailureCategory.PROVIDER_TIMEOUT); assertThat(timeout).hasNoCause();
+        assertThat(GeminiKnowledgeMetadataSuggestionClient.transportFailure(new IllegalStateException("429 only in raw text")).category()).isEqualTo(MetadataFailureCategory.PROVIDER_UNAVAILABLE);
+    }
+    @Test void realSdkTimeoutHasSafeCategory() {
+        delay=500;
+        try(var client=client(100)) { assertThatThrownBy(()->client.suggest(input())).isInstanceOf(MetadataUnavailableException.class)
+                .satisfies(ex->assertThat(((MetadataUnavailableException)ex).category()).isEqualTo(MetadataFailureCategory.PROVIDER_TIMEOUT)).hasNoCause(); }
+        assertThat(calls.get()).isEqualTo(1);
+    }
+    @Test void structuralParsingAndSemanticOutputValidationAreSeparate() {
+        assertThatThrownBy(()->GeminiKnowledgeMetadataSuggestionClient.parse("not json")).isInstanceOf(MetadataUnavailableException.class)
+                .satisfies(ex->assertThat(((MetadataUnavailableException)ex).category()).isEqualTo(MetadataFailureCategory.INVALID_STRUCTURED_OUTPUT));
+        for(var invalid:List.of("{\"summary\":\" \",\"tags\":[]}","{\"summary\":\"x\",\"tags\":[\" \"]}"))
+            assertThatThrownBy(()->GeminiKnowledgeMetadataSuggestionClient.parse(invalid)).isInstanceOf(MetadataUnavailableException.class)
+                    .satisfies(ex->assertThat(((MetadataUnavailableException)ex).category()).isEqualTo(MetadataFailureCategory.OUTPUT_VALIDATION));
+    }
+    @Test void localQuotaDenialOccursBeforeTransportTimingHookOrHttp() {
+        var marks=new AtomicInteger(); when(limiter.reserve(any(),any(),anyLong())).thenReturn(false);
+        var props=new MetadataProperties(true,"model","http://127.0.0.1:"+server.getAddress().getPort(),Duration.ofSeconds(1),Duration.ofSeconds(2),600,32000,
+                new AiQuotaProperties(true,10,200000,400,2.5,ZoneOffset.UTC,null));
+        try(var client=new GeminiKnowledgeMetadataSuggestionClient(props,new GeminiProperties("fake-key"),limiter,marks::incrementAndGet)) {
+            assertThatThrownBy(()->client.suggest(input())).isInstanceOf(MetadataUnavailableException.class)
+                    .satisfies(ex->assertThat(((MetadataUnavailableException)ex).category()).isEqualTo(MetadataFailureCategory.LOCAL_QUOTA));
+        }
+        assertThat(marks.get()).isZero(); assertThat(calls.get()).isZero();
+    }
+    @Test void timingHookIsAfterReservationImmediatelyBeforeOneTransportAttempt() {
+        var events=new ArrayList<String>(); when(limiter.reserve(any(),any(),anyLong())).thenAnswer(i->{events.add("reserve");return true;});
+        var props=new MetadataProperties(true,"model","http://127.0.0.1:"+server.getAddress().getPort(),Duration.ofSeconds(1),Duration.ofSeconds(2),600,32000,
+                new AiQuotaProperties(true,10,200000,400,2.5,ZoneOffset.UTC,null));
+        try(var client=new GeminiKnowledgeMetadataSuggestionClient(props,new GeminiProperties("fake-key"),limiter,()->events.add("attempt"))) { client.suggest(input()); }
+        assertThat(events).containsExactly("reserve","attempt"); assertThat(calls.get()).isEqualTo(1);
+    }
+    @Test void sdkJsonParseFailureHasTypedStructuredOutputCategory() {
+        try { new com.fasterxml.jackson.databind.ObjectMapper().readTree("malformed secret body"); throw new AssertionError(); }
+        catch(com.fasterxml.jackson.core.JsonProcessingException ex) {
+            var safe=GeminiKnowledgeMetadataSuggestionClient.transportFailure(new com.google.genai.errors.GenAiIOException("SDK raw response",ex));
+            assertThat(safe.category()).isEqualTo(MetadataFailureCategory.INVALID_STRUCTURED_OUTPUT); assertThat(safe).hasNoCause();
+            assertThat(safe.getMessage()).doesNotContain("secret body","SDK raw response");
+        }
+    }
 }

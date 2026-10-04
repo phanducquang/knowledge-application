@@ -57,5 +57,15 @@ class MetadataEvaluationAdapterTest {
         assertThat(settings.metadata().model()).isEqualTo("model-from-environment"); assertThat(settings.metadata().maxOutputTokens()).isEqualTo(600);
         assertThat(settings.metadata().maxContentChars()).isEqualTo(32000); assertThat(settings.maxRequests()).isEqualTo(20);
         assertThat(settings.maxTokens()).isEqualTo(150000); assertThat(calls.get()).isZero();
+        assertThat(settings.maxRpm()).isEqualTo(10); assertThat(settings.safetyMillis()).isEqualTo(250); assertThat(settings.resumeFrom()).isNull();
+    }
+    @Test void newEvaluationOnlySettingsAreConfigDriven() throws Exception {
+        var environment=new StandardEnvironment();
+        environment.getPropertySources().addFirst(new MapPropertySource("fake-eval",Map.of("app.ai.metadata.enabled",true,"app.gemini.api-key","fake-key",
+                "METADATA_EVAL_LIVE_MAX_RPM","12","METADATA_EVAL_LIVE_PACING_SAFETY_MS","321","METADATA_EVAL_RESUME_FROM","synthetic-prior.json")));
+        environment.getPropertySources().addLast(new ResourcePropertySource(new ClassPathResource("metadata-suggestions.properties")));
+        var settings=MetadataLiveSettings.bind(environment);
+        assertThat(settings.maxRpm()).isEqualTo(12); assertThat(settings.safetyMillis()).isEqualTo(321); assertThat(settings.resumeFrom()).isEqualTo("synthetic-prior.json");
+        assertThat(calls.get()).isZero();
     }
 }

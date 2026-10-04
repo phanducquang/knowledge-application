@@ -18,6 +18,15 @@ class MetadataEvaluationTest {
     final AiQuotaProperties quota=new AiQuotaProperties(true,10,200000,400,2.5,ZoneId.of("America/Los_Angeles"),null);
     MetadataEvaluation.Identity identity(String model) { return MetadataEvaluation.Identity.create(corpus,"offline-fake",model,32000,600,Instant.EPOCH); }
     MetadataEvaluation.Report run(KnowledgeMetadataSuggestionClient client) { return MetadataEvaluation.run(corpus,client,identity("fake-v1"),quota,c->{},false,20,150000); }
+    @Test void accountingMismatchCannotLeaveACompleteQualityBaseline() {
+        var complete=run(MetadataEvaluation.fake(corpus,32000));
+        var failed=complete.accounting(20,19,1).accountingFailure();
+        assertThat(failed.status()).isEqualTo("INCOMPLETE");
+        assertThat(failed.failure().category()).isEqualTo(MetadataFailureCategory.UNKNOWN_SAFE);
+        assertThat(failed.metrics()).isNull(); assertThat(failed.groups()).isEmpty();
+        assertThat(failed.cases()).isEqualTo(complete.cases());
+        assertThat(failed.usage().quotaReservations()).isEqualTo(19);
+    }
     MetadataCorpus.Fixture fixture(String id) { return corpus.fixtures().stream().filter(f->f.id().equals(id)).findFirst().orElseThrow(); }
     MetadataMetrics.Result score(String id,String summary,List<String> tags) { return MetadataMetrics.score(fixture(id),new MetadataSuggestion(summary,tags).validated(fixture(id).existingTags()),corpus.genericTags(),32000); }
     MetadataCorpus changed(MetadataCorpus.Fixture fixture) { return new MetadataCorpus(corpus.version(),corpus.genericTags(),List.of(fixture)); }
@@ -138,8 +147,8 @@ class MetadataEvaluationTest {
     }
     @Test void budgetPreflightBeforeAnyFakeOrProviderCalls() {
         var calls=new AtomicInteger(); KnowledgeMetadataSuggestionClient client=r->{calls.incrementAndGet();throw new AssertionError("must not call");};
-        assertThatThrownBy(()->MetadataEvaluation.run(corpus,client,identity("x"),quota,c->{},true,19,150000)).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(()->MetadataEvaluation.run(corpus,client,identity("x"),quota,c->{},true,20,1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(()->MetadataEvaluation.run(corpus,client,identity("x"),quota,c->{},true,19,150000)).isInstanceOf(MetadataUnavailableException.class);
+        assertThatThrownBy(()->MetadataEvaluation.run(corpus,client,identity("x"),quota,c->{},true,20,1)).isInstanceOf(MetadataUnavailableException.class);
         assertThat(calls.get()).isZero();
     }
     @ParameterizedTest @ValueSource(strings={"429 raw provider body","500 secret body","timeout raw secret detail","malformed structured output"})
@@ -152,7 +161,8 @@ class MetadataEvaluationTest {
     }
     @Test void invalidOutputStopsAndIsNotSerialized() {
         var report=run(r->new MetadataSuggestion("x".repeat(501),List.of())); assertThat(report.status()).isEqualTo("INCOMPLETE");
-        assertThat(report.cases()).hasSize(1); assertThat(report.cases().get(0).suggestion()).isNull(); assertThat(report.usage().validOutputs()).isZero();
+        assertThat(report.cases()).hasSize(20); assertThat(report.cases().get(0).suggestion()).isNull(); assertThat(report.usage().validOutputs()).isZero();
+        assertThat(report.cases().stream().filter(c->c.status().equals("UNATTEMPTED"))).hasSize(19);
     }
     @Test void quotaPacingFailureMakesZeroCalls() {
         var calls=new AtomicInteger();
@@ -169,5 +179,33 @@ class MetadataEvaluationTest {
         assertThat(com.knowledgeapplication.api.ai.gemini.GeminiKnowledgeMetadataSuggestionClient.schemaFingerprint()).hasSize(64);
         var f=fixture("webclient-vi");
         assertThat(changed(copy(f,f.expectedTags(),List.of(f.concepts().get(0)))).fingerprint()).isNotEqualTo(corpus.fingerprint());
+    }
+    @ParameterizedTest @org.junit.jupiter.params.provider.EnumSource(MetadataFailureCategory.class)
+    void categoriesStayAllowlistedAndContainNoRawFailureData(MetadataFailureCategory category) {
+        var report=run(r->{throw new MetadataUnavailableException(category,429);});
+        assertThat(report.failure().category()).isEqualTo(category); assertThat(report.failure().caseId()).isEqualTo("spring-health");
+        assertThat(report.failure().attemptedCaseNumber()).isEqualTo(1); assertThat(report.metrics()).isNull();
+        assertThat(report.cases().get(0).status()).isEqualTo("FAILED"); assertThat(report.cases().get(1).provenance()).isEqualTo("UNATTEMPTED");
+        assertThat(MetadataReportWriter.json(report)).doesNotContain("stackTrace","Authorization","apiKey","cause");
+    }
+    @Test void interruptWhilePacingCannotProduceAdditionalCalls() {
+        var ticks=new java.util.concurrent.atomic.AtomicLong(); var calls=new AtomicInteger(); var fake=MetadataEvaluation.fake(corpus,32000);
+        var wait=new MetadataPacing.WaitBudget(ticks::get,m->{throw new InterruptedException("raw detail");},180);
+        var pacer=new MetadataPacing(10,10,250,ticks::get,wait,c->{});
+        try {
+            var report=MetadataEvaluation.run(corpus,r->{calls.incrementAndGet();return fake.suggest(r);},identity("fake"),quota,pacer,false,20,150000);
+            assertThat(calls.get()).isEqualTo(1); assertThat(report.failure().category()).isEqualTo(MetadataFailureCategory.PACING_BUDGET);
+            assertThat(report.usage().attemptedCases()).isEqualTo(1); assertThat(Thread.currentThread().isInterrupted()).isTrue();
+        } finally { Thread.interrupted(); }
+    }
+    @Test void localDenialHasNoProviderOrQuotaUsageAndUnknownFallbackIsSafe() {
+        var report=run(r->{throw new MetadataUnavailableException(MetadataFailureCategory.LOCAL_QUOTA);});
+        assertThat(report.usage().providerRequests()).isZero(); assertThat(report.usage().attemptedEstimatedInputTokens()).isZero();
+        var unknown=run(r->{throw new IllegalStateException("private key/value/raw body");});
+        assertThat(unknown.failure().category()).isEqualTo(MetadataFailureCategory.UNKNOWN_SAFE);
+        assertThat(MetadataReportWriter.json(unknown)).doesNotContain("private key/value/raw body");
+    }
+    @Test void nullProviderOutputIsLocalValidationFailure() {
+        assertThat(run(r->null).failure().category()).isEqualTo(MetadataFailureCategory.OUTPUT_VALIDATION);
     }
 }

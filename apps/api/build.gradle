@@ -95,6 +95,28 @@ tasks.register('metadataEval', JavaExec) {
     outputs.upToDateWhen { false }
 }
 
+// Keep prior live outputs byte-for-byte: required for explicitly approved future resume.
+// Delete compiled/build files, but never recursively delete the protected report directories.
+tasks.named('clean', Delete) {
+    setDelete(provider {
+        fileTree(layout.buildDirectory).matching {
+            exclude 'reports/metadata-eval/live-*'
+            exclude 'reports/metadata-eval/live-runs/**'
+        }.files
+    })
+}
+
+tasks.register('metadataEvalResumeCheck', JavaExec) {
+    description = 'Read-only offline compatibility/count check for an explicitly supplied resume report; no provider or DB.'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.knowledgeapplication.api.metadata.eval.MetadataResumeCheckMain'
+    environment 'GEMINI_API_KEY', ''
+    environment 'GOOGLE_API_KEY', ''
+    systemProperty 'app.gemini.api-key', ''
+}
+
 // Manual JavaExec only: NEVER wired into test/check/build/CI.
 tasks.register('metadataEvalLive', JavaExec) {
     description = 'Explicit opt-in, bounded synthetic Gemini metadata evaluation using the production adapter.'

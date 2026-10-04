@@ -93,7 +93,8 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - AI metadata suggestions — complete for explicit Summary/new-Tag suggestions on existing owner notes, preview/apply via ordinary autosave, structured JSON and independent quotas; no background enrichment
 - Metadata Suggestion Quality Evaluation tooling — complete for 20 synthetic notes, deterministic offline metrics, versioned reports/human rubric and bounded opt-in live mode; one approved attempt stopped after 17 valid outputs/18 attempts, so **full synthetic live baseline is INCOMPLETE**, not complete ([evidence](METADATA_EVALUATION.md))
 - real/private-corpus metadata quality — not evaluated
-- next metadata evaluation direction — safely diagnose the failed provider/quota/output boundary and separately approve a complete baseline run with the frozen corpus/contract; no automatic rerun or quality tuning
+- Metadata Evaluation Reliability — complete: evaluation-only monotonic rolling-RPM spacing, bounded pre-reservation waits, typed safe diagnostics, explicit v1/v2 resume with new-only budgets/provenance and preserved reports; zero external Gemini calls/no live resume in this milestone
+- next metadata evaluation direction — separately approve the bounded three-case resume (17 prior valid cases reusable offline), then review the explicitly composite complete baseline with frozen corpus/contract; no automatic rerun, taxonomy calibration or quality tuning
 - prompt/input strategy tuning — future, only after adequate evidence and separate review
 - automatic/background tagging/summarization — future, separate explicit opt-in review required
 

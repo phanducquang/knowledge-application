@@ -10,6 +10,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.core.io.ClassPathResource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import com.knowledgeapplication.api.metadata.*;
 
 /** Own container only, quota table only. Cannot accept an application DB URL or load Knowledge. */
 final class MetadataQuotaDatabase implements AutoCloseable {
@@ -34,30 +35,41 @@ final class MetadataQuotaDatabase implements AutoCloseable {
     MetadataEvaluation.Pacer pacer(AiQuotaProperties quota,int maxWaitSeconds) {
         return new QuotaPacer(jdbc,quota,Clock.systemUTC(),maxWaitSeconds,Thread::sleep);
     }
+    MetadataPacing pacer(AiQuotaProperties quota,int maxWaitSeconds,int maxRpm,long safetyMillis) {
+        var wait=new MetadataPacing.WaitBudget(System::nanoTime,Thread::sleep,maxWaitSeconds);
+        return new MetadataPacing(maxRpm,quota.requestsPerMinute(),safetyMillis,System::nanoTime,wait,
+                new QuotaPacer(jdbc,quota,Clock.systemUTC(),maxWaitSeconds,Thread::sleep,wait));
+    }
     static final class QuotaPacer implements MetadataEvaluation.Pacer {
         private final JdbcClient jdbc; private final AiQuotaProperties quota; private final Clock clock;
         private final Sleeper sleeper; private final long maxWaitMillis; private long waited;
+        private final MetadataPacing.WaitBudget sharedWait;
         QuotaPacer(JdbcClient jdbc,AiQuotaProperties quota,Clock clock,int maxWaitSeconds,Sleeper sleeper) {
+            this(jdbc,quota,clock,maxWaitSeconds,sleeper,null);
+        }
+        QuotaPacer(JdbcClient jdbc,AiQuotaProperties quota,Clock clock,int maxWaitSeconds,Sleeper sleeper,MetadataPacing.WaitBudget sharedWait) {
             this.jdbc=jdbc; this.quota=quota; this.clock=clock; this.maxWaitMillis=maxWaitSeconds*1000L; this.sleeper=sleeper;
+            this.sharedWait=sharedWait;
         }
         @Override public void await(long chars) {
             long tokens=quota.estimate(chars);
             for(;;) {
-                if(Thread.currentThread().isInterrupted()) throw new IllegalStateException("Interrupted evaluation");
+                if(Thread.currentThread().isInterrupted()) throw new MetadataUnavailableException(MetadataFailureCategory.PACING_BUDGET);
                 Instant now=clock.instant();
                 if(tokens>quota.inputTokensPerMinute() || !available("metadata-generation-day",
                         now.atZone(quota.dailyResetZone()).toLocalDate().atStartOfDay(quota.dailyResetZone()).toInstant(),quota.requestsPerDay(),Long.MAX_VALUE,0))
-                    throw new IllegalStateException("Local quota boundary");
+                    throw new MetadataUnavailableException(MetadataFailureCategory.LOCAL_QUOTA);
                 Instant minute=now.truncatedTo(ChronoUnit.MINUTES);
                 if(available("metadata-generation-minute",minute,quota.requestsPerMinute(),quota.inputTokensPerMinute(),tokens)) return;
                 long delay=Duration.between(now,minute.plusSeconds(60)).toMillis()+50;
-                if(waited+delay>maxWaitMillis) throw new IllegalStateException("Pacing wait budget exhausted");
+                if(sharedWait!=null) { sharedWait.sleep(delay*1_000_000L); continue; }
+                if(waited+delay>maxWaitMillis) throw new MetadataUnavailableException(MetadataFailureCategory.PACING_BUDGET);
                 // Each sleep <=30s; interruptible, no provider request/retry during pacing.
                 long remaining=delay;
                 while(remaining>0) {
                     long chunk=Math.min(30000,remaining);
                     try { sleeper.sleep(chunk); }
-                    catch(InterruptedException ex) { Thread.currentThread().interrupt(); throw new IllegalStateException("Interrupted evaluation"); }
+                    catch(InterruptedException ex) { Thread.currentThread().interrupt(); throw new MetadataUnavailableException(MetadataFailureCategory.PACING_BUDGET); }
                     remaining-=chunk; waited+=chunk;
                 }
             }

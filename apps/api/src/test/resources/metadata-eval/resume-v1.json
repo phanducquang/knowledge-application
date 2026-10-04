@@ -1,0 +1,159 @@
+{
+  "identity": {
+    "reportVersion": "metadata-report-v1",
+    "metricsVersion": "metadata-metrics-v1",
+    "corpusVersion": "metadata-eval-v1",
+    "corpusFingerprint": "9f64eb96cf6b55b4ef62261ae755dff4a7b9895c5dec36c5bc8a1e4124b7d1db",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "sdkVersion": "1.75.0",
+    "promptVersion": "metadata-prompt-v1",
+    "promptFingerprint": "e9dc6c7eb1cf12a937ed973ce6b7fe625a26c9b42efdd25e992fa706f8ed204c",
+    "schemaVersion": "metadata-schema-v1",
+    "schemaFingerprint": "7d8011c4a1400732e4e3fd693a8472326232cfd6a790fb5ce8ed4cabf3d20597",
+    "inputStrategyVersion": "prefix-32000-v1",
+    "contentLimit": 32000,
+    "summaryLimit": 500,
+    "tagCountLimit": 5,
+    "tagLengthLimit": 50,
+    "maxOutputTokens": 600,
+    "evaluatedAt": "1970-01-01T00:00:00Z"
+  },
+  "status": "INCOMPLETE",
+  "failure": null,
+  "usage": {
+    "plannedCases": 20,
+    "validOutputs": 1,
+    "providerRequests": 0
+  },
+  "metrics": null,
+  "groups": {},
+  "cases": [
+    {
+      "id": "spring-health",
+      "title": "Spring Boot health in a synthetic lab",
+      "language": "en",
+      "category": "Spring Boot",
+      "lengthGroup": "short",
+      "position": "early-important-facts",
+      "fullContentChars": 299,
+      "visibleContentChars": 299,
+      "truncated": false,
+      "status": "VALID",
+      "latencyMs": null,
+      "estimatedInputTokens": 599,
+      "suggestion": {
+        "summary": "health endpoint; readiness; private; automatic restart",
+        "tags": [
+          "Actuator",
+          "Readiness Probe",
+          "Software"
+        ]
+      },
+      "metrics": {
+        "precision": 0.6666666666666666,
+        "recall": 1,
+        "f1": 0.8,
+        "visiblePrecision": 0.6666666666666666,
+        "visibleRecall": 1,
+        "visibleF1": 0.8,
+        "genericTagRate": 0.3333333333333333,
+        "forbiddenTagCount": 0,
+        "suggestedTagCount": 3,
+        "requiredConceptCoverage": 1,
+        "visibleConceptCoverage": 1,
+        "expectedCoverageCeiling": 1,
+        "forbiddenClaimCount": 1,
+        "summaryChars": 54,
+        "summaryWords": 6,
+        "conceptsPer100Chars": 5.555555555555555,
+        "expectedNewTags": [
+          "Actuator",
+          "Readiness Probe"
+        ],
+        "visibleExpectedTags": [
+          "Actuator",
+          "Readiness Probe"
+        ],
+        "invisibleExpectedTags": [],
+        "observedTags": [
+          "Actuator",
+          "Readiness Probe"
+        ],
+        "requiredConcepts": [
+          "health",
+          "readiness",
+          "private-management"
+        ],
+        "visibleConcepts": [
+          "health",
+          "readiness",
+          "private-management"
+        ],
+        "invisibleConcepts": [],
+        "observedConcepts": [
+          "health",
+          "readiness",
+          "private-management"
+        ],
+        "flaggedClaims": [
+          "automatic restart"
+        ],
+        "flaggedTags": []
+      },
+      "conceptGroundTruth": [
+        {
+          "id": "health",
+          "phrases": [
+            "health endpoint",
+            "health probe",
+            "health check"
+          ],
+          "evidence": "health endpoint"
+        },
+        {
+          "id": "readiness",
+          "phrases": [
+            "readiness",
+            "accept traffic"
+          ],
+          "evidence": "readiness probe"
+        },
+        {
+          "id": "private-management",
+          "phrases": [
+            "private",
+            "restricted"
+          ],
+          "evidence": "management endpoints private"
+        }
+      ],
+      "tagGroundTruth": [
+        {
+          "canonical": "Spring Boot",
+          "aliases": [],
+          "evidence": "Spring Boot"
+        },
+        {
+          "canonical": "Actuator",
+          "aliases": [
+            "Spring Boot Actuator"
+          ],
+          "evidence": "Actuator"
+        },
+        {
+          "canonical": "Readiness Probe",
+          "aliases": [
+            "Readiness",
+            "Health Check"
+          ],
+          "evidence": "readiness probe"
+        }
+      ],
+      "existingTags": [
+        "Spring Boot"
+      ],
+      "rationale": "Existing Spring Boot is excluded from new-tag recall; no automatic restart is specified."
+    }
+  ]
+}

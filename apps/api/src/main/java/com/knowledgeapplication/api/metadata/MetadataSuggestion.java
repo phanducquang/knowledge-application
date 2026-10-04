@@ -9,16 +9,16 @@ public record MetadataSuggestion(String summary, List<String> tags) {
     public MetadataSuggestion validated(List<String> existingTags) {
         if (summary==null || summary.isBlank() || summary.length()>MAX_SUMMARY || tags==null || tags.size()>MAX_TAGS
                 || summary.codePoints().anyMatch(c -> Character.isISOControl(c) && c!='\n' && c!='\r' && c!='\t'))
-            throw new MetadataUnavailableException(false);
+            throw new MetadataUnavailableException(MetadataFailureCategory.OUTPUT_VALIDATION);
         var existing=new HashSet<String>();
         existingTags.forEach(t -> existing.add(MetadataNameNormalizer.key(MetadataNameNormalizer.tagDisplayName(t))));
         var normalized=new LinkedHashMap<String,String>();
         for (String tag:tags) {
             if (tag==null || tag.isBlank() || tag.length()>MAX_TAG_LENGTH || tag.codePoints().anyMatch(Character::isISOControl))
-                throw new MetadataUnavailableException(false);
+                throw new MetadataUnavailableException(MetadataFailureCategory.OUTPUT_VALIDATION);
             String name;
             try { name=MetadataNameNormalizer.tagDisplayName(tag); }
-            catch (IllegalArgumentException ex) { throw new MetadataUnavailableException(false); }
+            catch (IllegalArgumentException ex) { throw new MetadataUnavailableException(MetadataFailureCategory.OUTPUT_VALIDATION); }
             String key=MetadataNameNormalizer.key(name);
             if (!existing.contains(key)) normalized.putIfAbsent(key,name);
         }
