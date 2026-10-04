@@ -1,0 +1,61 @@
+{
+  "identity": {
+    "reportVersion": "metadata-report-v1",
+    "metricsVersion": "metadata-metrics-v1",
+    "corpusVersion": "metadata-eval-v1",
+    "corpusFingerprint": "9f64eb96cf6b55b4ef62261ae755dff4a7b9895c5dec36c5bc8a1e4124b7d1db",
+    "provider": "gemini",
+    "model": "gemini-3.5-flash-lite",
+    "sdkVersion": "1.75.0",
+    "promptVersion": "metadata-prompt-v1",
+    "promptFingerprint": "e9dc6c7eb1cf12a937ed973ce6b7fe625a26c9b42efdd25e992fa706f8ed204c",
+    "schemaVersion": "metadata-schema-v1",
+    "schemaFingerprint": "7d8011c4a1400732e4e3fd693a8472326232cfd6a790fb5ce8ed4cabf3d20597",
+    "inputStrategyVersion": "prefix-32000-v1",
+    "contentLimit": 32000,
+    "summaryLimit": 500,
+    "tagCountLimit": 5,
+    "tagLengthLimit": 50,
+    "maxOutputTokens": 600,
+    "evaluatedAt": "2026-10-04T11:49:28.410645Z"
+  },
+  "status": "INCOMPLETE",
+  "failure": "Provider, quota, invalid output or pacing failure; stopped without retries.",
+  "usage": {
+    "plannedCases": 20,
+    "attemptedCases": 18,
+    "validOutputs": 17,
+    "providerRequests": 18,
+    "fakeCalls": 0,
+    "plannedEstimatedInputTokens": 66027,
+    "attemptedEstimatedInputTokens": 39071,
+    "validStructuredOutputRate": 0.9444444444444444,
+    "durationMs": 33873.589031
+  },
+  "metrics": null,
+  "completedCaseIds": [
+    "spring-health",
+    "webclient-vi",
+    "netty-pool",
+    "postgres-index",
+    "pgvector",
+    "redis-vi",
+    "kafka",
+    "nginx",
+    "docker-vi",
+    "kubernetes",
+    "oidc",
+    "flyway",
+    "actions",
+    "minio",
+    "nextjs",
+    "testcontainers",
+    "long-early"
+  ],
+  "failedCaseId": "long-middle",
+  "unattemptedCaseIds": [
+    "long-late",
+    "long-early-late"
+  ],
+  "interpretation": "Incomplete attempt, not a full-corpus model-quality baseline. No automatic retry or human ratings. Generated outputs remain ignored."
+}

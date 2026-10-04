@@ -79,3 +79,34 @@ tasks.register('retrievalEvalLive', JavaExec) {
         }
     }
 }
+
+tasks.register('metadataEval', JavaExec) {
+    description = 'Deterministic synthetic summary/tag benchmark; no credentials or provider calls.'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.knowledgeapplication.api.metadata.eval.MetadataEvalMain'
+    environment 'GEMINI_API_KEY', ''
+    environment 'GOOGLE_API_KEY', ''
+    environment 'AI_METADATA_ENABLED', 'false'
+    systemProperty 'app.gemini.api-key', ''
+    systemProperty 'app.ai.metadata.enabled', 'false'
+    systemProperty 'metadata.eval.report-directory', layout.buildDirectory.dir('reports/metadata-eval').get().asFile.absolutePath
+    outputs.upToDateWhen { false }
+}
+
+// Manual JavaExec only: NEVER wired into test/check/build/CI.
+tasks.register('metadataEvalLive', JavaExec) {
+    description = 'Explicit opt-in, bounded synthetic Gemini metadata evaluation using the production adapter.'
+    group = 'verification'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.knowledgeapplication.api.metadata.eval.MetadataEvalLiveMain'
+    systemProperty 'metadata.eval.live-task', 'true'
+    systemProperty 'metadata.eval.report-directory', layout.buildDirectory.dir('reports/metadata-eval').get().asFile.absolutePath
+    doFirst {
+        if (System.getenv('METADATA_EVAL_LIVE') != 'true') {
+            throw new GradleException('Manual evaluation requires METADATA_EVAL_LIVE=true; no provider calls made.')
+        }
+    }
+}

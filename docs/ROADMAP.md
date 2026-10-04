@@ -91,7 +91,10 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - Manual Live Gemini Retrieval Evaluation — complete for the synthetic corpus: one approved `gemini-embedding-2`/768 run, 28 notes/55 chunks/60 queries, eight native embedding requests, bounded quota pacing and twelve vector-reusing retrieval variants; no generation/CI execution/production tuning
 - focused long-note supporting-chunk selection/context-cost evaluation — deferred; separate review before tuning/additional live requests
 - AI metadata suggestions — complete for explicit Summary/new-Tag suggestions on existing owner notes, preview/apply via ordinary autosave, structured JSON and independent quotas; no background enrichment
-- summary/tag usefulness evaluation — recommended next on a curated representative corpus, with separate privacy/live-call approval
+- Metadata Suggestion Quality Evaluation tooling — complete for 20 synthetic notes, deterministic offline metrics, versioned reports/human rubric and bounded opt-in live mode; one approved attempt stopped after 17 valid outputs/18 attempts, so **full synthetic live baseline is INCOMPLETE**, not complete ([evidence](METADATA_EVALUATION.md))
+- real/private-corpus metadata quality — not evaluated
+- next metadata evaluation direction — safely diagnose the failed provider/quota/output boundary and separately approve a complete baseline run with the frozen corpus/contract; no automatic rerun or quality tuning
+- prompt/input strategy tuning — future, only after adequate evidence and separate review
 - automatic/background tagging/summarization — future, separate explicit opt-in review required
 
 Exact scroll-to-chunk/heading-aware source jumps remain deferred until Reading has a reliable deterministic anchor contract. Grounding evaluation and evidence-to-claim correctness remain explicit limitations, not claims of factual proof.

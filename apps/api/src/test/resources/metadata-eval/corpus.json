@@ -1,0 +1,1448 @@
+{
+  "version": "metadata-eval-v1",
+  "genericTags": [
+    "Programming",
+    "Software",
+    "Technology",
+    "Development",
+    "Lập trình",
+    "Công nghệ"
+  ],
+  "fixtures": [
+    {
+      "id": "spring-health",
+      "title": "Spring Boot health in a synthetic lab",
+      "summary": null,
+      "content": "# Health probe\n\nThe lab uses Spring Boot Actuator. Expose the health endpoint for a readiness probe. The probe checks whether the service can accept traffic; it does not restart the process. Keep other management endpoints private.\n\n```properties\nmanagement.endpoints.web.exposure.include=health\n```",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [
+        "Spring Boot"
+      ],
+      "language": "en",
+      "category": "Spring Boot",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Spring Boot",
+          "aliases": [],
+          "evidence": "Spring Boot"
+        },
+        {
+          "canonical": "Actuator",
+          "aliases": [
+            "Spring Boot Actuator"
+          ],
+          "evidence": "Actuator"
+        },
+        {
+          "canonical": "Readiness Probe",
+          "aliases": [
+            "Readiness",
+            "Health Check"
+          ],
+          "evidence": "readiness probe"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "health",
+          "phrases": [
+            "health endpoint",
+            "health probe",
+            "health check"
+          ],
+          "evidence": "health endpoint"
+        },
+        {
+          "id": "readiness",
+          "phrases": [
+            "readiness",
+            "accept traffic"
+          ],
+          "evidence": "readiness probe"
+        },
+        {
+          "id": "private-management",
+          "phrases": [
+            "private",
+            "restricted"
+          ],
+          "evidence": "management endpoints private"
+        }
+      ],
+      "forbiddenClaims": [
+        "restarts automatically",
+        "automatic restart"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "MongoDB"
+      ],
+      "notes": "Existing Spring Boot is excluded from new-tag recall; no automatic restart is specified."
+    },
+    {
+      "id": "webclient-vi",
+      "title": "Timeout khi gọi upstream bằng WebClient",
+      "summary": "Ghi chú cấu hình timeout trong phòng lab.",
+      "content": "# WebClient\n\nWebClient dùng Reactor Netty trong bài thử này. Đặt connect timeout 1000 ms để giới hạn mở kết nối. Đặt response timeout 3 giây cho phản hồi upstream. ReadTimeoutException là lỗi quan sát được khi upstream chậm. Không có cấu hình retry trong ví dụ.\n\n```java\nHttpClient.create().responseTimeout(Duration.ofSeconds(3));\n```",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "mixed-technical",
+      "category": "WebClient",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "WebClient",
+          "aliases": [
+            "Spring WebClient"
+          ],
+          "evidence": "WebClient"
+        },
+        {
+          "canonical": "Reactor Netty",
+          "aliases": [
+            "Netty"
+          ],
+          "evidence": "Reactor Netty"
+        },
+        {
+          "canonical": "Timeout",
+          "aliases": [
+            "Timeouts"
+          ],
+          "evidence": "timeout"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "connect",
+          "phrases": [
+            "connect timeout",
+            "connection timeout",
+            "mở kết nối"
+          ],
+          "evidence": "connect timeout 1000 ms"
+        },
+        {
+          "id": "response",
+          "phrases": [
+            "response timeout",
+            "responseTimeout",
+            "phản hồi upstream"
+          ],
+          "evidence": "response timeout 3 giây"
+        },
+        {
+          "id": "exception",
+          "phrases": [
+            "ReadTimeoutException"
+          ],
+          "evidence": "ReadTimeoutException"
+        }
+      ],
+      "forbiddenClaims": [
+        "automatic retry",
+        "retries automatically",
+        "tự động retry",
+        "tự động thử lại"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "MongoDB"
+      ],
+      "notes": "Vietnamese prose must retain English timeout terms; negated retry mentions require human review."
+    },
+    {
+      "id": "netty-pool",
+      "title": "Reactor Netty connection pool saturation",
+      "summary": null,
+      "content": "# Pool lab\n\nA synthetic Reactor Netty load test has maxConnections=12 and pendingAcquireTimeout=2 seconds. When all connections are busy, a request waits in the pending queue. The pending acquire timeout bounds that wait, not the response duration. Measure queue depth before increasing maxConnections.\n\n```java\nConnectionProvider.builder(\"lab\").maxConnections(12);\n```",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [],
+      "language": "en",
+      "category": "Reactor Netty",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Reactor Netty",
+          "aliases": [
+            "Netty"
+          ],
+          "evidence": "Reactor Netty"
+        },
+        {
+          "canonical": "Connection Pool",
+          "aliases": [
+            "Connection Pooling"
+          ],
+          "evidence": "connections are busy"
+        },
+        {
+          "canonical": "Timeout",
+          "aliases": [
+            "Pending Acquire Timeout"
+          ],
+          "evidence": "pendingAcquireTimeout"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "pool-limit",
+          "phrases": [
+            "maxConnections",
+            "12 connections",
+            "pool limit"
+          ],
+          "evidence": "maxConnections=12"
+        },
+        {
+          "id": "queue-wait",
+          "phrases": [
+            "pending queue",
+            "queue",
+            "pending acquire",
+            "pendingAcquireTimeout"
+          ],
+          "evidence": "pending queue"
+        }
+      ],
+      "forbiddenClaims": [
+        "unlimited connections",
+        "automatically scales"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "Redis"
+      ],
+      "notes": "Distinguish pool acquisition from response timeout; medium synthetic appendix is deliberately irrelevant."
+    },
+    {
+      "id": "postgres-index",
+      "title": "Chỉ mục PostgreSQL cho truy vấn theo chủ sở hữu",
+      "summary": null,
+      "content": "# Thử nghiệm chỉ mục\n\nTrong lab PostgreSQL, truy vấn lọc owner_id và sắp xếp updated_at giảm dần. Dùng chỉ mục ghép (owner_id, updated_at DESC) để hỗ trợ đường đọc này. EXPLAIN ANALYZE cho thấy kế hoạch thực thi; cần so sánh trên cùng bộ dữ liệu tổng hợp. Chỉ mục không thay thế điều kiện phân quyền trong SQL.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [
+        "PostgreSQL"
+      ],
+      "language": "mixed-technical",
+      "category": "PostgreSQL",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "PostgreSQL",
+          "aliases": [
+            "Postgres"
+          ],
+          "evidence": "PostgreSQL"
+        },
+        {
+          "canonical": "Composite Index",
+          "aliases": [
+            "Chỉ mục ghép",
+            "Indexing"
+          ],
+          "evidence": "chỉ mục ghép"
+        },
+        {
+          "canonical": "EXPLAIN ANALYZE",
+          "aliases": [
+            "Query Plan"
+          ],
+          "evidence": "EXPLAIN ANALYZE"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "owner",
+          "phrases": [
+            "owner_id",
+            "chủ sở hữu"
+          ],
+          "evidence": "owner_id"
+        },
+        {
+          "id": "compound",
+          "phrases": [
+            "chỉ mục ghép",
+            "composite index"
+          ],
+          "evidence": "chỉ mục ghép"
+        },
+        {
+          "id": "explain",
+          "phrases": [
+            "EXPLAIN ANALYZE",
+            "kế hoạch thực thi"
+          ],
+          "evidence": "EXPLAIN ANALYZE"
+        }
+      ],
+      "forbiddenClaims": [
+        "eliminates authorization",
+        "không cần phân quyền"
+      ],
+      "forbiddenTags": [
+        "MongoDB",
+        "Elasticsearch"
+      ],
+      "notes": "Expected new tags exclude already persisted Postgres concept."
+    },
+    {
+      "id": "pgvector",
+      "title": "Exact cosine retrieval with pgvector",
+      "summary": null,
+      "content": "# Vector lab\n\nStore 768-dimensional vectors in pgvector. The exact cosine query filters owner and current model before ordering by cosine distance. Old incompatible vectors must be excluded. This example uses an exact scan and does not create an HNSW index.\n\n```sql\nORDER BY embedding <=> :query_vector\n```",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "en",
+      "category": "pgvector",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "pgvector",
+          "aliases": [],
+          "evidence": "pgvector"
+        },
+        {
+          "canonical": "Cosine Similarity",
+          "aliases": [
+            "Cosine Distance"
+          ],
+          "evidence": "cosine distance"
+        },
+        {
+          "canonical": "Vector Search",
+          "aliases": [
+            "Semantic Search"
+          ],
+          "evidence": "vectors"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "cosine",
+          "phrases": [
+            "cosine"
+          ],
+          "evidence": "cosine distance"
+        },
+        {
+          "id": "current-model",
+          "phrases": [
+            "current model",
+            "compatible",
+            "incompatible"
+          ],
+          "evidence": "current model"
+        },
+        {
+          "id": "owner",
+          "phrases": [
+            "owner"
+          ],
+          "evidence": "filters owner"
+        }
+      ],
+      "forbiddenClaims": [
+        "uses HNSW",
+        "HNSW index accelerates",
+        "approximate nearest neighbor index"
+      ],
+      "forbiddenTags": [
+        "HNSW",
+        "Kafka"
+      ],
+      "notes": "No approximate index is configured. Mentioning its absence is not automatically an unsupported claim."
+    },
+    {
+      "id": "redis-vi",
+      "title": "Bộ nhớ đệm và dữ liệu cũ",
+      "summary": null,
+      "content": "# Bộ nhớ đệm\n\nVí dụ tổng hợp dùng Redis lưu kết quả đọc trong 60 giây. Khi cập nhật bản ghi, xóa khóa tương ứng thay vì chờ hết hạn. TTL giới hạn thời gian dữ liệu cũ còn tồn tại nhưng không bảo đảm mọi lần đọc đều mới nhất. Không dùng Redis làm nguồn dữ liệu chính.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "vi",
+      "category": "Redis",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Redis",
+          "aliases": [],
+          "evidence": "Redis"
+        },
+        {
+          "canonical": "Cache Invalidation",
+          "aliases": [
+            "Vô hiệu hóa bộ nhớ đệm",
+            "Cache Eviction"
+          ],
+          "evidence": "xóa khóa tương ứng"
+        },
+        {
+          "canonical": "TTL",
+          "aliases": [
+            "Time To Live"
+          ],
+          "evidence": "TTL"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "expire",
+          "phrases": [
+            "60 giây",
+            "TTL",
+            "hết hạn"
+          ],
+          "evidence": "60 giây"
+        },
+        {
+          "id": "invalidate",
+          "phrases": [
+            "xóa khóa",
+            "vô hiệu hóa",
+            "cập nhật"
+          ],
+          "evidence": "xóa khóa tương ứng"
+        },
+        {
+          "id": "stale",
+          "phrases": [
+            "dữ liệu cũ",
+            "không bảo đảm",
+            "stale"
+          ],
+          "evidence": "dữ liệu cũ"
+        }
+      ],
+      "forbiddenClaims": [
+        "luôn mới nhất",
+        "zero stale reads",
+        "dữ liệu luôn nhất quán"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "pgvector"
+      ],
+      "notes": "Vietnamese summary, bounded stale window, no strong consistency guarantee."
+    },
+    {
+      "id": "kafka",
+      "title": "Kafka consumer offsets in a lab",
+      "summary": null,
+      "content": "# Consumer lab\n\nThe Kafka consumer processes a record before committing its offset. A crash between processing and commit can redeliver the record. Make the handler idempotent using a synthetic event identifier. This setup provides at-least-once delivery, not exactly-once side effects.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [],
+      "language": "en",
+      "category": "Kafka",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Kafka",
+          "aliases": [
+            "Apache Kafka"
+          ],
+          "evidence": "Kafka"
+        },
+        {
+          "canonical": "At Least Once",
+          "aliases": [
+            "At-Least-Once",
+            "At-least-once Delivery"
+          ],
+          "evidence": "at-least-once delivery"
+        },
+        {
+          "canonical": "Idempotency",
+          "aliases": [
+            "Idempotent Consumer"
+          ],
+          "evidence": "idempotent"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "offset",
+          "phrases": [
+            "offset",
+            "commit"
+          ],
+          "evidence": "committing its offset"
+        },
+        {
+          "id": "redelivery",
+          "phrases": [
+            "redeliver",
+            "at-least-once",
+            "duplicate"
+          ],
+          "evidence": "redeliver"
+        },
+        {
+          "id": "idempotent",
+          "phrases": [
+            "idempotent",
+            "idempotency"
+          ],
+          "evidence": "idempotent"
+        }
+      ],
+      "forbiddenClaims": [
+        "guarantees exactly-once side effects",
+        "no duplicate records"
+      ],
+      "forbiddenTags": [
+        "RabbitMQ",
+        "Redis"
+      ],
+      "notes": "A negated exactly-once contrast is valid; forbidden claims target positive guarantees."
+    },
+    {
+      "id": "nginx",
+      "title": "Nginx reverse proxy timeout boundaries",
+      "summary": null,
+      "content": "# Proxy lab\n\nNginx proxy_connect_timeout bounds establishing the upstream connection. proxy_read_timeout bounds gaps between reads, not the total response time. The synthetic upstream may stream for longer while sending bytes regularly. Keep the two settings distinct.\n\n```nginx\nproxy_connect_timeout 2s;\nproxy_read_timeout 10s;\n```",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "en",
+      "category": "Nginx",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Nginx",
+          "aliases": [],
+          "evidence": "Nginx"
+        },
+        {
+          "canonical": "Reverse Proxy",
+          "aliases": [
+            "Proxy"
+          ],
+          "evidence": "upstream connection"
+        },
+        {
+          "canonical": "Timeout",
+          "aliases": [
+            "Proxy Timeout"
+          ],
+          "evidence": "proxy_read_timeout"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "connect",
+          "phrases": [
+            "proxy_connect_timeout",
+            "connection",
+            "connect timeout"
+          ],
+          "evidence": "proxy_connect_timeout"
+        },
+        {
+          "id": "read-gap",
+          "phrases": [
+            "gaps between reads",
+            "between reads",
+            "read gaps",
+            "read timeout"
+          ],
+          "evidence": "gaps between reads"
+        }
+      ],
+      "forbiddenClaims": [
+        "limits total response time to 10",
+        "response must finish in 10"
+      ],
+      "forbiddenTags": [
+        "Apache HTTPD",
+        "Kafka"
+      ],
+      "notes": "Capture per-read gap semantics without inventing a total deadline."
+    },
+    {
+      "id": "docker-vi",
+      "title": "Tách dữ liệu khỏi vòng đời container",
+      "summary": null,
+      "content": "# Thử nghiệm container\n\nTrong ví dụ Docker, named volume giữ dữ liệu PostgreSQL khi tạo lại container. Xóa container không đồng nghĩa xóa volume. Lệnh docker compose down -v sẽ xóa volume của dự án, nên không dùng khi muốn giữ dữ liệu lab. Không có cơ chế sao lưu tự động trong ví dụ.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "vi",
+      "category": "Docker",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Docker",
+          "aliases": [],
+          "evidence": "Docker"
+        },
+        {
+          "canonical": "Docker Compose",
+          "aliases": [
+            "Compose"
+          ],
+          "evidence": "docker compose"
+        },
+        {
+          "canonical": "Volumes",
+          "aliases": [
+            "Docker Volume",
+            "Named Volume"
+          ],
+          "evidence": "named volume"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "volume",
+          "phrases": [
+            "volume"
+          ],
+          "evidence": "named volume"
+        },
+        {
+          "id": "recreate",
+          "phrases": [
+            "tạo lại",
+            "giữ dữ liệu",
+            "persist"
+          ],
+          "evidence": "tạo lại container"
+        },
+        {
+          "id": "delete",
+          "phrases": [
+            "down -v",
+            "xóa volume"
+          ],
+          "evidence": "down -v"
+        }
+      ],
+      "forbiddenClaims": [
+        "tự động sao lưu",
+        "automatic backup"
+      ],
+      "forbiddenTags": [
+        "Kubernetes",
+        "MinIO"
+      ],
+      "notes": "Vietnamese operational warning; no backup guarantee."
+    },
+    {
+      "id": "kubernetes",
+      "title": "Kubernetes readiness versus liveness",
+      "summary": null,
+      "content": "# Probe lab\n\nIn this Kubernetes deployment a failed readiness probe removes the pod from service endpoints. A failed liveness probe may restart its container. Startup probes protect a slow initialization period before liveness takes effect. Do not make a transient downstream dependency a liveness requirement.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [],
+      "language": "en",
+      "category": "Kubernetes",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Kubernetes",
+          "aliases": [
+            "K8s"
+          ],
+          "evidence": "Kubernetes"
+        },
+        {
+          "canonical": "Readiness Probe",
+          "aliases": [
+            "Readiness"
+          ],
+          "evidence": "readiness probe"
+        },
+        {
+          "canonical": "Liveness Probe",
+          "aliases": [
+            "Liveness",
+            "Health Probes"
+          ],
+          "evidence": "liveness probe"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "readiness",
+          "phrases": [
+            "readiness",
+            "endpoints"
+          ],
+          "evidence": "service endpoints"
+        },
+        {
+          "id": "liveness",
+          "phrases": [
+            "liveness",
+            "restart"
+          ],
+          "evidence": "liveness probe"
+        },
+        {
+          "id": "startup",
+          "phrases": [
+            "startup",
+            "initialization"
+          ],
+          "evidence": "Startup probes"
+        }
+      ],
+      "forbiddenClaims": [
+        "readiness restarts containers",
+        "readiness restarts the pod"
+      ],
+      "forbiddenTags": [
+        "Docker Compose",
+        "Kafka"
+      ],
+      "notes": "Separate three probe roles in a concise summary."
+    },
+    {
+      "id": "oidc",
+      "title": "OIDC đăng nhập với email allowlist",
+      "summary": null,
+      "content": "# Đăng nhập lab\n\nOIDC trả về danh tính đã xác minh. Backend kiểm tra email_verified và email trong allowlist trước khi cấp quyền owner. HttpOnly session cookie giữ phiên; CSRF token bảo vệ các mutation. UUID owner cấu hình không tự chứng minh danh tính. Không lưu access token trong localStorage.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [
+        "OIDC"
+      ],
+      "language": "mixed-technical",
+      "category": "OAuth/OIDC",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "OIDC",
+          "aliases": [
+            "OpenID Connect"
+          ],
+          "evidence": "OIDC"
+        },
+        {
+          "canonical": "CSRF",
+          "aliases": [
+            "CSRF Protection"
+          ],
+          "evidence": "CSRF token"
+        },
+        {
+          "canonical": "Session Cookie",
+          "aliases": [
+            "Session Authentication",
+            "HttpOnly"
+          ],
+          "evidence": "HttpOnly session cookie"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "verified",
+          "phrases": [
+            "email_verified",
+            "xác minh",
+            "verified email"
+          ],
+          "evidence": "email_verified"
+        },
+        {
+          "id": "allowlist",
+          "phrases": [
+            "allowlist"
+          ],
+          "evidence": "allowlist"
+        },
+        {
+          "id": "csrf",
+          "phrases": [
+            "CSRF"
+          ],
+          "evidence": "CSRF token"
+        }
+      ],
+      "forbiddenClaims": [
+        "token được lưu trong localStorage",
+        "stores access token in localStorage",
+        "UUID grants authentication"
+      ],
+      "forbiddenTags": [
+        "JWT Stateless",
+        "API Key Authentication"
+      ],
+      "notes": "Synthetic security workflow only; no actual user, email, token or cookie values."
+    },
+    {
+      "id": "flyway",
+      "title": "Forward-only Flyway migration discipline",
+      "summary": null,
+      "content": "# Migration lab\n\nFlyway checksums detect edits to applied migrations. Keep an applied V1 immutable and add V2 for a new column. Hibernate ddl-auto=validate checks mapping against the schema; it does not create tables. Test both fresh migration and upgrade paths on disposable PostgreSQL.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "en",
+      "category": "Flyway",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Flyway",
+          "aliases": [],
+          "evidence": "Flyway"
+        },
+        {
+          "canonical": "Database Migration",
+          "aliases": [
+            "Schema Migration",
+            "Migrations"
+          ],
+          "evidence": "migrations"
+        },
+        {
+          "canonical": "Hibernate",
+          "aliases": [
+            "JPA"
+          ],
+          "evidence": "Hibernate"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "immutable",
+          "phrases": [
+            "immutable",
+            "applied V1",
+            "forward-only"
+          ],
+          "evidence": "V1 immutable"
+        },
+        {
+          "id": "v2",
+          "phrases": [
+            "V2",
+            "new migration"
+          ],
+          "evidence": "add V2"
+        },
+        {
+          "id": "validate",
+          "phrases": [
+            "ddl-auto=validate",
+            "validate",
+            "validation"
+          ],
+          "evidence": "ddl-auto=validate"
+        }
+      ],
+      "forbiddenClaims": [
+        "edits applied V1",
+        "automatically creates tables"
+      ],
+      "forbiddenTags": [
+        "Liquibase",
+        "MongoDB"
+      ],
+      "notes": "No auto-DDL or rewrite of applied migrations."
+    },
+    {
+      "id": "actions",
+      "title": "GitHub Actions chạy Web và API độc lập",
+      "summary": null,
+      "content": "# CI lab\n\nGitHub Actions có hai job Web và API. Web dùng Node 22 để chạy npm test, lint và build. API dùng Java 17 cùng Gradle clean build; Docker runner hỗ trợ Testcontainers. Test thông thường dùng fake AI client, không gửi yêu cầu Gemini và không cần secret provider trong CI.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [],
+      "language": "mixed-technical",
+      "category": "GitHub Actions",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "GitHub Actions",
+          "aliases": [],
+          "evidence": "GitHub Actions"
+        },
+        {
+          "canonical": "CI",
+          "aliases": [
+            "Continuous Integration",
+            "CI/CD"
+          ],
+          "evidence": "CI"
+        },
+        {
+          "canonical": "Testcontainers",
+          "aliases": [],
+          "evidence": "Testcontainers"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "jobs",
+          "phrases": [
+            "Web và API",
+            "Web and API",
+            "hai job",
+            "two jobs"
+          ],
+          "evidence": "hai job Web và API"
+        },
+        {
+          "id": "offline",
+          "phrases": [
+            "fake",
+            "không gửi",
+            "offline",
+            "không cần secret"
+          ],
+          "evidence": "fake AI client"
+        },
+        {
+          "id": "container",
+          "phrases": [
+            "Testcontainers",
+            "Docker"
+          ],
+          "evidence": "Testcontainers"
+        }
+      ],
+      "forbiddenClaims": [
+        "live Gemini trong CI",
+        "CI calls Gemini",
+        "provider secrets required"
+      ],
+      "forbiddenTags": [
+        "Jenkins",
+        "CircleCI"
+      ],
+      "notes": "Offline AI validation and independent application jobs."
+    },
+    {
+      "id": "minio",
+      "title": "Private MinIO images with S3-compatible delivery",
+      "summary": null,
+      "content": "# Storage lab\n\nMinIO provides an S3-compatible private bucket. Store stable attachment references in Markdown, not public object URLs. The application authorizes the parent note before streaming image bytes. A retained revision reference protects the image from orphan cleanup. This sample uploads only synthetic PNG bytes.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [
+        "MinIO"
+      ],
+      "language": "en",
+      "category": "MinIO/S3",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "MinIO",
+          "aliases": [],
+          "evidence": "MinIO"
+        },
+        {
+          "canonical": "S3",
+          "aliases": [
+            "S3-Compatible",
+            "Object Storage"
+          ],
+          "evidence": "S3-compatible"
+        },
+        {
+          "canonical": "Attachment Lifecycle",
+          "aliases": [
+            "Orphan Cleanup",
+            "Revision-safe Cleanup"
+          ],
+          "evidence": "orphan cleanup"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "private",
+          "phrases": [
+            "private bucket",
+            "private"
+          ],
+          "evidence": "private bucket"
+        },
+        {
+          "id": "authorize",
+          "phrases": [
+            "authoriz",
+            "parent note",
+            "access-scoped"
+          ],
+          "evidence": "authorizes the parent note"
+        },
+        {
+          "id": "revision",
+          "phrases": [
+            "revision",
+            "retained"
+          ],
+          "evidence": "retained revision reference"
+        }
+      ],
+      "forbiddenClaims": [
+        "public bucket",
+        "permanent public URLs"
+      ],
+      "forbiddenTags": [
+        "CDN",
+        "Redis"
+      ],
+      "notes": "No real image/object key/provider URL in synthetic data."
+    },
+    {
+      "id": "nextjs",
+      "title": "Next.js gọi backend từ server",
+      "summary": null,
+      "content": "# Transport lab\n\nNext.js Server Components đọc dữ liệu qua server-only client. Cookie phiên được forward tới backend; browser chỉ gọi same-origin BFF cho mutation. Dùng cache: no-store để dữ liệu owner không thành static artifact. Backend URL không dùng biến NEXT_PUBLIC. Backend vẫn là nơi kiểm tra quyền.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 0,
+      "existingTags": [],
+      "language": "mixed-technical",
+      "category": "Next.js",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Next.js",
+          "aliases": [
+            "NextJS"
+          ],
+          "evidence": "Next.js"
+        },
+        {
+          "canonical": "BFF",
+          "aliases": [
+            "Backend For Frontend"
+          ],
+          "evidence": "BFF"
+        },
+        {
+          "canonical": "Server Components",
+          "aliases": [
+            "React Server Components"
+          ],
+          "evidence": "Server Components"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "server",
+          "phrases": [
+            "server-only",
+            "Server Components",
+            "server"
+          ],
+          "evidence": "server-only client"
+        },
+        {
+          "id": "cache",
+          "phrases": [
+            "no-store",
+            "không cache",
+            "cache"
+          ],
+          "evidence": "no-store"
+        },
+        {
+          "id": "auth",
+          "phrases": [
+            "kiểm tra quyền",
+            "backend",
+            "authorization"
+          ],
+          "evidence": "kiểm tra quyền"
+        }
+      ],
+      "forbiddenClaims": [
+        "API key ở browser",
+        "public backend credentials",
+        "static owner cache"
+      ],
+      "forbiddenTags": [
+        "Angular",
+        "Vue"
+      ],
+      "notes": "No actual URL/cookie; source language is Vietnamese with technical English."
+    },
+    {
+      "id": "testcontainers",
+      "title": "Isolated PostgreSQL tests with Testcontainers",
+      "summary": null,
+      "content": "# Integration lab\n\nTestcontainers starts disposable PostgreSQL for integration tests. Flyway applies the same schema as the application. Assert persisted rows rather than mocking the repository. Stop the container after the suite. Use fake provider outputs so normal tests never call external AI services.",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 900,
+      "existingTags": [],
+      "language": "en",
+      "category": "Testcontainers",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Testcontainers",
+          "aliases": [],
+          "evidence": "Testcontainers"
+        },
+        {
+          "canonical": "PostgreSQL",
+          "aliases": [
+            "Postgres"
+          ],
+          "evidence": "PostgreSQL"
+        },
+        {
+          "canonical": "Integration Testing",
+          "aliases": [
+            "Integration Tests"
+          ],
+          "evidence": "integration tests"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "disposable",
+          "phrases": [
+            "disposable",
+            "isolated",
+            "container"
+          ],
+          "evidence": "disposable PostgreSQL"
+        },
+        {
+          "id": "schema",
+          "phrases": [
+            "Flyway",
+            "schema"
+          ],
+          "evidence": "Flyway"
+        },
+        {
+          "id": "offline",
+          "phrases": [
+            "fake",
+            "never call external",
+            "offline"
+          ],
+          "evidence": "fake provider outputs"
+        }
+      ],
+      "forbiddenClaims": [
+        "connects to production database",
+        "requires live Gemini"
+      ],
+      "forbiddenTags": [
+        "H2",
+        "SQLite"
+      ],
+      "notes": "Real DB persistence versus mocked provider; medium length."
+    },
+    {
+      "id": "long-early",
+      "title": "Long synthetic pool runbook",
+      "summary": null,
+      "content": "# Decisions near the beginning\n\nReactor Netty uses a connection pool capped at 12. pendingAcquireTimeout limits waiting for a free connection. Queue depth is the metric to inspect before raising the pool cap.\n",
+      "lateContent": "",
+      "paddingBeforeLate": 0,
+      "paddingAfter": 42000,
+      "existingTags": [],
+      "language": "en",
+      "category": "Reactor Netty",
+      "position": "early-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Reactor Netty",
+          "aliases": [
+            "Netty"
+          ],
+          "evidence": "Reactor Netty"
+        },
+        {
+          "canonical": "Connection Pool",
+          "aliases": [
+            "Connection Pooling"
+          ],
+          "evidence": "connection pool"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "pool",
+          "phrases": [
+            "connection pool",
+            "pool cap",
+            "12"
+          ],
+          "evidence": "connection pool capped at 12"
+        },
+        {
+          "id": "wait",
+          "phrases": [
+            "pendingAcquireTimeout",
+            "waiting",
+            "acquire"
+          ],
+          "evidence": "pendingAcquireTimeout"
+        },
+        {
+          "id": "queue",
+          "phrases": [
+            "queue depth",
+            "queue"
+          ],
+          "evidence": "Queue depth"
+        }
+      ],
+      "forbiddenClaims": [
+        "unlimited pool",
+        "automatic retries"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "MongoDB"
+      ],
+      "notes": "Long note with all crucial facts before cutoff; repeated background appendix is synthetic, not private data."
+    },
+    {
+      "id": "long-middle",
+      "title": "Sổ tay vận hành tổng hợp dài",
+      "summary": null,
+      "content": "# Phần mở đầu\n\nTài liệu lab gồm nhật ký tham khảo và quyết định ở phần giữa.\n",
+      "lateContent": "\n## Quyết định ở phần giữa\n\nPostgreSQL dùng chỉ mục ghép owner_id và updated_at. EXPLAIN ANALYZE so sánh kế hoạch đọc trước và sau thay đổi. Không bỏ điều kiện owner trong truy vấn.\n",
+      "paddingBeforeLate": 18000,
+      "paddingAfter": 23000,
+      "existingTags": [],
+      "language": "mixed-technical",
+      "category": "PostgreSQL",
+      "position": "middle-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "PostgreSQL",
+          "aliases": [
+            "Postgres"
+          ],
+          "evidence": "PostgreSQL"
+        },
+        {
+          "canonical": "Composite Index",
+          "aliases": [
+            "Chỉ mục ghép",
+            "Indexing"
+          ],
+          "evidence": "chỉ mục ghép"
+        },
+        {
+          "canonical": "EXPLAIN ANALYZE",
+          "aliases": [
+            "Query Plan"
+          ],
+          "evidence": "EXPLAIN ANALYZE"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "index",
+          "phrases": [
+            "chỉ mục ghép",
+            "composite index"
+          ],
+          "evidence": "chỉ mục ghép owner_id"
+        },
+        {
+          "id": "plan",
+          "phrases": [
+            "EXPLAIN ANALYZE",
+            "kế hoạch"
+          ],
+          "evidence": "EXPLAIN ANALYZE"
+        },
+        {
+          "id": "owner",
+          "phrases": [
+            "owner",
+            "chủ sở hữu"
+          ],
+          "evidence": "điều kiện owner"
+        }
+      ],
+      "forbiddenClaims": [
+        "tự động tăng tốc mọi truy vấn",
+        "eliminates authorization"
+      ],
+      "forbiddenTags": [
+        "MongoDB",
+        "Elasticsearch"
+      ],
+      "notes": "Important facts near character 18000 are visible; repeated background appendix preserves Vietnamese prose with English technical terms."
+    },
+    {
+      "id": "long-late",
+      "title": "Long synthetic operations notebook",
+      "summary": null,
+      "content": "# Background notebook\n\nThe decisive design is recorded at the end, after the repeated lab checklist.\n",
+      "lateContent": "\n## Final decision\n\nUse Kafka with at-least-once delivery. Commit the offset after processing. The idempotent handler tolerates a redelivered event.\n",
+      "paddingBeforeLate": 34000,
+      "paddingAfter": 7000,
+      "existingTags": [],
+      "language": "en",
+      "category": "Kafka",
+      "position": "after-32k-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "Kafka",
+          "aliases": [
+            "Apache Kafka"
+          ],
+          "evidence": "Use Kafka"
+        },
+        {
+          "canonical": "Idempotency",
+          "aliases": [
+            "Idempotent Consumer"
+          ],
+          "evidence": "idempotent handler"
+        },
+        {
+          "canonical": "At Least Once",
+          "aliases": [
+            "At-Least-Once",
+            "At-least-once Delivery"
+          ],
+          "evidence": "at-least-once delivery"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "kafka",
+          "phrases": [
+            "Kafka"
+          ],
+          "evidence": "Use Kafka"
+        },
+        {
+          "id": "delivery",
+          "phrases": [
+            "at-least-once",
+            "redeliver"
+          ],
+          "evidence": "at-least-once delivery"
+        },
+        {
+          "id": "idempotent",
+          "phrases": [
+            "idempotent",
+            "idempotency"
+          ],
+          "evidence": "idempotent handler"
+        }
+      ],
+      "forbiddenClaims": [
+        "guarantees exactly-once",
+        "no duplicate events"
+      ],
+      "forbiddenTags": [
+        "RabbitMQ",
+        "MongoDB"
+      ],
+      "notes": "All specific ground truth is invisible beyond 34000; visible-only recall is not applicable, not zero. Missing it is an input limitation."
+    },
+    {
+      "id": "long-early-late",
+      "title": "Ghi chú dài tổng hợp cho phòng lab",
+      "summary": null,
+      "content": "# Quyết định đầu\n\nWebClient gọi upstream với response timeout 3 giây. Nếu upstream chậm, ghi nhận timeout để phân tích.\n",
+      "lateContent": "\n## Quyết định cuối\n\nBổ sung Circuit Breaker với Resilience4j để ngắt lời gọi khi tỷ lệ lỗi vượt ngưỡng. Phần này là quyết định riêng, không được suy ra từ timeout ở đầu tài liệu.\n",
+      "paddingBeforeLate": 34000,
+      "paddingAfter": 7000,
+      "existingTags": [
+        "WebClient"
+      ],
+      "language": "mixed-technical",
+      "category": "WebClient",
+      "position": "early-and-late-important-facts",
+      "expectedTags": [
+        {
+          "canonical": "WebClient",
+          "aliases": [
+            "Spring WebClient"
+          ],
+          "evidence": "WebClient"
+        },
+        {
+          "canonical": "Timeout",
+          "aliases": [
+            "Response Timeout"
+          ],
+          "evidence": "response timeout"
+        },
+        {
+          "canonical": "Circuit Breaker",
+          "aliases": [
+            "Circuit Breaking"
+          ],
+          "evidence": "Circuit Breaker"
+        },
+        {
+          "canonical": "Resilience4j",
+          "aliases": [],
+          "evidence": "Resilience4j"
+        }
+      ],
+      "concepts": [
+        {
+          "id": "timeout",
+          "phrases": [
+            "response timeout",
+            "timeout",
+            "3 giây"
+          ],
+          "evidence": "response timeout 3 giây"
+        },
+        {
+          "id": "breaker",
+          "phrases": [
+            "Circuit Breaker",
+            "ngắt lời gọi"
+          ],
+          "evidence": "Circuit Breaker"
+        },
+        {
+          "id": "library",
+          "phrases": [
+            "Resilience4j"
+          ],
+          "evidence": "Resilience4j"
+        }
+      ],
+      "forbiddenClaims": [
+        "automatic retry",
+        "tự động retry"
+      ],
+      "forbiddenTags": [
+        "Kafka",
+        "Redis"
+      ],
+      "notes": "Visible timeout versus invisible late circuit breaker; existing WebClient removed from new-tag denominator."
+    }
+  ]
+}

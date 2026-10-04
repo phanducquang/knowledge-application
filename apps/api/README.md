@@ -12,6 +12,12 @@ curl -X POST http://localhost:8080/api/knowledge/1/ai/metadata-suggestions \
   -H 'X-CSRF-TOKEN: <token-from-api-auth-csrf>'
 ```
 
+## Metadata quality benchmark
+
+Run `./gradlew metadataEval` for 20 deterministic synthetic cases, zero Gemini calls; ignored reports are under `build/reports/metadata-eval`. A separately approved manual run uses `METADATA_EVAL_LIVE=true ./gradlew metadataEvalLive`, the existing secure Gemini configuration/current `AI_METADATA_MODEL` and the production adapter/input preparation. Hard request/token budgets, isolated persistent PostgreSQL metadata quotas, fail-stop/no-retry behavior, versioned identity and visible-versus-full ground truth keep comparisons reusable. Never wire live evaluation into CI; preserve reports before `clean`. [Corpus, metrics, privacy, human review and baseline](../../docs/METADATA_EVALUATION.md).
+
+One approved live attempt: **17 valid outputs/18 attempts**, 39071 estimated input tokens, stopped at `long-middle`. Full 20-case baseline remains **INCOMPLETE**; no retry, no tuning, separate approval needed before further live work. Normal validation: 408 API tests/97 Web tests, lint/build and offline evaluation pass, zero external Gemini calls.
+
 ## Requirements
 
 - Java 17

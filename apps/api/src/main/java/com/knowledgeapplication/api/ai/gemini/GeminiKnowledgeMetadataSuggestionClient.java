@@ -36,6 +36,19 @@ public class GeminiKnowledgeMetadataSuggestionClient implements KnowledgeMetadat
                 "tags",Map.of("type","array","maxItems",MetadataSuggestion.MAX_TAGS,"items",
                         Map.of("type","string","minLength",1,"maxLength",MetadataSuggestion.MAX_TAG_LENGTH))));
     }
+    /** Same serialized input + system instructions + schema overhead used by quota reservation. */
+    public static long estimatedInputChars(Request request) {
+        return (long)INSTRUCTIONS.length()+JSON.writeValueAsString(request).length()+JSON.writeValueAsString(schema()).length();
+    }
+    public static String promptFingerprint() { return fingerprint(INSTRUCTIONS); }
+    public static String schemaFingerprint() {
+        return fingerprint(JsonMapper.builder().enable(tools.jackson.databind.SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
+                .build().writeValueAsString(schema()));
+    }
+    private static String fingerprint(String text) {
+        try { return HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(text.getBytes(java.nio.charset.StandardCharsets.UTF_8))); }
+        catch (java.security.NoSuchAlgorithmException ex) { throw new IllegalStateException("SHA-256 unavailable"); }
+    }
     static MetadataSuggestion parse(String text) {
         if (text==null || text.isBlank() || text.length()>8192) throw new MetadataUnavailableException(false);
         var root=JSON.readTree(text);
@@ -56,7 +69,7 @@ public class GeminiKnowledgeMetadataSuggestionClient implements KnowledgeMetadat
                     || request.currentTags().stream().anyMatch(t -> t==null || t.length()>50)) throw new MetadataUnavailableException(false);
             String data=JSON.writeValueAsString(request);
             if (!limiter.reserve(AiQuotaLimiter.Purpose.METADATA,properties.quota(),
-                    (long)INSTRUCTIONS.length()+data.length()+JSON.writeValueAsString(schema()).length())) throw new MetadataUnavailableException(false);
+                    estimatedInputChars(request))) throw new MetadataUnavailableException(false);
             var response=client.models.generateContent(properties.model(),Content.fromParts(Part.fromText(data)),
                     GenerateContentConfig.builder().systemInstruction(Content.fromParts(Part.fromText(INSTRUCTIONS)))
                             .responseMimeType("application/json").responseJsonSchema(schema()).candidateCount(1)

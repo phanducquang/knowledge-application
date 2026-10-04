@@ -75,6 +75,8 @@ Initial product scope should stay small: knowledge authoring, organization, sear
 
 Explicit owner-only AI Summary/Tag suggestions are implemented in Edit: save current edits, request once, review, then apply through existing autosave. Independently disabled by default, with native structured Gemini output, persistent metadata quotas and no background generation. [Contract/privacy/configuration](docs/AI_METADATA_SUGGESTIONS.md).
 
+Synthetic summary/tag quality tooling provides deterministic offline `./gradlew metadataEval` and separately gated, bounded `metadataEvalLive`, with full-note/visible-prefix metrics and blank human-review rubrics. The one approved live attempt stopped after 17 valid cases; a full synthetic baseline remains pending, with no automatic rerun. Normal tests/builds stay Gemini-offline; no automatic metadata or production tuning. [Benchmark and run evidence](docs/METADATA_EVALUATION.md).
+
 Read these before implementing features:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
