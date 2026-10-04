@@ -16,15 +16,23 @@ record RetrievalCorpus(String version, String description, List<Note> notes, Lis
             throw new IllegalArgumentException("Exactly one synthetic Markdown source is required");
         }
     }
-    record ChunkTruth(String slug, String marker) {}
+    record ChunkTruth(String slug, String marker, String position) {
+        ChunkTruth(String slug, String marker) { this(slug, marker, null); }
+    }
     record Query(String id, String query, String category, String language, String rationale,
             boolean negative, List<String> relevantKnowledge, List<ChunkTruth> relevantChunks) {}
     static RetrievalCorpus load() {
-        var mapper = JsonMapper.builder().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
-        var corpus = mapper.readValue(resource("corpus.json"), RetrievalCorpus.class);
+        return load("corpus.json");
+    }
+    static RetrievalCorpus load(String resourceName) {
+        var corpus = parse(resourceName);
         corpus.validate(new MarkdownChunker(4000, 200));
         return corpus;
+    }
+    static RetrievalCorpus parse(String resourceName) {
+        var mapper = JsonMapper.builder().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION).build();
+        return mapper.readValue(resource(resourceName), RetrievalCorpus.class);
     }
     static String resource(String name) {
         try (var input = RetrievalCorpus.class.getResourceAsStream("/retrieval-eval/" + name)) {
@@ -63,8 +71,19 @@ record RetrievalCorpus(String version, String description, List<Note> notes, Lis
                         && truth.marker().matches("[a-z0-9]+(?:-[a-z0-9]+)*"), "Malformed expected chunk marker");
                 require(chunker.chunk(bySlug.get(truth.slug()).markdown()).stream()
                         .anyMatch(chunk -> chunk.text().contains("[eval:" + truth.marker() + "]")), "Unresolvable chunk marker");
+                if (truth.position() != null) {
+                    require(Set.of("early", "middle", "late").contains(truth.position()), "Invalid chunk-position declaration");
+                    var baseline = new MarkdownChunker(4000, 200).chunk(bySlug.get(truth.slug()).markdown());
+                    int index = baseline.stream().filter(c -> c.text().contains("[eval:" + truth.marker() + "]"))
+                            .findFirst().orElseThrow().index();
+                    require(position(index, baseline.size()).equals(truth.position()), "Chunk-position declaration differs from baseline anchor");
+                }
             }
         }
+    }
+    static String position(int index, int count) {
+        if (count < 1 || index < 0 || index >= count) throw new IllegalArgumentException("Invalid chunk position/count");
+        return List.of("early", "middle", "late").get(index * 3 / count);
     }
     private static void require(boolean valid, String message) { if (!valid) throw new IllegalArgumentException(message); }
 }

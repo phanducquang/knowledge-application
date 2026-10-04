@@ -21,6 +21,35 @@ final class RetrievalReportWriter {
         mode(text, "RAG CONTEXT (chunk positions; note AND chunk coverage, RR@8)", report.ragContext());
         Files.writeString(directory.resolve("report.txt"), text);
     }
+    static void writeMatrix(ChunkSelectionEvaluation.Report report, Path directory) throws IOException {
+        Files.createDirectories(directory);
+        Files.writeString(directory.resolve("chunk-selection-report.json"),JSON.writerWithDefaultPrettyPrinter().writeValueAsString(report));
+        var out = new StringBuilder("RAG CHUNK SELECTION — offline synthetic matrix\nProvider semantic quality NOT measured.\n");
+        out.append("Corpus: ").append(report.corpusVersion()).append(" notes=").append(report.noteCount()).append(" queries=").append(report.queryCount())
+                .append(" addedLongNotes=").append(report.addedLongNotes()).append(" declaredPositions=").append(report.declaredPositionCases()).append('\n');
+        out.append(report.policies()).append('\n').append("Decision: ").append(report.recommendation()).append('\n')
+                .append("BestObserved (Recall@8 then lowest raw context, NOT production choice): ").append(report.bestObserved()).append('\n');
+        out.append("BASELINE: ").append(report.baseline().name()).append("; all deltas use the SAME extended corpus\n")
+                .append("variant | Recall@1/3/5/8 | MRR@limit | noteRecall@8 | conditionalRecall@limit | noteHitChunkMiss | mean/p50/p95/max chars | diversity | chunkCount | delta\n");
+        for (var r : report.variants()) {
+            out.append(r.baseline()?"BASELINE ":"").append(r.name()).append(" | ").append(r.metrics().chunkMetrics().cutoffs().stream().map(k -> String.format(Locale.ROOT,"%.4f",k.recall())).toList())
+                    .append(" | ").append(r.metrics().chunkMetrics().reciprocalRank()).append(" | ").append(ChunkSelectionMetrics.recall(r.metrics().noteMetrics(),8))
+                    .append(" | ").append(r.diagnostics().supportingChunkRecallGivenRelevantNoteRetrieved()).append(" | ").append(r.diagnostics().noteHitChunkMissCount())
+                    .append(" | ").append(r.diagnostics().selectedCharacters()).append(" | ").append(r.metrics().meanDiversity())
+                    .append(" | ").append(r.indexingCost().chunkCount()).append(" | ").append(r.deltaFromBaseline()).append('\n');
+        }
+        for (var r : report.variants()) {
+            out.append("\n").append(r.name()).append("\nIndex cost: ").append(r.indexingCost()).append("\nDiagnostics: ").append(r.diagnostics()).append('\n');
+            r.byCategory().forEach((name,stats) -> summary(out,"category="+name,stats));
+            r.byLanguage().forEach((name,stats) -> summary(out,"language="+name,stats));
+            var playbook = r.cases().stream().filter(c -> c.query().id().equals("q-playbook")).findFirst().orElseThrow();
+            out.append("q-playbook ranked candidates: ").append(playbook.ranked()).append('\n');
+            for (var c : r.caseDiagnostics()) out.append(c.queryId()).append(" ").append(c.coverage()).append(" expected=").append(c.expected())
+                    .append(" missingNotes=").append(c.missingNotes()).append(" chars=").append(c.contextChars())
+                    .append(" assembledChars=").append(c.assembledContextChars()).append(" assembledMarkerRecall=").append(c.assembledMarkerRecall()).append('\n');
+        }
+        Files.writeString(directory.resolve("chunk-selection-report.txt"),out);
+    }
     private static void mode(StringBuilder out, String label, RetrievalEvaluation.Mode mode) {
         out.append('\n').append(label).append('\n');
         summary(out, "overall", mode.overall());

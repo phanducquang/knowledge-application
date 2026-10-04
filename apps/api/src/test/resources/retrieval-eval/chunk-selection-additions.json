@@ -1,0 +1,421 @@
+{
+  "version": "chunk-selection-v1",
+  "description": "Synthetic long-note additions, merged with immutable retrieval-eval-v1 for the bounded RAG matrix.",
+  "notes": [
+    {
+      "slug": "kubernetes-operations",
+      "title": "Kubernetes deployment operations",
+      "summary": "A synthetic six-section guide for deployment investigations.",
+      "language": "en",
+      "contentResource": "kubernetes-operations.md"
+    },
+    {
+      "slug": "postgres-performance",
+      "title": "PostgreSQL performance investigations",
+      "summary": "Six bounded investigations with synthetic SQL and no production data.",
+      "language": "en",
+      "contentResource": "postgres-performance.md"
+    },
+    {
+      "slug": "nginx-handbook",
+      "title": "Nginx reverse proxy operations",
+      "summary": "A synthetic handbook covering route and deadline boundaries.",
+      "language": "en",
+      "contentResource": "nginx-handbook.md"
+    },
+    {
+      "slug": "redis-strategy",
+      "title": "Redis cache operations strategy",
+      "summary": "A synthetic guide to bounded refresh and durable source behavior.",
+      "language": "en",
+      "contentResource": "redis-strategy.md"
+    }
+  ],
+  "queries": [
+    {
+      "id": "q-kubernetes-operations-early",
+      "query": "Kubernetes readiness probe admission",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the early section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "kubernetes-operations"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "kubernetes-operations",
+          "marker": "kubernetes-operations-admission",
+          "position": "early"
+        }
+      ]
+    },
+    {
+      "id": "q-kubernetes-operations-middle",
+      "query": "Kubernetes Docker rollout retry backoff",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the middle section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "kubernetes-operations"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "kubernetes-operations",
+          "marker": "kubernetes-operations-rollout",
+          "position": "middle"
+        }
+      ]
+    },
+    {
+      "id": "q-kubernetes-operations-late",
+      "query": "Kubernetes HTTP readiness drain timeout retry",
+      "category": "semantic_paraphrase",
+      "language": "en",
+      "rationale": "Supporting evidence in the late section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "kubernetes-operations"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "kubernetes-operations",
+          "marker": "kubernetes-operations-shutdown",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-kubernetes-operations-combined",
+      "query": "Kubernetes Docker image Java startup and Kubernetes HTTP readiness drain timeout retry",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Requires two separate supporting sections from the same long note, not just note identity.",
+      "negative": false,
+      "relevantKnowledge": [
+        "kubernetes-operations"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "kubernetes-operations",
+          "marker": "kubernetes-operations-image",
+          "position": "early"
+        },
+        {
+          "slug": "kubernetes-operations",
+          "marker": "kubernetes-operations-shutdown",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-postgres-performance-early",
+      "query": "PostgreSQL EXPLAIN Btree index ordered lookup",
+      "category": "code",
+      "language": "en",
+      "rationale": "Supporting evidence in the early section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "postgres-performance"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "postgres-performance",
+          "marker": "postgres-performance-plan",
+          "position": "early"
+        }
+      ]
+    },
+    {
+      "id": "q-postgres-performance-middle",
+      "query": "PostgreSQL lock concurrency timeout retry",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the middle section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "postgres-performance"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "postgres-performance",
+          "marker": "postgres-performance-locks",
+          "position": "middle"
+        }
+      ]
+    },
+    {
+      "id": "q-postgres-performance-late",
+      "query": "PostgreSQL index lock Java timeout retry maintenance",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the late section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "postgres-performance"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "postgres-performance",
+          "marker": "postgres-performance-maintenance",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-postgres-performance-combined",
+      "query": "PostgreSQL JSON index containment plan and PostgreSQL index lock Java timeout retry maintenance",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Requires two separate supporting sections from the same long note, not just note identity.",
+      "negative": false,
+      "relevantKnowledge": [
+        "postgres-performance"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "postgres-performance",
+          "marker": "postgres-performance-json",
+          "position": "early"
+        },
+        {
+          "slug": "postgres-performance",
+          "marker": "postgres-performance-maintenance",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-nginx-handbook-early",
+      "query": "Nginx proxy HTTP upstream forwarded route",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the early section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "nginx-handbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "nginx-handbook",
+          "marker": "nginx-handbook-route",
+          "position": "early"
+        }
+      ]
+    },
+    {
+      "id": "q-nginx-handbook-middle",
+      "query": "Nginx upstream timeout Java WebClient HTTP retry",
+      "category": "code",
+      "language": "en",
+      "rationale": "Supporting evidence in the middle section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "nginx-handbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "nginx-handbook",
+          "marker": "nginx-handbook-read",
+          "position": "middle"
+        }
+      ]
+    },
+    {
+      "id": "q-nginx-handbook-late",
+      "query": "Nginx proxy WebClient HTTP timeout retry exhaustion",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the late section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "nginx-handbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "nginx-handbook",
+          "marker": "nginx-handbook-failure",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-nginx-handbook-combined",
+      "query": "Nginx upstream proxy connect timeout and Nginx proxy WebClient HTTP timeout retry exhaustion",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Requires two separate supporting sections from the same long note, not just note identity.",
+      "negative": false,
+      "relevantKnowledge": [
+        "nginx-handbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "nginx-handbook",
+          "marker": "nginx-handbook-connect",
+          "position": "early"
+        },
+        {
+          "slug": "nginx-handbook",
+          "marker": "nginx-handbook-failure",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-redis-strategy-early",
+      "query": "Redis cache TTL expiration timeout",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the early section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "redis-strategy"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "redis-strategy",
+          "marker": "redis-strategy-ttl",
+          "position": "early"
+        }
+      ]
+    },
+    {
+      "id": "q-redis-strategy-middle",
+      "query": "Redis cache PostgreSQL EXPLAIN index timeout lock",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Supporting evidence in the middle section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "redis-strategy"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "redis-strategy",
+          "marker": "redis-strategy-source",
+          "position": "middle"
+        }
+      ]
+    },
+    {
+      "id": "q-redis-strategy-late",
+      "query": "Redis cache retry backoff concurrency quota exhaustion",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Supporting evidence in the late section of the six-section synthetic operations guide.",
+      "negative": false,
+      "relevantKnowledge": [
+        "redis-strategy"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "redis-strategy",
+          "marker": "redis-strategy-outage",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-redis-strategy-combined",
+      "query": "Redis cache lock concurrency refresh and Redis cache retry backoff concurrency quota exhaustion",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Requires two separate supporting sections from the same long note, not just note identity.",
+      "negative": false,
+      "relevantKnowledge": [
+        "redis-strategy"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "redis-strategy",
+          "marker": "redis-strategy-refresh",
+          "position": "early"
+        },
+        {
+          "slug": "redis-strategy",
+          "marker": "redis-strategy-outage",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-playbook-early",
+      "query": "WebClient HTTP response timeout Java configuration",
+      "category": "configuration",
+      "language": "en",
+      "rationale": "Existing long playbook: declared section ground truth remains separate from note retrieval.",
+      "negative": false,
+      "relevantKnowledge": [
+        "webclient-playbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "webclient-playbook",
+          "marker": "client-response",
+          "position": "early"
+        }
+      ]
+    },
+    {
+      "id": "q-playbook-middle",
+      "query": "WebClient retry HTTP Java safe repeated attempt",
+      "category": "code",
+      "language": "en",
+      "rationale": "Existing long playbook: declared section ground truth remains separate from note retrieval.",
+      "negative": false,
+      "relevantKnowledge": [
+        "webclient-playbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "webclient-playbook",
+          "marker": "client-retry",
+          "position": "middle"
+        }
+      ]
+    },
+    {
+      "id": "q-playbook-late",
+      "query": "WebClient HTTP Java cancellation timeout procedure",
+      "category": "semantic_paraphrase",
+      "language": "en",
+      "rationale": "Existing long playbook: declared section ground truth remains separate from note retrieval.",
+      "negative": false,
+      "relevantKnowledge": [
+        "webclient-playbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "webclient-playbook",
+          "marker": "client-checklist",
+          "position": "late"
+        }
+      ]
+    },
+    {
+      "id": "q-playbook-combined",
+      "query": "WebClient Java HTTP connection timeout and cancellation",
+      "category": "multi_topic",
+      "language": "en",
+      "rationale": "Existing long playbook: declared section ground truth remains separate from note retrieval.",
+      "negative": false,
+      "relevantKnowledge": [
+        "webclient-playbook"
+      ],
+      "relevantChunks": [
+        {
+          "slug": "webclient-playbook",
+          "marker": "client-connection",
+          "position": "early"
+        },
+        {
+          "slug": "webclient-playbook",
+          "marker": "client-cancel",
+          "position": "middle"
+        }
+      ]
+    }
+  ]
+}

@@ -43,13 +43,21 @@ final class RetrievalEvaluation {
     private final RetrievalCorpus corpus;
     private final Map<Long, String> slugs;
     private final Map<String, List<MarkdownChunker.Chunk>> chunks;
+    private final int ragLimit, perNote;
 
     RetrievalEvaluation(KnowledgeEmbeddingRepository repository, EmbeddingStrategy strategy, EmbeddingClient embeddings,
             UUID owner, RetrievalCorpus corpus, Map<Long, String> slugs, Map<String, List<MarkdownChunker.Chunk>> chunks) {
+        this(repository, strategy, embeddings, owner, corpus, slugs, chunks, RAG_LIMIT, PER_NOTE);
+    }
+    RetrievalEvaluation(KnowledgeEmbeddingRepository repository, EmbeddingStrategy strategy, EmbeddingClient embeddings,
+            UUID owner, RetrievalCorpus corpus, Map<Long, String> slugs, Map<String, List<MarkdownChunker.Chunk>> chunks,
+            int ragLimit, int perNote) {
         this.repository = repository; this.strategy = strategy; this.embeddings = embeddings;
         this.owner = owner; this.corpus = corpus; this.slugs = slugs; this.chunks = chunks;
+        this.ragLimit = ragLimit; this.perNote = perNote;
         if (strategy.properties().dimensions() != OfflineEmbeddingClient.DIMENSIONS || SEMANTIC_LIMIT < 5
-                || RAG_LIMIT < 8 || PER_NOTE < 1 || chunks.values().stream().mapToInt(List::size).sum() > 100) {
+                || ragLimit < 1 || ragLimit > 100 || perNote < 1 || perNote > 10
+                || chunks.values().stream().mapToInt(List::size).sum() > 100) {
             throw new IllegalArgumentException("Impossible evaluation configuration / distance diagnostic horizon");
         }
     }
@@ -69,7 +77,7 @@ final class RetrievalEvaluation {
             var noteRanks = new ArrayList<Ranked>();
             for (var note : notes) noteRanks.add(ranked(noteRanks.size() + 1, note.slug(), note.chunkIndex(), distances));
             semantic.add(result(query, noteRanks, SEMANTIC_K, true));
-            var context = repository.findRagChunks(owner, strategy, vector, RAG_LIMIT, PER_NOTE);
+            var context = repository.findRagChunks(owner, strategy, vector, ragLimit, perNote);
             var contextRanks = new ArrayList<Ranked>();
             for (var chunk : context) contextRanks.add(ranked(contextRanks.size() + 1, chunk.slug(), chunk.chunkIndex(), distances));
             rag.add(result(query, contextRanks, RAG_K, false));
@@ -83,12 +91,38 @@ final class RetrievalEvaluation {
                         chunks.values().stream().mapToInt(List::size).sum(), decoys),
                 new Configuration("offline", p.model(), p.dimensions(), "binary controlled vocabulary/synonyms, L2 normalized; unknown bias 0.05",
                         strategy.chunkerVersion(), p.maxChunkChars(), p.overlapChars(), strategy.marker(),
-                        SEMANTIC_LIMIT, RAG_LIMIT, PER_NOTE, SEMANTIC_K, RAG_K,
+                        SEMANTIC_LIMIT, ragLimit, perNote, SEMANTIC_K, RAG_K,
                         "Retrieval correctness under controlled embeddings; provider semantic quality NOT measured; no answer generation/entailment scoring",
                         "Negatives excluded from recall/MRR means; nearest results and cosine distances are diagnostics, not no-result expectations",
                         "Declared markers resolve to ALL actual default-chunker chunks containing the marker; missing chunk truth is unscored",
-                        "Semantic deduplicated before rank metrics; MRR@20. RAG note coverage uses raw chunk positions with unique relevant hits; RR horizon 8. Fixed note IDs/timestamps, production SQL tie-breaks"),
+                        "Semantic deduplicated before rank metrics; MRR@20. RAG note coverage uses raw chunk positions with unique relevant hits; RR horizon "
+                                + ragLimit + ". K above limit is censored at limit. Fixed note IDs/timestamps, production SQL tie-breaks"),
                 mode(semantic, SEMANTIC_K), mode(rag, RAG_K));
+    }
+
+    /** Matrix varies only RAG. Do not repeatedly evaluate unchanged Semantic note limits for every cap/limit pair. */
+    Mode evaluateRag() {
+        return evaluateRag(Map.of());
+    }
+    Mode evaluateRag(Map<String,ChunkSelectionEvaluation.QuerySnapshot> snapshots) {
+        var results = new ArrayList<CaseResult>();
+        for (var query : corpus.queries()) {
+            var snapshot = snapshots.get(query.id());
+            if (snapshot != null && !snapshot.strategyMarker().equals(strategy.marker())) throw new IllegalArgumentException("Snapshot strategy mismatch");
+            var vector = snapshot == null ? embeddings.embed(List.of(query.query())).get(0) : snapshot.vector();
+            var distances = new HashMap<String,Double>();
+            var nearest = snapshot == null ? repository.findNearestChunks(owner,strategy,vector,100) : snapshot.nearest();
+            for (var c : nearest) {
+                var slug = slugs.get(c.knowledgeId());
+                if (slug == null) throw new IllegalStateException("Isolation decoy participated in retrieval");
+                distances.put(slug+"#"+c.chunkIndex(),c.distance());
+            }
+            var ranked = new ArrayList<Ranked>();
+            for (var c : repository.findRagChunks(owner,strategy,vector,ragLimit,perNote))
+                ranked.add(ranked(ranked.size()+1,c.slug(),c.chunkIndex(),distances));
+            results.add(result(query,ranked,RAG_K,false));
+        }
+        return mode(results,RAG_K);
     }
 
     private Ranked ranked(int rank, String slug, int chunk, Map<String, Double> distances) {
@@ -117,7 +151,7 @@ final class RetrievalEvaluation {
                 missing(semantic ? new ArrayList<>(new LinkedHashSet<>(notes)) : notes, relevantNotes, ks),
                 semantic ? Map.of() : missing(chunkIds, expectedChunks, ks), List.copyOf(duplicates), seen.size(), ranked.size(),
                 ranked.isEmpty() ? 0 : (double) seen.size() / ranked.size(),
-                semantic ? List.of() : counts.entrySet().stream().filter(e -> e.getValue() == PER_NOTE).map(Map.Entry::getKey).toList());
+                semantic ? List.of() : counts.entrySet().stream().filter(e -> e.getValue() == perNote).map(Map.Entry::getKey).toList());
     }
     private static Map<String, Integer> ranks(List<String> retrieved, Set<String> relevant) {
         var ranks = new TreeMap<String, Integer>();

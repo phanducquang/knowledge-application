@@ -51,6 +51,7 @@ Owner-only **Semantic Search is complete** on `/search`, alongside default live 
 - semantic search using the pgvector foundation — complete
 - Ask My Knowledge — complete
 - Source-linked Answers — complete for block-linked current chunk identity/evidence and Reading navigation
+- RAG chunk-selection evaluation — complete offline, with long-note section coverage and 48 configuration comparisons; production defaults retained, real Gemini quality not measured
 - automatic tags
 - automatic summaries
 - similar-knowledge suggestions
