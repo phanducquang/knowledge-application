@@ -1,5 +1,7 @@
 # Gemini-powered Ask My Knowledge
 
+Explicit authoring Summary/Tag suggestions now have a separate provider-neutral client, model and metadata quota group; no Ask prompts/context/answer DTOs/retrieval/citations/quotas change. [AI_METADATA_SUGGESTIONS.md](AI_METADATA_SUGGESTIONS.md) documents the current-note-only privacy and user-apply flow. Background metadata generation remains out of scope.
+
 Owner-only, optional **single-turn** answers grounded in current indexed Knowledge. Semantic Search, FTS, Quick Search, Reading/sharing, relationships and authoring contracts remain intact. No conversation/history storage, agents, tools, external web search or public AI endpoint.
 
 ## Provider and configuration

@@ -2,6 +2,16 @@
 
 Spring Boot REST API for Knowledge Application.
 
+## AI metadata suggestions
+
+AI metadata suggestions: owner-only CSRF-protected `POST /api/knowledge/{id}/ai/metadata-suggestions`, no input body, returns `{summary,tags}` without writing. `AI_METADATA_ENABLED=false` by default; independently configured model `AI_METADATA_MODEL=gemini-3.5-flash-lite`, output budget 600. Reuses existing backend Gemini key and SDK 1.75.0. Current text prefix max 32000, summary max 500, five new tags max 50. Independent persistent quota, no retry/retrieval/background generation or migration. [Full environment defaults, privacy and errors](../../docs/AI_METADATA_SUGGESTIONS.md).
+
+```bash
+curl -X POST http://localhost:8080/api/knowledge/1/ai/metadata-suggestions \
+  -b 'JSESSIONID=<authenticated-session>' \
+  -H 'X-CSRF-TOKEN: <token-from-api-auth-csrf>'
+```
+
 ## Requirements
 
 - Java 17

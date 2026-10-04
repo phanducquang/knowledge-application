@@ -34,6 +34,11 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(com.knowledgeapplication.api.metadata.MetadataUnavailableException.class)
+    public ResponseEntity<ApiError> handleMetadataUnavailable(com.knowledgeapplication.api.metadata.MetadataUnavailableException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).header(HttpHeaders.CACHE_CONTROL,"private, no-store, max-age=0")
+                .body(ApiError.of(exception.code(),exception.getMessage()));
+    }
     @ExceptionHandler(com.knowledgeapplication.api.ask.AskUnavailableException.class)
     public ResponseEntity<ApiError> handleAskUnavailable(com.knowledgeapplication.api.ask.AskUnavailableException exception) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).header(HttpHeaders.CACHE_CONTROL,"private, no-store, max-age=0")

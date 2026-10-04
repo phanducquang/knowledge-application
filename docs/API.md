@@ -436,6 +436,12 @@ API errors retain `{code,message,fieldErrors}` with constant sanitized messages,
 
 Protected `/ask` calls only a focused same-origin `/api/ask-my-knowledge` POST BFF with session/CSRF forwarding, bounded question-only body and Host/Origin validation. Typing/mount do not call AI; button/Cmd-Ctrl Enter explicitly submits; regular Enter adds a newline. No question URL/storage/history. Limited answer Markdown cannot render active arbitrary links/images/HTML/Mermaid or manufacture citation controls. Structured `[1]` controls beside each block focus its evidence item; Sources / Evidence groups notes once with their cited chunk items and Open note links to `/knowledge/{slug}`. Exact in-document chunk/heading jumps are deferred; no guessed fragments/Reading anchor changes. Cancel/obsolete response guards protect UI state, not guaranteed cancellation/refund of already-running provider work.
 
+## AI metadata suggestions (authenticated owner only)
+
+`POST /api/knowledge/{id}/ai/metadata-suggestions`, no input body. CurrentOwner/owner-scoped current snapshot, CSRF required, `Cache-Control: private, no-store, max-age=0`. Success `{ "summary": "Concise factual text", "tags": ["New topical tag"] }`: summary max 500/non-blank, at most five new tags max 50, trimmed/case-insensitively deduplicated and filtered against current tags. No owner/prompt/raw note/provider/quota details. No write until explicit user apply through ordinary authoring PUT.
+
+Errors: 401 anonymous, 403 rejected owner/CSRF, 404 missing/cross-owner when enabled; 503 `AI_METADATA_DISABLED` or `AI_METADATA_UNAVAILABLE` (quota/provider/invalid output). A deterministic prefix bounds long notes; no revisions, attachment binaries, retrieval or retries. Private content goes to Gemini only when explicitly enabled/requested. Next BFF `POST /api/knowledge-metadata-suggestions` accepts only `{id}` and forwards session/CSRF. [Full contract/configuration/privacy](AI_METADATA_SUGGESTIONS.md).
+
 ## Ownership and authorization
 
 The backend accepts only an authenticated Google OIDC principal with a verified email matching `AUTH_ALLOWED_EMAIL` case-insensitively. After that identity check, `CurrentOwner` returns:

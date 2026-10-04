@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { ArticleSettings } from "@/components/knowledge/article-settings";
 import { KnowledgeMarkdownEditor } from "@/components/knowledge/knowledge-markdown-editor";
 import { KnowledgeShareAction } from "@/components/knowledge/knowledge-share-action";
+import { MetadataSuggestions } from "@/components/knowledge/metadata-suggestions";
+import { MetadataError, flushMetadataDraft } from "@/lib/metadata-suggestions";
 import {
   createKnowledgeAction,
   getUnlistedLinkAction,
@@ -80,6 +82,7 @@ export function KnowledgeEditor({
   const saveInFlightRef = useRef(false);
   const shareMutationRef = useRef(false);
   const savePromiseRef = useRef<Promise<KnowledgeActionResult> | null>(null);
+  const lastSaveFailedRef = useRef(false);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
   const flushSaveRef = useRef<() => Promise<void>>(async () => undefined);
@@ -121,6 +124,7 @@ export function KnowledgeEditor({
     );
     savePromiseRef.current = savePromise;
     const result = await savePromise;
+    lastSaveFailedRef.current = !result.ok;
     if (savePromiseRef.current === savePromise) {
       savePromiseRef.current = null;
     }
@@ -223,6 +227,7 @@ export function KnowledgeEditor({
           initialKnowledge.slug,
           savingDraft,
         );
+        lastSaveFailedRef.current = !flushResult.ok;
         if (!flushResult.ok) dirtyRef.current = true;
         else setUpdatedAt(flushResult.knowledge.updatedAt);
         return flushResult;
@@ -350,6 +355,15 @@ export function KnowledgeEditor({
     onTagsChange: changeTags,
   };
 
+  const flushForMetadata = async () => {
+    if (!initialKnowledge || mode !== "edit" || shareMutationRef.current) throw new MetadataError("SAVE_REQUIRED");
+    if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); debounceTimerRef.current = null; }
+    // Reuse the same serialized/coalescing PUT, including drafts typed during an in-flight save.
+    return flushMetadataDraft({ pending: () => savePromiseRef.current, flush: () => flushSaveRef.current(),
+      blocked: () => !mountedRef.current || shareMutationRef.current, dirty: () => dirtyRef.current,
+      saving: () => saveInFlightRef.current, failed: () => lastSaveFailedRef.current, key: () => JSON.stringify(latestDraftRef.current) });
+  };
+
   return (
     <div className="mx-auto w-full max-w-[1160px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
@@ -453,6 +467,9 @@ export function KnowledgeEditor({
               className="mt-2 w-full resize-y border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[15px] leading-7 text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
             />
           </label>
+
+          <MetadataSuggestions key={initialKnowledge?.id ?? "new"} id={initialKnowledge?.id} flushDraft={flushForMetadata} draftKey={JSON.stringify(draft)} currentTags={draft.tags}
+            applySummary={(summary) => changeDraft(current => ({ ...current, summary }))} applyTags={changeTags} />
 
           <ArticleSettings compact {...settingsProps} />
 

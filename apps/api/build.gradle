@@ -45,11 +45,13 @@ tasks.withType(Test).configureEach {
     // Never inherit an enabled production embedding provider into integration tests.
     systemProperty 'app.embedding.enabled', 'false'
     systemProperty 'app.ask.enabled', 'false'
+    systemProperty 'app.ai.metadata.enabled', 'false'
     systemProperty 'app.gemini.api-key', ''
     environment 'GEMINI_API_KEY', ''
     environment 'GOOGLE_API_KEY', ''
     environment 'EMBEDDING_ENABLED', 'false'
     environment 'ASK_ENABLED', 'false'
+    environment 'AI_METADATA_ENABLED', 'false'
     systemProperty 'retrieval.eval.report-directory', layout.buildDirectory.dir('reports/retrieval-eval').get().asFile.absolutePath
 }
 

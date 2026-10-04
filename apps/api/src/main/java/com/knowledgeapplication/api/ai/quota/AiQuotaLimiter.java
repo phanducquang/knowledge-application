@@ -11,7 +11,7 @@ import java.util.*;
 /** Atomic, cross-replica fixed-minute and timezone-aware daily reservations. No payload storage. */
 @Component
 public class AiQuotaLimiter {
-    public enum Purpose { EMBEDDING, EMBEDDING_BACKGROUND, ASK }
+    public enum Purpose { EMBEDDING, EMBEDDING_BACKGROUND, ASK, METADATA }
     private final JdbcClient jdbc;
     private final TransactionTemplate transaction;
     private final Clock clock;
@@ -26,11 +26,11 @@ public class AiQuotaLimiter {
         long tokens = props.estimate(inputChars);
         return Boolean.TRUE.equals(transaction.execute(status -> {
             // Serialize a quota group across replicas, including its background sub-budget.
-            jdbc.sql("SELECT pg_advisory_xact_lock(:key)").param("key", purpose == Purpose.ASK ? 83452002L : 83452001L)
+            jdbc.sql("SELECT pg_advisory_xact_lock(:key)").param("key", purpose == Purpose.METADATA ? 83452004L : purpose == Purpose.ASK ? 83452002L : 83452001L)
                     .query((row, n) -> true).single();
             Instant now = clock.instant();
             List<Window> windows = new ArrayList<>();
-            add(windows, purpose == Purpose.ASK ? "ask-generation" : "embedding-global", props.budget(), props, now);
+            add(windows, purpose == Purpose.METADATA ? "metadata-generation" : purpose == Purpose.ASK ? "ask-generation" : "embedding-global", props.budget(), props, now);
             if (purpose == Purpose.EMBEDDING_BACKGROUND) {
                 if (props.background() == null) throw new IllegalArgumentException("Background quota is required");
                 add(windows, "embedding-background", props.background(), props, now);

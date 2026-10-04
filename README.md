@@ -73,6 +73,8 @@ Initial product scope should stay small: knowledge authoring, organization, sear
 
 ## Documentation
 
+Explicit owner-only AI Summary/Tag suggestions are implemented in Edit: save current edits, request once, review, then apply through existing autosave. Independently disabled by default, with native structured Gemini output, persistent metadata quotas and no background generation. [Contract/privacy/configuration](docs/AI_METADATA_SUGGESTIONS.md).
+
 Read these before implementing features:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)

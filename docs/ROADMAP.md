@@ -89,7 +89,9 @@ Semantic Retrieval Foundation, owner-only Semantic Search, **Gemini-powered Ask 
 - retrieval quality evaluation — complete for an offline synthetic corpus, actual PostgreSQL/pgvector Semantic/RAG queries, independent note/chunk metrics and deterministic reports; [details and observed misses](RETRIEVAL_EVALUATION.md)
 - RAG chunk-selection evaluation — complete: 48 offline configurations, four additional long fixtures, conditional/position/cap/global-cutoff diagnostics and raw/assembled/indexing cost proxies; **KEEP BASELINE**, no production tuning applied
 - Manual Live Gemini Retrieval Evaluation — complete for the synthetic corpus: one approved `gemini-embedding-2`/768 run, 28 notes/55 chunks/60 queries, eight native embedding requests, bounded quota pacing and twelve vector-reusing retrieval variants; no generation/CI execution/production tuning
-- focused long-note supporting-chunk selection/context-cost evaluation — recommended next for remaining late-section misses; separate review required before tuning or additional live requests
-- auto tagging/summarization — future, requires separate review after reliability work
+- focused long-note supporting-chunk selection/context-cost evaluation — deferred; separate review before tuning/additional live requests
+- AI metadata suggestions — complete for explicit Summary/new-Tag suggestions on existing owner notes, preview/apply via ordinary autosave, structured JSON and independent quotas; no background enrichment
+- summary/tag usefulness evaluation — recommended next on a curated representative corpus, with separate privacy/live-call approval
+- automatic/background tagging/summarization — future, separate explicit opt-in review required
 
 Exact scroll-to-chunk/heading-aware source jumps remain deferred until Reading has a reliable deterministic anchor contract. Grounding evaluation and evidence-to-claim correctness remain explicit limitations, not claims of factual proof.

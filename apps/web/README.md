@@ -167,6 +167,10 @@ Each component derives an opaque render ID from React `useId()` plus a render at
 
 The editor remains canonical fenced Markdown with Crepe's existing CodeMirror behavior; there is no visual diagram editor or live preview. Mermaid supports the diagram types provided by the installed official package; flowchart, sequence and class diagrams are the representative verified types. Diagram links, export, copy, zoom/pan and server-side SVG persistence are intentionally deferred.
 
+## AI metadata suggestions
+
+Summary-adjacent **Suggest summary & tags** supports existing notes only, flushing serialized autosave before its focused same-origin POST. Preview, Apply summary, Add individual tags, Apply all tags or Dismiss; only explicit apply changes the draft, then ordinary autosave/checkpoints persist. Additive tags remain bounded at 20. Changed drafts show an earlier-result warning; duplicate requests are blocked and errors never auto retry. Create a new note first. [Setup, privacy and constraints](../../docs/AI_METADATA_SUGGESTIONS.md).
+
 ## Validate
 
 ```bash
