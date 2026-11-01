@@ -49,8 +49,8 @@ Use this influence selectively to give the product a distinct visual identity:
 
 - disciplined grid and alignment
 - strong typography rather than decoration
-- small uppercase labels
-- deliberate tracking
+- small sentence-case labels with a readable 12px minimum
+- restrained tracking on page titles, not on labels
 - numeric/index elements where they carry real information
 - asymmetric alignment when it improves hierarchy
 - restrained, high-contrast use of the accent color
@@ -114,7 +114,7 @@ Target visual distribution:
 | Sidebar | `#EFEEE8` | Navigation separation without a hard panel look |
 | Text | `#1D211E` | Primary ink |
 | Text muted | `#606861` | Secondary copy |
-| Text subtle | `#858C85` | Metadata and tertiary labels |
+| Text subtle | `#616B62` | Readable metadata and tertiary labels, including on the sidebar |
 | Border | `#D9D8D0` | Normal divider |
 | Border strong | `#C5C7BF` | Controls and stronger separation |
 | Active surface | `#E7E8E2` | Quiet warm-neutral selected navigation surface |
@@ -122,8 +122,9 @@ Target visual distribution:
 | Row hover | `#F2F1EC` | Near-neutral list/editor hover feedback |
 | Accent | `#2F6863` | Deep petrol/teal product accent |
 | Accent strong | `#24534F` | High-emphasis accent text |
-| Accent muted | `#557E79` | Low-emphasis metadata/tags |
+| Accent muted | `#4E716C` | Readable low-emphasis metadata/tags |
 | Accent soft | `#DDEAE6` | Small-area selection/focus tint, not a default full-row fill |
+| Control border | `#858C83` | Visible text-input/select boundaries; dividers keep their lighter tokens |
 
 The deep petrol/teal accent is selected because it feels technical and calm without falling into the common purple/bright-blue AI-startup palette.
 
@@ -235,7 +236,9 @@ Approximate hierarchy:
 - metadata: 12–13px
 - code: 13–14px
 
-Swiss influence may use small uppercase labels with moderate tracking and numeric/tabular data where meaningful. Do not uppercase body copy or ordinary navigation merely for style.
+Swiss influence uses sentence-case labels and numeric/tabular data where meaningful.
+Labels are at least 12px and untracked; title tracking remains restrained.
+This accessibility refinement was applied in the October 28, 2026 UI review.
 
 Do not use bold weight everywhere.
 

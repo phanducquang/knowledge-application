@@ -35,7 +35,7 @@ export function ExternalKnowledgeArticle({
       <div className="mx-auto w-full max-w-[1160px] px-5 py-6 sm:px-8 sm:py-8 lg:px-12 lg:py-10">
         <header className="mb-9 flex items-center justify-between border-b border-[var(--border)] pb-4">
           <span className="text-[14px] font-semibold tracking-[-0.015em]">Knowledge</span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+          <span className="text-[12px] font-semibold text-[var(--accent)]">
             {accessLabel}
           </span>
         </header>
@@ -43,7 +43,7 @@ export function ExternalKnowledgeArticle({
         <div className={toc.length > 0 ? "xl:grid xl:grid-cols-[minmax(0,760px)_180px] xl:gap-16" : "max-w-[760px]"}>
           <article className="min-w-0">
             <header className="mb-8">
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+              <p className="mb-3 text-[12px] font-semibold text-[var(--accent)]">
                 {article.collection ?? "Unfiled"} / {topicLabel}
               </p>
               <h1 className="max-w-[720px] text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-[var(--text)] sm:text-[38px]">
@@ -84,11 +84,11 @@ export function ExternalKnowledgeArticle({
             )}
 
             <footer className="mt-12 border-t border-[var(--border-strong)] pt-5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+              <p className="text-[12px] font-semibold text-[var(--text-subtle)]">
                 Collection &amp; tags
               </p>
               <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-strong)]">
+                <span className="text-[12px] font-semibold text-[var(--accent-strong)]">
                   {article.collection ?? "Unfiled"}
                 </span>
                 {article.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}

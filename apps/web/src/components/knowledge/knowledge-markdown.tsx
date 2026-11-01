@@ -105,11 +105,11 @@ export function KnowledgeMarkdown({
             <code className={className ?? "rounded-[3px] bg-[var(--surface-muted)] px-1 py-0.5 text-[0.88em] text-[var(--accent-strong)]"}>{children}</code>
           ),
           table: ({ children }) => (
-            <div className="my-6 overflow-x-auto">
+            <div className="my-6 overflow-x-auto" tabIndex={0} role="region" aria-label="Scrollable table">
               <table className="w-full min-w-[560px] border-collapse text-left text-[13px] leading-5">{children}</table>
             </div>
           ),
-          thead: ({ children }) => <thead className="border-y border-[var(--border-strong)] text-[11px] uppercase tracking-[0.08em] text-[var(--text-subtle)]">{children}</thead>,
+          thead: ({ children }) => <thead className="border-y border-[var(--border-strong)] text-[12px] text-[var(--text-subtle)]">{children}</thead>,
           th: ({ children }) => <th className="py-2 pr-5 font-semibold">{children}</th>,
           tr: ({ children }) => <tr className="border-b border-[var(--border)]">{children}</tr>,
           td: ({ children }) => <td className="py-3 pr-5 text-[var(--text-muted)]">{children}</td>,

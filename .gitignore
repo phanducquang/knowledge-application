@@ -44,3 +44,6 @@ logs/
 # Local infrastructure data
 .data/
 data/
+/apps/api/bin/
+/.agents/
+/.hallmark/

@@ -16,7 +16,7 @@ interface ArticleSettingsProps {
 }
 
 const propertyLabelClassName =
-  "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]";
+  "text-[12px] font-medium text-[var(--text-subtle)]";
 
 const visibilityOptions: KnowledgeVisibility[] = ["Private", "Unlisted", "Public"];
 
@@ -34,6 +34,17 @@ function VisibilityControl({
         className="mt-1.5 flex w-full border-b border-[var(--border)]"
         role="radiogroup"
         aria-label="Visibility"
+        onKeyDown={(event) => {
+          const direction = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1
+            : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+          if (!direction && event.key !== "Home" && event.key !== "End") return;
+          event.preventDefault();
+          const currentIndex = visibilityOptions.indexOf(value);
+          const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? visibilityOptions.length - 1
+            : (currentIndex + direction + visibilityOptions.length) % visibilityOptions.length;
+          event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="radio"]')[nextIndex]?.focus();
+          onChange(visibilityOptions[nextIndex]);
+        }}
       >
         {visibilityOptions.map((option) => {
           const selected = option === value;
@@ -44,8 +55,9 @@ function VisibilityControl({
               type="button"
               role="radio"
               aria-checked={selected}
+              tabIndex={selected ? 0 : -1}
               onClick={() => onChange(option)}
-              className={`relative min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1 pt-0.5 text-center text-[14px] font-medium leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
+              className={`relative min-h-11 min-w-0 flex-1 whitespace-nowrap px-0.5 pb-1 pt-0.5 text-center text-[14px] font-medium leading-5 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 ${
                 selected
                   ? "text-[var(--accent-strong)]"
                   : "text-[var(--text-muted)] hover:text-[var(--text)]"
@@ -129,6 +141,7 @@ function CollectionCombobox({
     onChange(collection);
     setQuery("");
     setOpen(false);
+    rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
   };
 
   const createCollection = () => {
@@ -149,29 +162,48 @@ function CollectionCombobox({
   };
 
   return (
-    <div ref={rootRef} className="relative">
-      <p className={propertyLabelClassName}>Collection</p>
+    <div ref={rootRef} className="relative" onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) {
+        setOpen(false);
+        setQuery("");
+      }
+    }} onKeyDown={(event) => {
+      if (event.target === searchInputRef.current && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+        event.preventDefault();
+        const options = rootRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]');
+        options?.[event.key === "ArrowDown" ? 0 : options.length - 1]?.focus();
+      }
+      if (event.key === "Escape" && open) {
+        event.preventDefault();
+        setOpen(false);
+        setQuery("");
+        rootRef.current?.querySelector<HTMLButtonElement>("button")?.focus();
+      }
+    }}>
+      <p id={`${id}-label`} className={propertyLabelClassName}>Collection</p>
       <button
         id={id}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-labelledby={`${id}-label ${id}-value`}
+        aria-controls={open ? `${id}-options` : undefined}
         onClick={() => {
           setOpen((current) => !current);
           if (open) {
             setQuery("");
           }
         }}
-        className="mt-1.5 inline-flex min-h-8 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[14px] font-normal leading-5 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-8 sm:px-3 sm:py-1.5 sm:text-[15px] xl:min-h-7 xl:px-2.5 xl:py-1 xl:text-[14px]"
+        className="mt-1.5 inline-flex min-h-11 max-w-full items-center gap-1.5 border border-[var(--border-strong)] bg-[var(--surface)] px-2.5 py-1 text-[14px] font-normal leading-5 text-[var(--text)] transition-colors hover:border-[var(--accent-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-9 sm:px-3 sm:py-1.5 sm:text-[15px] xl:px-2.5 xl:py-1 xl:text-[14px]"
       >
-        <span className="truncate">{value ?? "No collection"}</span>
+        <span id={`${id}-value`} className="truncate">{value ?? "No collection"}</span>
         <span aria-hidden="true" className="text-[10px] text-[var(--text-subtle)]">
           ▾
         </span>
       </button>
 
       {open && (
-        <div className="absolute left-0 z-20 mt-1 w-[min(280px,calc(100vw-48px))] border border-[var(--border-strong)] bg-[var(--surface)] shadow-sm">
+        <div className="absolute left-0 z-20 mt-1 w-64 max-w-[calc(100dvw-40px)] border border-[var(--border-strong)] bg-[var(--surface)] shadow-[var(--shadow-popover)] xl:left-auto xl:right-0">
           <div className="p-2">
             <label className="block" htmlFor={`${id}-search`}>
               <span className="sr-only">Search collections</span>
@@ -194,23 +226,31 @@ function CollectionCombobox({
                   }
                 }}
                 placeholder="Search collections..."
-                className="h-8 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[13px] font-normal leading-5 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)]"
+                className="h-11 w-full border border-[var(--border)] bg-[var(--background)] px-2 text-[16px] font-normal leading-5 text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] focus:border-[var(--accent)] sm:h-9 sm:text-[13px]"
               />
             </label>
 
-            <div className="mt-1.5 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections">
+            <div id={`${id}-options`} className="mt-1.5 max-h-48 overflow-y-auto" role="listbox" aria-label="Collections" onKeyDown={(event) => {
+              if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'));
+              const currentIndex = options.indexOf(document.activeElement as HTMLButtonElement);
+              const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1
+                : (currentIndex + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+              options[nextIndex]?.focus();
+            }}>
               {!query.trim() && (
                 <button
                   type="button"
                   role="option"
                   aria-selected={value === null}
                   onClick={() => selectCollection(null)}
-                  className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[14px] leading-5 transition-colors hover:bg-[var(--row-hover)] sm:text-[15px] xl:text-[14px] ${
+                  className={`flex min-h-11 w-full sm:min-h-9 items-center justify-between gap-3 px-2 text-left text-[14px] leading-5 transition-colors hover:bg-[var(--row-hover)] sm:text-[15px] xl:text-[14px] ${
                     value === null ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text-muted)]"
                   }`}
                 >
                   <span>No collection</span>
-                  {value === null && <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">✓</span>}
+                  {value === null && <span aria-hidden="true" className="text-[12px] text-[var(--accent)]">✓</span>}
                 </button>
               )}
               {filteredCollections.map((collection) => {
@@ -223,13 +263,13 @@ function CollectionCombobox({
                     role="option"
                     aria-selected={selected}
                     onClick={() => selectCollection(collection)}
-                    className={`flex min-h-8 w-full items-center justify-between gap-3 px-2 text-left text-[14px] leading-5 transition-colors hover:bg-[var(--row-hover)] sm:text-[15px] xl:text-[14px] ${
+                    className={`flex min-h-11 w-full sm:min-h-9 items-center justify-between gap-3 px-2 text-left text-[14px] leading-5 transition-colors hover:bg-[var(--row-hover)] sm:text-[15px] xl:text-[14px] ${
                       selected ? "font-medium text-[var(--accent-strong)]" : "text-[var(--text)]"
                     }`}
                   >
-                    <span>{collection}</span>
+                    <span className="min-w-0 break-words">{collection}</span>
                     {selected && (
-                      <span aria-hidden="true" className="text-[11px] text-[var(--accent)]">
+                      <span aria-hidden="true" className="text-[12px] text-[var(--accent)]">
                         ✓
                       </span>
                     )}
@@ -246,7 +286,7 @@ function CollectionCombobox({
           <button
             type="button"
             onClick={handleCreateAction}
-            className="w-full border-t border-[var(--border)] px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
+            className="min-h-11 w-full border-t border-[var(--border)] px-3 py-2 text-left text-[13px] font-medium text-[var(--accent-strong)] transition-colors hover:bg-[var(--row-hover)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)]"
           >
             {canCreate ? `+ Create “${normalizedDraft}”` : "+ New collection"}
           </button>
@@ -256,7 +296,7 @@ function CollectionCombobox({
   );
 }
 
-function TagEditor({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
+function TagEditor({ id, tags, onChange }: { id: string; tags: string[]; onChange: (tags: string[]) => void }) {
   const [draft, setDraft] = useState("");
 
   const addTag = () => {
@@ -273,21 +313,21 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (tags: string
 
   return (
     <div>
-      <p className={propertyLabelClassName}>Tags</p>
+      <label htmlFor={id} className={propertyLabelClassName}>Tags</label>
 
       {tags.length > 0 && (
         <div className="mt-1.5 flex flex-wrap gap-1" aria-label="Selected tags">
           {tags.map((tag) => (
             <span
               key={tag}
-              className="inline-flex min-h-7 items-center gap-1 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] px-1.5 text-[14px] text-[var(--text)]"
+              className="inline-flex min-h-9 max-w-full items-center gap-1 rounded-[4px] border border-[var(--border)] bg-[var(--surface-muted)] pl-2 text-[14px] text-[var(--text)] sm:min-h-8"
             >
-              #{tag}
+              <span className="min-w-0 break-all">#{tag}</span>
               <button
                 type="button"
                 aria-label={`Remove ${tag} tag`}
                 onClick={() => onChange(tags.filter((item) => item !== tag))}
-                className="-mr-0.5 inline-flex h-4 w-4 items-center justify-center text-[14px] leading-none text-[var(--text-subtle)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--accent)]"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center text-[16px] leading-none text-[var(--text-muted)] transition-colors hover:text-[var(--danger)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--accent)] sm:h-8 sm:w-8"
               >
                 ×
               </button>
@@ -296,8 +336,9 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (tags: string
         </div>
       )}
 
-      <div className="mt-1.5 border-b border-[var(--border-strong)] transition-colors focus-within:border-[var(--accent)]">
+      <div className="mt-1.5 border-b border-[var(--control-border)] transition-colors focus-within:border-[var(--accent)]">
         <input
+          id={id}
           type="text"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -313,7 +354,7 @@ function TagEditor({ tags, onChange }: { tags: string[]; onChange: (tags: string
           }}
           onBlur={addTag}
           placeholder="Add tag and press Enter"
-          className="h-8 w-full bg-transparent px-0 text-[14px] leading-5 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)]"
+          className="h-11 w-full bg-transparent px-0 text-[16px] leading-5 text-[var(--text)] outline-none placeholder:text-[var(--text-subtle)] sm:h-9 sm:text-[14px]"
         />
       </div>
     </div>
@@ -344,7 +385,7 @@ export function ArticleSettings({
         onChange={onCollectionChange}
       />
 
-      <TagEditor tags={tags} onChange={onTagsChange} />
+      <TagEditor id={`tags-${suffix}`} tags={tags} onChange={onTagsChange} />
 
       <div>
         <p className={propertyLabelClassName}>Updated</p>
@@ -356,7 +397,7 @@ export function ArticleSettings({
   if (compact) {
     return (
       <details className="mb-6 border-y border-[var(--border)] py-3 xl:hidden">
-        <summary className="cursor-pointer text-[14px] font-medium text-[var(--text-muted)]">Article settings</summary>
+        <summary className="min-h-11 cursor-pointer content-center text-[14px] font-medium text-[var(--text-muted)] sm:min-h-8">Article settings</summary>
         <div className="mt-4">{content}</div>
       </details>
     );

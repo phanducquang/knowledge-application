@@ -147,7 +147,7 @@ export function KnowledgeSearch({
         <div role="group" aria-label="Search mode" className="mb-4 flex gap-5 border-b border-[var(--border)]">
           {(["keyword", "semantic"] as const).map(value => (
             <button key={value} type="button" aria-pressed={mode === value} onClick={() => switchMode(value)}
-              className={`border-b-2 px-1 pb-2 text-[13px] capitalize focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${mode === value ? "border-[var(--accent)] text-[var(--accent-strong)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text)]"}`}>
+              className={`min-h-11 border-b-2 px-1 pb-2 text-[13px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${mode === value ? "border-[var(--accent)] text-[var(--accent-strong)]" : "border-transparent text-[var(--text-muted)] hover:text-[var(--text)]"}`}>
               {value === "keyword" ? "Keyword" : "Semantic"}
             </button>
           ))}
@@ -176,6 +176,7 @@ export function KnowledgeSearch({
             autoFocus
             autoComplete="off"
             enterKeyHint="search"
+            aria-describedby="knowledge-search-help"
             placeholder={mode === "keyword" ? "Search notes, tags, or collections" : "Describe what you want to find"}
             className="h-12 w-full border border-[var(--border-strong)] bg-[var(--surface)] px-4 text-[16px] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--accent-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
           />
@@ -184,9 +185,9 @@ export function KnowledgeSearch({
           className="shrink-0 border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[13px] text-[var(--accent-strong)] hover:border-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--accent)] disabled:cursor-default disabled:text-[var(--text-subtle)] sm:px-4">Search</button>}
         </div>
 
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[11px] text-[var(--text-subtle)]">
-          <span>{mode === "keyword" ? "Titles, summaries, collections, and tags" : "Submit to search by meaning · Query sent to your configured provider"}</span>
-          <span className="hidden sm:inline">{mode === "semantic" ? "Enter search · ↓ results · Esc clear draft" : "↓ results · ↑ back · Enter open · Esc search"}</span>
+        <div id="knowledge-search-help" className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-[12px] text-[var(--text-subtle)]">
+          <span>{mode === "keyword" ? "Titles, summaries, collections, and tags" : "Submit to search by meaning. Query sent to your configured provider."}</span>
+          <span className="hidden flex-wrap gap-x-4 gap-y-1 sm:flex">{mode === "semantic" ? <><span>Enter search</span><span>↓ results</span><span>Esc clear draft</span></> : <><span>↓ results</span><span>↑ back</span><span>Enter open</span><span>Esc search</span></>}</span>
         </div>
       </form>
 
@@ -204,14 +205,14 @@ export function KnowledgeSearch({
           <h2 className="text-[21px] font-medium tracking-[-0.02em]">{semantic.error === "SEMANTIC_SEARCH_DISABLED" ? "Semantic search is not configured." : semantic.error === "VALIDATION_ERROR" ? "Enter a query of up to 200 characters." : semantic.error === "UNAUTHENTICATED" || semantic.error === "ACCESS_DENIED" ? "Sign in again to search your workspace." : "Semantic search is temporarily unavailable."}</h2>
           <p className="mt-3 text-[14px] text-[var(--text-muted)]">Your notes are unaffected. Keyword search is still available.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-6 text-[13px] text-[var(--accent-strong)]">
-            {semantic.error !== "SEMANTIC_SEARCH_DISABLED" && <button type="button" onClick={submitSemantic} className="underline underline-offset-4">Try again</button>}
-            <button type="button" onClick={() => switchMode("keyword")} className="underline underline-offset-4">Use keyword search</button>
+            {semantic.error !== "SEMANTIC_SEARCH_DISABLED" && <button type="button" onClick={submitSemantic} className="min-h-11 underline underline-offset-4">Try again</button>}
+            <button type="button" onClick={() => switchMode("keyword")} className="min-h-11 underline underline-offset-4">Use keyword search</button>
           </div>
         </section>}
         {semantic.status === "success" && semantic.results.length === 0 && <section className="mx-auto max-w-[980px] py-16 text-center" aria-label="Semantic index not ready">
           <h2 className="text-[21px] font-medium">{availableCount ? "Semantic index is not ready yet." : "Your library is empty."}</h2>
           <p className="mt-3 text-[14px] text-[var(--text-muted)]">{availableCount ? "Current notes may still be waiting for background indexing." : "Create a note before searching by meaning."}</p>
-          <button type="button" onClick={() => switchMode("keyword")} className="mt-6 text-[13px] text-[var(--accent-strong)] underline underline-offset-4">Use keyword search</button>
+          <button type="button" onClick={() => switchMode("keyword")} className="mt-6 min-h-11 text-[13px] text-[var(--accent-strong)] underline underline-offset-4">Use keyword search</button>
         </section>}
       </div>}
 
@@ -220,8 +221,8 @@ export function KnowledgeSearch({
           className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
           aria-label="Search guidance"
         >
-          <div className="max-w-[520px]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+          <div className="min-w-0 max-w-[520px] break-words [overflow-wrap:anywhere]">
+            <p className="text-[12px] font-semibold text-[var(--text-subtle)]">
               Search knowledge
             </p>
             <h2 className="mt-3 text-[22px] font-medium tracking-[-0.025em] text-[var(--text)] sm:text-[24px]">
@@ -237,14 +238,14 @@ export function KnowledgeSearch({
                   key={suggestion}
                   type="button"
                   onClick={() => applySuggestion(suggestion)}
-                  className="border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+                  className="inline-flex min-h-9 items-center border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
                 >
                   {suggestion}
                 </button>
               ))}
             </div>
 
-            <p className="mt-7 text-[11px] tabular-nums text-[var(--text-subtle)]">{availableCount} notes available</p>
+            <p className="mt-7 text-[12px] tabular-nums text-[var(--text-subtle)]">{availableCount} notes available</p>
           </div>
         </section>
       )}
@@ -255,8 +256,8 @@ export function KnowledgeSearch({
           aria-label="Searching"
           aria-live="polite"
         >
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Searching</p>
+          <div className="min-w-0 max-w-full break-words [overflow-wrap:anywhere]">
+            <p className="text-[12px] font-semibold text-[var(--text-subtle)]">Searching</p>
             <p className="mt-3 text-[16px] text-[var(--text-muted)]">
               Looking for <span className="font-medium text-[var(--text)]">“{query.trim()}”</span>…
             </p>
@@ -270,8 +271,8 @@ export function KnowledgeSearch({
           aria-label="Search unavailable"
           aria-live="polite"
         >
-          <div className="max-w-[520px]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Search unavailable</p>
+          <div className="min-w-0 max-w-[520px] break-words [overflow-wrap:anywhere]">
+            <p className="text-[12px] font-semibold text-[var(--text-subtle)]">Search unavailable</p>
             <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
               We couldn&apos;t search right now.
             </h2>
@@ -281,7 +282,7 @@ export function KnowledgeSearch({
             <button
               type="button"
               onClick={() => searchState.search(query)}
-              className="mt-6 text-[12px] text-[var(--accent-strong)] underline decoration-[var(--border-strong)] underline-offset-4"
+              className="mt-6 min-h-11 text-[12px] text-[var(--accent-strong)] underline decoration-[var(--border-strong)] underline-offset-4"
             >
               Try again
             </button>
@@ -293,9 +294,10 @@ export function KnowledgeSearch({
         <section
           className="mx-auto flex min-h-[340px] max-w-[980px] items-center justify-center py-12 text-center"
           aria-label="No search results"
+          aria-live="polite"
         >
-          <div className="max-w-[520px]">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">No matches</p>
+          <div className="min-w-0 max-w-[520px] break-words [overflow-wrap:anywhere]">
+            <p className="text-[12px] font-semibold text-[var(--text-subtle)]">No matches</p>
             <h2 className="mt-3 text-[21px] font-medium tracking-[-0.02em] text-[var(--text)] sm:text-[23px]">
               Nothing found for “{searchState.query}”.
             </h2>
@@ -309,7 +311,7 @@ export function KnowledgeSearch({
                   key={suggestion}
                   type="button"
                   onClick={() => applySuggestion(suggestion)}
-                  className="border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+                  className="inline-flex min-h-9 items-center border-b border-[var(--border-strong)] pb-0.5 text-[13px] text-[var(--accent-strong)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
                 >
                   {suggestion}
                 </button>
@@ -322,7 +324,7 @@ export function KnowledgeSearch({
                 changeQuery("");
                 inputRef.current?.focus();
               }}
-              className="mt-7 text-[12px] text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
+              className="mt-7 min-h-11 text-[12px] text-[var(--text-muted)] underline decoration-[var(--border-strong)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--accent)]"
             >
               Clear search
             </button>

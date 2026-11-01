@@ -5,7 +5,7 @@ export default function KnowledgeNotFound() {
   return (
     <WorkspaceShell>
       <div className="mx-auto w-full max-w-[760px] px-5 py-16 sm:px-8 lg:px-12">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">Knowledge / Missing</p>
+        <p className="text-[12px] font-semibold text-[var(--accent)]">Knowledge / Missing</p>
         <h1 className="mt-3 text-[32px] font-semibold tracking-[-0.035em] text-[var(--text)]">Note not found</h1>
         <p className="mt-4 max-w-lg text-[15px] leading-7 text-[var(--text-muted)]">
           This note does not exist, was removed, or is outside the current workspace.

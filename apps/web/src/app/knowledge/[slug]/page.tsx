@@ -59,10 +59,10 @@ export default async function KnowledgeReadingPage(props: {
   return (
     <WorkspaceShell items={allKnowledge.map(toKnowledgeListItem)}>
         <div className="mx-auto w-full max-w-[1160px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
-          <div className="mb-7 flex items-center justify-between gap-6 border-b border-[var(--border)] pb-4">
+          <div className="page-actions mb-7 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[var(--border)] pb-4">
             <Link
               href="/"
-              className="inline-flex min-h-9 items-center text-[14px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
+              className="inline-flex min-h-9 shrink-0 items-center whitespace-nowrap text-[14px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
             >
               ← All notes
             </Link>
@@ -91,7 +91,7 @@ export default async function KnowledgeReadingPage(props: {
           <div className={toc.length > 0 ? "xl:grid xl:grid-cols-[minmax(0,760px)_180px] xl:gap-16" : "max-w-[760px]"}>
             <article className="min-w-0">
               <header className="mb-8">
-                <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+                <p className="mb-3 text-[12px] font-semibold text-[var(--accent)]">
                   {article.collection ?? "Unfiled"} / {topicLabel}
                 </p>
                 <h1 className="max-w-[720px] text-[34px] font-semibold leading-[1.08] tracking-[-0.035em] text-[var(--text)] sm:text-[38px]">
@@ -128,9 +128,9 @@ export default async function KnowledgeReadingPage(props: {
               )}
 
               <footer className="mt-12 border-t border-[var(--border-strong)] pt-5">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">Collection &amp; tags</p>
+                <p className="text-[12px] font-semibold text-[var(--text-subtle)]">Collection &amp; tags</p>
                 <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                  <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-strong)]">
+                  <span className="text-[12px] font-semibold text-[var(--accent-strong)]">
                     {article.collection ?? "Unfiled"}
                   </span>
                   {article.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}

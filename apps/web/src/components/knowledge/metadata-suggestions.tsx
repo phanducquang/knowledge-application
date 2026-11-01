@@ -16,12 +16,12 @@ export function MetadataSuggestions({ id, flushDraft, draftKey, currentTags, app
     <button type="button" className={action} disabled={!id || state.busy} onClick={() => void session.submit(flushDraft)}>
       {state.busy ? "Saving & suggesting…" : "Suggest summary & tags"}
     </button>
-    <p className="text-[11px] text-[var(--text-subtle)]">{id
+    <p className="text-[12px] text-[var(--text-subtle)]">{id
       ? "Saves current edits, then sends this note’s text to Gemini. Review before applying."
       : "Create this note first to request AI suggestions."}</p>
     {state.error && <p role="alert" className="mt-2 text-[var(--danger)]">{metadataErrorMessage(state.error)}</p>}
     {state.result && <div className="mt-3" aria-live="polite">
-      <div className="flex items-center justify-between gap-3"><span className="text-[10px] uppercase tracking-[0.1em] text-[var(--text-subtle)]">Suggested metadata</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1"><span className="text-[12px] font-medium text-[var(--text-subtle)]">Suggested metadata</span>
         <button type="button" className={action} onClick={session.dismiss}>Dismiss suggestions</button></div>
       {state.sourceDraft !== draftKey && <p className="text-[var(--warning)]">The note changed after the request. Review these earlier suggestions before applying.</p>}
       <p className="whitespace-pre-wrap break-words text-[var(--text-muted)]">{state.result.summary}</p>

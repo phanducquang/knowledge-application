@@ -16,7 +16,7 @@ export default function ApplicationError({
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[760px] items-center px-5 py-16 sm:px-8">
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--danger)]">
+        <p className="text-[12px] font-semibold text-[var(--danger)]">
           Knowledge / Unavailable
         </p>
         <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.035em] text-[var(--text)]">

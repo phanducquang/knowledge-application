@@ -34,13 +34,13 @@ export default async function CollectionPage(props: { params: Promise<{ id: stri
     <WorkspaceShell items={allKnowledge.map(toKnowledgeListItem)}>
       <div className="mx-auto w-full max-w-[1080px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <header className="mb-8 border-b border-[var(--border)] pb-6 sm:flex sm:items-end sm:justify-between sm:gap-8">
-          <div>
+          <div className="min-w-0">
             <Link href="/collections" className="text-[13px] font-medium text-[var(--text-muted)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline">← Collections</Link>
-            <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">Knowledge / Collection</p>
+            <p className="mb-2 mt-5 text-[12px] font-semibold text-[var(--accent)]">Knowledge / Collection</p>
             <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] text-[var(--text)] sm:text-[34px]">{collection.name}</h1>
             <p className="mt-3 text-[14px] leading-6 text-[var(--text-muted)]">{collection.knowledgeCount} {collection.knowledgeCount === 1 ? "note" : "notes"} in this collection.</p>
           </div>
-          <Link href="/collections" className="mt-5 inline-flex min-h-9 items-center text-[13px] font-medium text-[var(--accent-strong)] underline-offset-4 hover:underline sm:mt-0">Manage collections</Link>
+          <Link href="/collections" className="mt-5 inline-flex min-h-9 items-center text-[13px] font-medium text-[var(--accent-strong)] underline-offset-4 hover:underline sm:mt-0 sm:shrink-0">Manage collections</Link>
         </header>
         <KnowledgeList
           items={notes.map(toKnowledgeListItem)}

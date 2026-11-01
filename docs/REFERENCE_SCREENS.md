@@ -2,6 +2,13 @@
 
 The first approved screens become the reference implementation of the visual language. New screens should reuse their patterns rather than independently inventing a style.
 
+**UI maintenance refinement — October 28, 2026:** the existing screen structures,
+content and business interactions remain approved. The UI review in
+`UI_UX_REVIEW.md` supersedes the original 10–11px uppercase micro-label treatment
+below with readable, untracked sentence-case labels at 12px. Metadata contrast,
+keyboard focus, mobile targets, dialog scrolling and long-text wrapping now use
+the shared refinements in `DESIGN.md` and `globals.css`.
+
 Build and approve them in this order.
 
 ## 1. Knowledge List

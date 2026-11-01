@@ -1,3 +1,7 @@
+/* Hallmark · v2.0.0 · built: the project · redesign: polish · shape: app screen · theme: locked Technical Editorial Workspace · scope: app · posture: restrained */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, existing approved layouts intentionally preserved; improve legibility and control states */
+/* Hallmark · waive 49b · Knowledge title links are preserved article data, not footer/tab/breadcrumb labels · Editorial Knowledge note titles remain complete and wrap on narrow screens while action labels remain single-line */
+/* Hallmark · finish-review: subagent · 1 finding · resolved; Geist Mono confirmed in CodeMirror and reading code */
 @import "tailwindcss";
 
 :root {
@@ -7,7 +11,7 @@
   --sidebar: #efeee8;
   --text: #1d211e;
   --text-muted: #606861;
-  --text-subtle: #858c85;
+  --text-subtle: #616b62;
   --border: #d9d8d0;
   --border-strong: #c5c7bf;
   --active: #e7e8e2;
@@ -15,12 +19,21 @@
   --row-hover: #f2f1ec;
   --accent: #2f6863;
   --accent-strong: #24534f;
-  --accent-muted: #557e79;
+  --accent-muted: #4e716c;
   --accent-soft: #ddeae6;
   --accent-contrast: #f8fbf9;
   --success: #4f7258;
   --warning: #936629;
   --danger: #a34b43;
+  --control-border: #858c83;
+  --font-body: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-code: var(--font-geist-mono), monospace;
+  --overlay-backdrop: rgb(29 33 30 / 24%);
+  --shadow-dialog: 0 16px 48px rgb(29 33 30 / 16%);
+  --shadow-popover: 0 8px 24px rgb(29 33 30 / 12%);
+  --shadow-editor-1: 0 1px 2px rgb(29 33 30 / 10%);
+  --shadow-editor-2: 0 4px 12px rgb(29 33 30 / 12%);
+  --workspace-header-height: 56px;
 }
 
 * {
@@ -29,20 +42,84 @@
 
 html {
   background: var(--background);
+  overflow-x: clip;
+  scroll-padding-block: 4.5rem 1rem;
 }
 
 body {
   margin: 0;
   background: var(--background);
   color: var(--text);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   text-rendering: optimizeLegibility;
+  overflow-x: clip;
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font-family: inherit;
   border-radius: 5px;
+}
+
+h1, h2, h3, h4 {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+h1, h2 {
+  text-wrap: balance;
+}
+
+p, li, dd, blockquote, .article-content a {
+  overflow-wrap: anywhere;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  transition-property: none;
+}
+
+button:not(:disabled), summary, select {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active:not(:disabled), a:active {
+  filter: brightness(0.92);
+}
+
+button:disabled, input:disabled, textarea:disabled, select:disabled {
+  cursor: not-allowed;
+}
+
+input:not([type="radio"]):not([type="checkbox"]):not([type="hidden"]), textarea, select {
+  border-color: var(--control-border);
+}
+
+[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.skip-link {
+  position: fixed;
+  inset: 12px auto auto 12px;
+  z-index: 100;
+  padding: 12px 16px;
+  border-radius: 5px;
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+.article-content :is(h2, h3, h4) {
+  scroll-margin-top: 4.5rem;
 }
 
 ::selection {
@@ -54,7 +131,7 @@ code,
 pre,
 kbd,
 samp {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-code);
 }
 
 .article-content pre code {
@@ -151,11 +228,11 @@ samp {
   --crepe-color-hover: var(--row-hover);
   --crepe-color-selected: var(--accent-soft);
   --crepe-color-inline-area: var(--surface-muted);
-  --crepe-font-title: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  --crepe-font-default: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  --crepe-font-code: var(--font-geist-mono), monospace;
-  --crepe-shadow-1: 0 1px 2px rgb(29 33 30 / 10%);
-  --crepe-shadow-2: 0 4px 12px rgb(29 33 30 / 12%);
+  --crepe-font-title: var(--font-body);
+  --crepe-font-default: var(--font-body);
+  --crepe-font-code: var(--font-code);
+  --crepe-shadow-1: var(--shadow-editor-1);
+  --crepe-shadow-2: var(--shadow-editor-2);
   min-height: 760px;
   background: var(--surface);
 }
@@ -169,7 +246,89 @@ samp {
   outline: none;
 }
 
+.knowledge-markdown-editor .milkdown {
+  --crepe-color-outline: var(--text-muted);
+}
+
+.knowledge-markdown-editor .milkdown .milkdown-top-bar {
+  top: calc(var(--workspace-header-height) + 1px);
+}
+
+.knowledge-markdown-editor .milkdown .milkdown-block-handle {
+  transition-property: opacity;
+}
+
+.knowledge-markdown-editor .milkdown [data-show="false"] {
+  visibility: hidden;
+}
+
+.knowledge-markdown-editor .milkdown .editor :is(h2, h3, h4) {
+  line-height: 1.4;
+}
+
+.knowledge-markdown-editor .milkdown .editor h2 { font-size: 22px; }
+.knowledge-markdown-editor .milkdown .editor h3 { font-size: 18px; }
+.knowledge-markdown-editor .milkdown .editor h4 { font-size: 16px; }
+
+.knowledge-markdown-editor .milkdown :is(.milkdown-code-block, .cm-editor) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.knowledge-markdown-editor .milkdown .cm-scroller {
+  overflow-x: auto;
+  font-family: var(--font-code);
+}
+
+.knowledge-markdown-editor .milkdown .milkdown-code-block .tools {
+  min-width: 0;
+}
+
+.knowledge-markdown-editor .milkdown .milkdown-code-block .tools :is(.language-button, .tools-button-group button) {
+  min-height: 32px;
+  opacity: 1;
+  font-size: 12px;
+}
+
+.knowledge-markdown-editor .milkdown .milkdown-code-block .tools-button-group button {
+  border-radius: 4px;
+}
+
+.knowledge-markdown-editor .milkdown .cm-gutters {
+  color: var(--text-muted);
+}
+
+.knowledge-markdown-editor .milkdown .cm-activeLine,
+.knowledge-markdown-editor .milkdown .cm-activeLineGutter {
+  background: var(--surface-muted);
+}
+
+.react-flow .react-flow__attribution {
+  background: var(--surface);
+}
+
+.react-flow .react-flow__attribution a {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.react-flow .react-flow__attribution a:focus-visible {
+  outline: 2px solid var(--accent);
+}
+
+@media (min-width: 1024px) {
+  :root { --workspace-header-height: 0px; }
+}
+
 @media (max-width: 639px) {
+  input:not(#knowledge-title):not([type="radio"]):not([type="checkbox"]), textarea, select {
+    font-size: max(1rem, 16px);
+  }
+
+  button, summary, select, nav a, header a, .page-actions a {
+    min-height: 44px;
+  }
+
   .knowledge-markdown-editor,
   .knowledge-markdown-editor .milkdown {
     min-height: 620px;

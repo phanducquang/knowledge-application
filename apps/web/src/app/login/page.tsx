@@ -24,7 +24,7 @@ export default async function LoginPage({
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[720px] items-center px-5 py-16 sm:px-8">
       <section className="w-full border-y border-[var(--border-strong)] py-10 sm:py-12">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+        <p className="text-[12px] font-semibold text-[var(--accent)]">
           Knowledge / Private workspace
         </p>
         <h1 className="mt-3 text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] text-[var(--text)] sm:text-[36px]">

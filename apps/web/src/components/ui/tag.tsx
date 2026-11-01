@@ -3,5 +3,5 @@ interface TagProps {
 }
 
 export function Tag({ children }: TagProps) {
-  return <span className="text-[12px] text-[var(--accent-muted)]">#{children}</span>;
+  return <span className="min-w-0 max-w-full text-[12px] text-[var(--accent-muted)] [overflow-wrap:anywhere]">#{children}</span>;
 }

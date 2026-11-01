@@ -2,6 +2,21 @@
 
 Local and future deployment/runtime configuration for Docker and Nginx. Application business logic does not belong here.
 
+## Ubuntu / PM2 deployment
+
+For the existing Ubuntu + PostgreSQL + RustFS setup, use the
+[step-by-step PM2 runbook](pm2/README.md). It includes API/Web launchers, a PM2
+ecosystem declaration and production environment templates. Nginx, HTTPS and
+domain configuration are managed separately by the operator. The files have
+been checked locally; they have not been applied to the VPS.
+
+[Deployment scripts](pm2/SCRIPTS.md) automate first deployment and updates from
+`main`, with build checks, atomic current switching, API/Web health gates, a
+deployment lock and explicit recovery/rollback. Existing PostgreSQL/RustFS
+services are not restarted, backed up or restored by these scripts.
+
+## Local development services
+
 `docker/compose.yml` provides local-development PostgreSQL plus S3-compatible MinIO. A one-shot `minio-init` service creates the `knowledge-images` bucket and explicitly keeps anonymous access disabled.
 
 ```bash

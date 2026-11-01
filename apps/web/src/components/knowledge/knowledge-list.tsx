@@ -30,7 +30,7 @@ export function KnowledgeList({
         </div>
       ) : (
         <div className="py-14 sm:py-16">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+          <p className="text-[12px] font-semibold text-[var(--text-subtle)]">
             {emptyTitle}
           </p>
           <p className="mt-3 max-w-lg text-[15px] leading-7 text-[var(--text-muted)]">

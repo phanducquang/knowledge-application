@@ -53,6 +53,12 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const selectedAction = dialogRef.current?.querySelectorAll<HTMLElement>("[data-quick-search-action]")[selectedIndex];
+    selectedAction?.scrollIntoView({ block: "nearest" });
+  }, [open, selectedIndex]);
+
   if (!open) {
     return null;
   }
@@ -140,8 +146,9 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
       <button
         type="button"
         aria-label="Close quick search"
+        tabIndex={-1}
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/20"
+        className="absolute inset-0 cursor-default bg-[var(--overlay-backdrop)]"
       />
 
       <div
@@ -175,7 +182,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
             activateSelectedAction();
           }
         }}
-        className="relative flex max-h-[calc(100vh-5rem)] w-full max-w-[720px] flex-col overflow-hidden rounded-[6px] border border-[var(--border-strong)] bg-[var(--surface)] shadow-[0_18px_50px_rgb(29_33_30_/_18%)]"
+        className="relative flex max-h-[calc(100dvh-5rem)] w-full max-w-[720px] flex-col overflow-hidden rounded-[6px] border border-[var(--border-strong)] bg-[var(--surface)] shadow-[var(--shadow-dialog)]"
       >
         <h2 id="quick-search-title" className="sr-only">Quick search knowledge</h2>
 
@@ -200,6 +207,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
               searchState.search(event.target.value);
             }}
             role="combobox"
+            aria-label="Search knowledge"
             aria-autocomplete="list"
             aria-expanded="true"
             aria-controls="quick-search-results"
@@ -213,7 +221,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
             type="button"
             onClick={onClose}
             aria-label="Close quick search"
-            className="shrink-0 border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-1 text-[10px] font-medium text-[var(--text-subtle)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="min-h-9 min-w-9 shrink-0 border border-[var(--border)] bg-[var(--surface-muted)] px-2 py-1 text-[12px] font-medium text-[var(--text-subtle)] transition-colors hover:border-[var(--border-strong)] hover:text-[var(--text-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             Esc
           </button>
@@ -221,10 +229,10 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
 
         <div className="min-h-0 overflow-y-auto py-2">
           <div className="flex items-center justify-between px-4 pb-2 pt-1 sm:px-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+            <p className="text-[12px] font-semibold text-[var(--text-subtle)]">
               {trimmedQuery ? "Quick results" : "Recently updated"}
             </p>
-            <span className="text-[11px] tabular-nums text-[var(--text-subtle)]">
+            <span className="text-[12px] tabular-nums text-[var(--text-subtle)]">
               {trimmedQuery ? `${results.length} shown` : `${items.length} notes`}
             </span>
           </div>
@@ -245,7 +253,7 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                   onClick={() => openResult(item)}
                   className={`group grid w-full grid-cols-[minmax(0,1fr)_auto] gap-4 px-4 py-3 text-left transition-colors sm:px-5 ${
                     selected ? "bg-[var(--row-hover)]" : "hover:bg-[var(--row-hover)]"
-                  } focus-visible:outline-none`}
+                  } focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]`}
                 >
                   <span className="min-w-0">
                     <span
@@ -257,11 +265,11 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                     >
                       {item.title}
                     </span>
-                    <span className="mt-1 block truncate text-[11px] text-[var(--text-subtle)]">
-                      {[item.collection, ...item.tags].filter(Boolean).join(" · ") || "No collection or tags"}
+                    <span className="mt-1 block truncate text-[12px] text-[var(--text-subtle)]">
+                      {[item.collection, ...item.tags].filter(Boolean).join(" / ") || "No collection or tags"}
                     </span>
                   </span>
-                  <span className="pt-0.5 text-[11px] tabular-nums text-[var(--text-subtle)]">{item.updatedAt}</span>
+                  <span className="pt-0.5 text-[12px] tabular-nums text-[var(--text-subtle)]">{item.updatedAt}</span>
                 </button>
               );
             })}
@@ -287,9 +295,9 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
           )}
 
           {trimmedQuery && searchState.status === "success" && results.length === 0 && (
-            <div className="px-5 py-8 text-center">
+            <div className="px-5 py-8 text-center" aria-live="polite">
               <p className="text-[14px] font-medium text-[var(--text)]">No quick matches.</p>
-              <p className="mt-1 text-[12px] leading-5 text-[var(--text-muted)]">
+              <p className="mt-1 break-words text-[12px] leading-5 text-[var(--text-muted)] [overflow-wrap:anywhere]">
                 Open full search to keep working with “{trimmedQuery}”.
               </p>
             </div>
@@ -307,18 +315,19 @@ export function QuickSearchOverlay({ open, items, onClose }: QuickSearchOverlayP
                   selectedIndex === results.length
                     ? "bg-[var(--row-hover)] text-[var(--accent-strong)]"
                     : "text-[var(--text-muted)] hover:bg-[var(--row-hover)] hover:text-[var(--accent-strong)]"
-                } focus-visible:outline-none`}
+                } focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[var(--accent)]`}
               >
-                <span>View all results for “{trimmedQuery}”</span>
-                <span aria-hidden="true">→</span>
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">View all results for “{trimmedQuery}”</span>
               </button>
             </div>
           )}
         </div>
 
-        <div className="hidden items-center justify-between border-t border-[var(--border)] px-5 py-2.5 text-[10px] text-[var(--text-subtle)] sm:flex">
-          <span>↑ ↓ Navigate · Enter Open</span>
-          <span>Cmd/Ctrl K · Esc Close</span>
+        <div className="hidden items-center justify-between border-t border-[var(--border)] px-5 py-2.5 text-[12px] text-[var(--text-subtle)] sm:flex">
+          <span>↑ ↓ Navigate</span>
+          <span>Enter Open</span>
+          <span>Cmd/Ctrl K</span>
+          <span>Esc Close</span>
         </div>
       </div>
     </div>

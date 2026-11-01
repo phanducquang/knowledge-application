@@ -6,6 +6,24 @@ import { resolveImageSource } from "@/lib/attachment-reference";
 type EditorStatus = "loading" | "ready" | "error";
 type CrepeInstance = import("@milkdown/crepe").Crepe;
 
+const commandLabels: Record<string, string> = {
+  bold: "Bold", italic: "Italic", strikethrough: "Strikethrough", code: "Inline code",
+  "bullet-list": "Bullet list", "ordered-list": "Numbered list", "task-list": "Task list",
+  link: "Insert link", image: "Insert image", table: "Insert table", "code-block": "Insert code block",
+  math: "Insert math", quote: "Block quote", hr: "Horizontal rule",
+};
+
+// Annotate Crepe's generated node views without changing their commands or Markdown.
+function labelEditorSurface(root: HTMLElement) {
+  root.querySelector('.ProseMirror')?.setAttribute("aria-label", "Markdown content");
+  root.querySelectorAll('.milkdown-list-item-block').forEach((item) => {
+    item.setAttribute("role", "listitem");
+    item.querySelector(':scope > li')?.setAttribute("role", "presentation");
+  });
+  root.querySelectorAll('[data-role="x-line-drag-handle"] .add-button').forEach((button) => button.setAttribute("aria-label", "Add row"));
+  root.querySelectorAll('[data-role="y-line-drag-handle"] .add-button').forEach((button) => button.setAttribute("aria-label", "Add column"));
+}
+
 interface KnowledgeMarkdownEditorProps {
   initialMarkdown: string;
   name?: string;
@@ -31,11 +49,22 @@ export function KnowledgeMarkdownEditor({
     }
 
     let crepe: CrepeInstance | null = null;
+    let accessibilityObserver: MutationObserver | null = null;
     let cancelled = false;
 
     const mountEditor = async () => {
       try {
-        const { Crepe } = await import("@milkdown/crepe");
+        const [{ Crepe }, { HighlightStyle, syntaxHighlighting }, { tags }] = await Promise.all([
+          import("@milkdown/crepe"), import("@codemirror/language"), import("@lezer/highlight"),
+        ]);
+        const codeTheme = syntaxHighlighting(HighlightStyle.define([
+          { tag: tags.keyword, color: "var(--accent-strong)" },
+          { tag: [tags.string, tags.special(tags.string)], color: "var(--success)" },
+          { tag: [tags.number, tags.bool, tags.null], color: "var(--warning)" },
+          { tag: tags.comment, color: "var(--text-subtle)", fontStyle: "italic" },
+          { tag: [tags.typeName, tags.className, tags.function(tags.variableName)], color: "var(--accent-strong)" },
+          { tag: [tags.variableName, tags.propertyName, tags.operator, tags.punctuation], color: "var(--text)" },
+        ]));
         const uploadImage = async (file: File) => {
           if (!knowledgeId) {
             throw new Error("Create this note before uploading images");
@@ -76,6 +105,14 @@ export function KnowledgeMarkdownEditor({
               mode: "block",
             },
             [Crepe.Feature.TopBar]: {
+              buildTopBar: (builder) => {
+                for (const group of builder.build()) {
+                  for (const item of group.items) {
+                    const label = commandLabels[item.key];
+                    if (label) item.icon = item.icon.replace("<svg", `<svg role="img" aria-label="${label}"`);
+                  }
+                }
+              },
               headingOptions: [
                 { label: "Text", level: null },
                 { label: "H2", level: 2 },
@@ -84,6 +121,8 @@ export function KnowledgeMarkdownEditor({
               ],
             },
             [Crepe.Feature.CodeMirror]: {
+              // Wrap the extension so Crepe's deep defaults cannot refill its dark-theme array.
+              theme: { extension: codeTheme },
               searchPlaceholder: "Search language...",
               noResultText: "No matching language",
             },
@@ -119,6 +158,9 @@ export function KnowledgeMarkdownEditor({
         }
 
         crepe = instance;
+        labelEditorSurface(root);
+        accessibilityObserver = new MutationObserver(() => labelEditorSurface(root));
+        accessibilityObserver.observe(root, { childList: true, subtree: true });
         setStatus("ready");
       } catch (error) {
         console.error("Failed to initialize Milkdown Crepe editor", error);
@@ -132,23 +174,30 @@ export function KnowledgeMarkdownEditor({
 
     return () => {
       cancelled = true;
+      accessibilityObserver?.disconnect();
       crepe?.destroy();
       root.replaceChildren();
     };
   }, [initialMarkdown, knowledgeId, onMarkdownChange]);
 
   return (
-    <div className="knowledge-markdown-editor relative" data-editor-status={status}>
+    <div className="knowledge-markdown-editor relative" data-editor-status={status} aria-busy={status === "loading"}
+      onKeyDown={(event) => {
+        if ((event.key === "Enter" || event.key === " ") && event.target instanceof HTMLButtonElement && event.target.matches('.top-bar-item')) {
+          event.preventDefault();
+          event.target.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+        }
+      }}>
       <div ref={rootRef} />
 
       {status === "loading" && (
-        <p className="pointer-events-none absolute left-4 top-4 text-[12px] text-[var(--text-subtle)]">
+        <p role="status" className="pointer-events-none absolute left-4 top-4 text-[12px] text-[var(--text-subtle)]">
           Loading editor…
         </p>
       )}
 
       {status === "error" && (
-        <div className="min-h-[360px] px-4 py-4 text-[13px] text-[var(--danger)]">
+        <div role="alert" className="min-h-[360px] px-4 py-4 text-[13px] text-[var(--danger)]">
           The Markdown editor could not be initialized.
         </div>
       )}

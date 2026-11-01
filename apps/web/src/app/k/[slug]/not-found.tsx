@@ -2,7 +2,7 @@ export default function PublicKnowledgeNotFound() {
   return (
     <main className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <div className="mx-auto w-full max-w-[760px] px-5 py-16 sm:px-8">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+        <p className="text-[12px] font-semibold text-[var(--accent)]">
           Knowledge / Missing
         </p>
         <h1 className="mt-3 text-[32px] font-semibold tracking-[-0.035em]">

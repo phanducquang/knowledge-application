@@ -79,7 +79,7 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
               <SearchIcon />
             </button>
           )}
-          <span className="px-1 text-[11px] font-medium text-[var(--accent)]">Private</span>
+          <span className="px-1 text-[12px] font-medium text-[var(--accent)]">Private</span>
           {onClose && (
             <button
               type="button"
@@ -104,7 +104,7 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
         </div>
 
         <div className="mt-7">
-          <p className="mb-2 px-3 text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-subtle)]">Collections</p>
+          <p className="mb-2 px-3 text-[12px] font-medium text-[var(--text-subtle)]">Collections</p>
           <div className="space-y-0.5">
             {collections.map((collection) => (
               <NavLink
@@ -115,7 +115,7 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
               >
                 <span className="flex items-center justify-between gap-2">
                   <span className="min-w-0 truncate">{collection.name}</span>
-                  <span className="text-[11px] tabular-nums text-[var(--text-subtle)]">{collection.knowledgeCount}</span>
+                  <span className="text-[12px] tabular-nums text-[var(--text-subtle)]">{collection.knowledgeCount}</span>
                 </span>
               </NavLink>
             ))}
@@ -150,13 +150,13 @@ export function Sidebar({ collections, currentUser, currentPath = "/", onNavigat
           + New note
         </Link>
         <div className="mt-4 border-t border-[var(--border)] pt-4">
-          <p className="truncate px-1 text-[11px] text-[var(--text-subtle)]" title={currentUser.email}>
+          <p className="truncate px-1 text-[12px] text-[var(--text-subtle)]" title={currentUser.email}>
             {currentUser.email}
           </p>
           <form action="/api/auth/logout" method="post" className="mt-2">
             <button
               type="submit"
-              className="px-1 text-[12px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+              className="min-h-8 px-1 text-[12px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
               Sign out
             </button>

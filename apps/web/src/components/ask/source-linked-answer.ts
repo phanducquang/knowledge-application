@@ -26,7 +26,7 @@ export function SourceLinkedAnswer({ answer, citations }: { answer: AskAnswerDat
             const citation = byId.get(id)!;
             return createElement("button", { key: id, type: "button", "aria-label": `Source ${id.slice(1)}: ${citation.source.title}`,
               "aria-controls": citationEvidenceId(id), onClick: () => focusCitationEvidence(id),
-              className: "min-h-8 min-w-8 rounded-[4px] px-1 text-[13px] text-[var(--accent-strong)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]" }, `[${id.slice(1)}]`);
+              className: "min-h-11 min-w-11 sm:min-h-8 sm:min-w-8 rounded-[4px] px-1 text-[13px] text-[var(--accent-strong)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]" }, `[${id.slice(1)}]`);
           }))))),
     createElement("section", { className: "mt-8 border-t border-[var(--border)] pt-5", "aria-labelledby": "ask-sources-heading" },
       createElement("h2", { id: "ask-sources-heading", className: "text-[18px] font-medium" }, "Sources / Evidence"),
@@ -38,6 +38,6 @@ export function SourceLinkedAnswer({ answer, citations }: { answer: AskAnswerDat
           ...group.items.map(citation => createElement("div", { key: citation.id, id: citationEvidenceId(citation.id), tabIndex: -1, role: "group",
             "aria-label": `Evidence ${citation.id.slice(1)}: ${group.source.title}, chunk ${citation.chunkIndex + 1}`,
             className: "my-3 min-w-0 border-l-2 border-[var(--border)] pl-4 focus:border-[var(--accent)] focus:outline-none" },
-            createElement("p", { className: "text-[11px] font-medium text-[var(--text-subtle)]" }, `[${citation.id.slice(1)}] · Chunk ${citation.chunkIndex + 1}`),
+            createElement("p", { className: "text-[12px] font-medium text-[var(--text-subtle)]" }, `[${citation.id.slice(1)}] Chunk ${citation.chunkIndex + 1}`),
             createElement("p", { className: "mt-2 whitespace-pre-wrap text-[13px] leading-6 text-[var(--text-muted)] [overflow-wrap:anywhere]" }, citation.evidence))))))));
 }

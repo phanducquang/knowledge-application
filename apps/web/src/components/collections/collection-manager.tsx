@@ -10,8 +10,8 @@ import {
 } from "@/app/collections/actions";
 import type { CollectionData } from "@/types/collection";
 
-const inputClassName = "min-h-10 w-full border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[14px] text-[var(--text)] outline-none focus:border-[var(--accent)]";
-const quietButtonClassName = "min-h-9 px-2 text-[12px] font-medium text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:opacity-60";
+const inputClassName = "min-h-11 w-full border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[16px] text-[var(--text)] outline-none focus:border-[var(--accent)] sm:text-[14px]";
+const quietButtonClassName = "min-h-11 px-2 text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] disabled:opacity-60";
 
 function CollectionRow({ collection }: { collection: CollectionData }) {
   const router = useRouter();
@@ -57,7 +57,7 @@ function CollectionRow({ collection }: { collection: CollectionData }) {
   return (
     <li className="border-b border-[var(--border)] py-4 last:border-b-0">
       {editing ? (
-        <form onSubmit={(event) => void rename(event)} className="flex flex-wrap items-center gap-2">
+        <form onSubmit={(event) => void rename(event)} aria-busy={pending} className="flex flex-wrap items-center gap-2">
           <label className="sr-only" htmlFor={`rename-collection-${collection.id}`}>Collection name</label>
           <input
             id={`rename-collection-${collection.id}`}
@@ -65,25 +65,28 @@ function CollectionRow({ collection }: { collection: CollectionData }) {
             name="name"
             maxLength={100}
             required
+            autoFocus
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `collection-error-${collection.id}` : undefined}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <button type="submit" disabled={pending} className="min-h-9 px-3 text-[12px] font-medium text-[var(--accent-strong)] disabled:opacity-60">
+          <button type="submit" disabled={pending} className="min-h-11 px-3 text-[13px] font-medium text-[var(--accent-strong)] disabled:opacity-60">
             {pending ? "Saving…" : "Save"}
           </button>
           <button type="button" disabled={pending} onClick={() => { setEditing(false); setName(collection.name); setError(null); }} className={quietButtonClassName}>Cancel</button>
         </form>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-          <div className="min-w-0">
-            <Link href={`/collections/${collection.id}`} className="text-[16px] font-medium text-[var(--text)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
+          <div className="min-w-0 flex-1 basis-[200px]">
+            <Link href={`/collections/${collection.id}`} className="break-words text-[16px] font-medium text-[var(--text)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] [overflow-wrap:anywhere]">
               {collection.name}
             </Link>
             <p className="mt-1 text-[12px] text-[var(--text-subtle)]">{collection.knowledgeCount} {collection.knowledgeCount === 1 ? "note" : "notes"}</p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" disabled={pending} onClick={() => { setEditing(true); setConfirmDelete(false); setError(null); }} className={quietButtonClassName}>Rename</button>
-            <button type="button" disabled={pending} onClick={() => void remove()} className={`${quietButtonClassName} ${confirmDelete ? "text-[var(--danger)]" : ""}`}>
+            <button type="button" aria-label={`Rename ${collection.name}`} disabled={pending} onClick={() => { setEditing(true); setConfirmDelete(false); setError(null); }} className={quietButtonClassName}>Rename</button>
+            <button type="button" aria-label={`${confirmDelete ? "Confirm delete" : "Delete"} ${collection.name}`} aria-describedby={confirmDelete ? `collection-delete-${collection.id}` : undefined} disabled={pending} onClick={() => void remove()} className={`${quietButtonClassName} ${confirmDelete ? "text-[var(--danger)]" : ""}`}>
               {pending ? "Deleting…" : confirmDelete ? "Confirm delete" : "Delete"}
             </button>
             {confirmDelete && <button type="button" disabled={pending} onClick={() => setConfirmDelete(false)} className={quietButtonClassName}>Cancel</button>}
@@ -91,9 +94,9 @@ function CollectionRow({ collection }: { collection: CollectionData }) {
         </div>
       )}
       {confirmDelete && !editing && (
-        <p className="mt-2 text-[12px] leading-5 text-[var(--danger)]">The {collection.knowledgeCount} {collection.knowledgeCount === 1 ? "note" : "notes"} in this collection will become unfiled. Notes and history remain intact.</p>
+        <p id={`collection-delete-${collection.id}`} role="status" className="mt-2 text-[12px] leading-5 text-[var(--danger)]">The {collection.knowledgeCount} {collection.knowledgeCount === 1 ? "note" : "notes"} in this collection will become unfiled. Notes and history remain intact.</p>
       )}
-      {error && <p role="alert" className="mt-2 text-[12px] text-[var(--danger)]">{error}</p>}
+      {error && <p id={`collection-error-${collection.id}`} role="alert" className="mt-2 text-[12px] text-[var(--danger)]">{error}</p>}
     </li>
   );
 }
@@ -121,8 +124,8 @@ export function CollectionManager({ collections }: { collections: CollectionData
 
   return (
     <div>
-      <form onSubmit={(event) => void create(event)} className="border-b border-[var(--border)] pb-8">
-        <label htmlFor="new-collection-name" className="mb-2 block text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-subtle)]">New collection</label>
+      <form onSubmit={(event) => void create(event)} aria-busy={creating} className="border-b border-[var(--border)] pb-8">
+        <label htmlFor="new-collection-name" className="mb-2 block text-[12px] font-medium text-[var(--text-subtle)]">New collection</label>
         <div className="flex flex-wrap items-center gap-2">
           <input
             id="new-collection-name"
@@ -131,14 +134,16 @@ export function CollectionManager({ collections }: { collections: CollectionData
             placeholder="Collection name"
             maxLength={100}
             required
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "new-collection-error" : undefined}
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <button type="submit" disabled={creating} className="min-h-10 border border-[var(--accent)] bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-contrast)] hover:bg-[var(--accent-strong)] disabled:opacity-60">
+          <button type="submit" disabled={creating} className="min-h-11 border border-[var(--accent)] bg-[var(--accent)] px-4 text-[13px] font-medium text-[var(--accent-contrast)] hover:bg-[var(--accent-strong)] disabled:opacity-60">
             {creating ? "Creating…" : "Create collection"}
           </button>
         </div>
-        {error && <p role="alert" className="mt-2 text-[12px] text-[var(--danger)]">{error}</p>}
+        {error && <p id="new-collection-error" role="alert" className="mt-2 text-[12px] text-[var(--danger)]">{error}</p>}
       </form>
 
       <section className="pt-7" aria-labelledby="collections-heading">

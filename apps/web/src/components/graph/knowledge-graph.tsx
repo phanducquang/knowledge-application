@@ -13,7 +13,7 @@ import type { KnowledgeGraphData } from "@/types/knowledge-graph";
 import type { CollectionData } from "@/types/collection";
 
 const nodeTypes = { knowledge: KnowledgeGraphNode };
-const controlClass = "min-h-9 border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-[13px] text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]";
+const controlClass = "min-h-11 min-w-11 rounded-[5px] border border-[var(--border-strong)] bg-[var(--surface)] px-3 py-1.5 text-[16px] text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:min-h-9 sm:text-[13px]";
 
 interface GraphProps {
   graph: KnowledgeGraphData;
@@ -49,16 +49,16 @@ function GraphWorkspace({ graph, collections, initialFocus }: GraphProps) {
   return (
     <section aria-label="Interactive knowledge graph" className="min-w-0">
       <div className="mb-4 flex min-w-0 flex-wrap items-end gap-3">
-        <label className="flex min-w-0 flex-col gap-1 text-[11px] text-[var(--text-subtle)]">
+        <label className="flex w-full min-w-0 flex-col gap-1 text-[12px] text-[var(--text-muted)] sm:w-auto">
           Collection
-          <select className={`${controlClass} w-[min(240px,100%)] max-w-full`} value={collectionId ?? ""} onChange={(event) => setCollectionId(event.target.value ? Number(event.target.value) : null)}>
+          <select className={`${controlClass} w-full max-w-full sm:w-[240px]`} value={collectionId ?? ""} onChange={(event) => setCollectionId(event.target.value ? Number(event.target.value) : null)}>
             <option value="">All Collections</option>
             {collections.map((collection) => <option key={collection.id} value={collection.id}>{collection.name}</option>)}
           </select>
         </label>
-        <label className="flex min-w-0 flex-col gap-1 text-[11px] text-[var(--text-subtle)]">
+        <label className="flex w-full min-w-0 flex-col gap-1 text-[12px] text-[var(--text-muted)] sm:w-auto">
           Focus note
-          <select className={`${controlClass} w-[min(280px,100%)] max-w-full`} value={focused?.slug ?? ""} onChange={(event) => setFocusSlug(event.target.value)}>
+          <select className={`${controlClass} w-full max-w-full sm:w-[280px]`} value={focused?.slug ?? ""} onChange={(event) => setFocusSlug(event.target.value)}>
             <option value="">All visible notes</option>
             {visible.nodes.map((note) => <option key={note.id} value={note.slug}>{note.title}</option>)}
           </select>

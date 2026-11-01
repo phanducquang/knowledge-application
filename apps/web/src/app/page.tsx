@@ -17,7 +17,7 @@ export default async function Home() {
       <div className="mx-auto w-full max-w-[1080px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <header className="mb-8 border-b border-[var(--border)] pb-6 sm:flex sm:items-end sm:justify-between sm:gap-10">
           <div>
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+            <p className="mb-2 text-[12px] font-semibold text-[var(--accent)]">
               Knowledge / Library
             </p>
             <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] text-[var(--text)] sm:text-[34px]">
@@ -30,7 +30,7 @@ export default async function Home() {
 
           <div className="mt-6 flex items-end justify-between gap-6 sm:mt-0 sm:justify-end">
             <div className="border-l border-[var(--border-strong)] pl-4">
-              <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[var(--text-subtle)]">Notes</p>
+              <p className="text-[12px] font-medium text-[var(--text-subtle)]">Notes</p>
               <p className="mt-1 text-[28px] font-medium leading-none tabular-nums tracking-[-0.04em] text-[var(--accent)]">
                 {String(items.length).padStart(2, "0")}
               </p>

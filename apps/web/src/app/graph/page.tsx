@@ -16,7 +16,7 @@ export default async function GraphPage({ searchParams }: {
     <WorkspaceShell>
       <div className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <header className="mb-6 border-b border-[var(--border)] pb-5">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">Knowledge / Relationships</p>
+          <p className="mb-2 text-[12px] font-semibold text-[var(--accent)]">Knowledge / Relationships</p>
           <h1 className="text-[32px] font-semibold leading-[1.1] tracking-[-0.035em] text-[var(--text)] sm:text-[34px]">Knowledge Graph</h1>
           <p className="mt-3 max-w-2xl text-[14px] leading-6 text-[var(--text-muted)]">Current wiki links across your notes. Arrows follow the direction of each link; isolated notes remain visible.</p>
         </header>

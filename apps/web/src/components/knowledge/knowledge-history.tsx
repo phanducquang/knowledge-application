@@ -108,20 +108,20 @@ export function KnowledgeHistory({
         <div>
           <Link
             href={`/knowledge/${knowledge.slug}/edit`}
-            className="inline-flex min-h-9 items-center text-[13px] font-medium text-[var(--text-muted)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+            className="inline-flex min-h-11 sm:min-h-9 items-center text-[13px] font-medium text-[var(--text-muted)] underline-offset-4 hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
           >
             ← Back to editor
           </Link>
           <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.025em] text-[var(--text)]">
             Revision history
           </h1>
-          <p className="mt-1 max-w-[720px] text-[13px] leading-5 text-[var(--text-subtle)]">
+          <p className="mt-1 max-w-[720px] break-words text-[13px] leading-5 text-[var(--text-subtle)]">
             {knowledge.title} · restore authoring content without changing its URL or sharing state.
           </p>
         </div>
         <Link
           href={`/knowledge/${knowledge.slug}`}
-          className="inline-flex min-h-9 items-center px-2 text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+          className="inline-flex min-h-11 sm:min-h-9 items-center px-2 text-[13px] font-medium text-[var(--text-muted)] hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
         >
           Read note
         </Link>
@@ -134,7 +134,7 @@ export function KnowledgeHistory({
       )}
 
       {items.length === 0 ? (
-        <section className="border border-[var(--border)] bg-[var(--surface)] px-6 py-12 text-center">
+        <section className="border-t border-[var(--border)] px-6 py-12 text-center">
           <h2 className="text-[17px] font-semibold text-[var(--text)]">No revisions yet</h2>
           <p className="mt-2 text-[13px] text-[var(--text-subtle)]">
             Checkpoints will appear here as the note changes over time.
@@ -143,7 +143,7 @@ export function KnowledgeHistory({
       ) : (
         <div className="grid gap-7 lg:grid-cols-[290px_minmax(0,1fr)] lg:gap-10">
           <aside aria-label="Revision list">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]">
+            <p className="mb-3 text-[12px] font-medium text-[var(--text-subtle)]">
               Newest first
             </p>
             <ol className="border-t border-[var(--border)]">
@@ -159,11 +159,11 @@ export function KnowledgeHistory({
                         active ? "bg-[var(--surface-muted)]" : "hover:bg-[var(--surface-muted)]"
                       }`}
                     >
-                      <span className="flex items-center justify-between gap-3">
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--accent-strong)]">
+                      <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                        <span className="text-[12px] font-medium text-[var(--accent-strong)]">
                           {reasonLabel(revision.reason)}
                         </span>
-                        <time dateTime={revision.createdAt} className="text-[10px] tabular-nums text-[var(--text-subtle)]">
+                        <time dateTime={revision.createdAt} className="text-[12px] tabular-nums text-[var(--text-subtle)]">
                           {revisionTime(revision.createdAt)}
                         </time>
                       </span>
@@ -171,7 +171,7 @@ export function KnowledgeHistory({
                         {revision.title}
                       </span>
                       {revision.summaryExcerpt && (
-                        <span className="mt-1 line-clamp-2 block text-[11px] leading-4 text-[var(--text-subtle)]">
+                        <span className="mt-1 line-clamp-2 block text-[12px] leading-4 text-[var(--text-subtle)]">
                           {revision.summaryExcerpt}
                         </span>
                       )}
@@ -185,14 +185,14 @@ export function KnowledgeHistory({
                 type="button"
                 disabled={loadingMore}
                 onClick={() => void loadOlder()}
-                className="mt-4 inline-flex min-h-9 w-full items-center justify-center border border-[var(--border-strong)] px-3 text-[12px] font-medium text-[var(--text-muted)] hover:border-[var(--accent)] hover:text-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                className="mt-4 inline-flex min-h-11 sm:min-h-9 w-full items-center justify-center border border-[var(--border-strong)] px-3 text-[12px] font-medium text-[var(--text-muted)] hover:border-[var(--accent)] hover:text-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
               >
                 {loadingMore ? "Loading…" : "Load older revisions"}
               </button>
             )}
           </aside>
 
-          <main className="min-w-0">
+          <section className="min-w-0" aria-label="Revision preview" aria-busy={loadingDetail || restoring}>
             {loadingDetail ? (
               <div aria-live="polite" className="border-t border-[var(--border)] py-12 text-[13px] text-[var(--text-subtle)]">
                 Loading revision…
@@ -201,19 +201,19 @@ export function KnowledgeHistory({
               <article>
                 <div className="flex flex-wrap items-start justify-between gap-5 border-b border-[var(--border)] pb-5">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+                    <p className="text-[12px] font-medium text-[var(--accent)]">
                       {reasonLabel(selected.reason)} · {revisionTime(selected.createdAt)}
                     </p>
                     <h2 className="mt-3 text-[26px] font-semibold leading-tight tracking-[-0.025em] text-[var(--text)]">
                       {selected.title}
                     </h2>
                     {selected.summary && (
-                      <p className="mt-3 max-w-[720px] text-[14px] leading-6 text-[var(--text-muted)]">
+                      <p className="mt-3 max-w-[720px] break-words text-[14px] leading-6 text-[var(--text-muted)]">
                         {selected.summary}
                       </p>
                     )}
                     <div className="mt-4 flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--text-subtle)]">
+                      <span className="text-[12px] font-medium text-[var(--text-subtle)]">
                         {selected.collection ?? "Unfiled"}
                       </span>
                       {selected.tags.map((tag) => <Tag key={tag}>{tag}</Tag>)}
@@ -222,23 +222,23 @@ export function KnowledgeHistory({
                   <button
                     type="button"
                     onClick={() => setConfirmRestore(true)}
-                    className="inline-flex min-h-9 items-center border border-[var(--accent)] px-3 text-[12px] font-medium text-[var(--accent-strong)] hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                    className="inline-flex min-h-11 sm:min-h-9 items-center border border-[var(--accent)] px-3 text-[12px] font-medium text-[var(--accent-strong)] hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                   >
                     Restore this version
                   </button>
                 </div>
 
                 {confirmRestore && (
-                  <div className="my-5 border-l-2 border-[var(--accent)] bg-[var(--surface-muted)] px-4 py-3" role="status">
+                  <div className="my-5 break-words border-l-2 border-[var(--accent)] bg-[var(--surface-muted)] px-4 py-3" role="status">
                     <p className="text-[12px] leading-5 text-[var(--text-muted)]">
                       This replaces the current title, summary, Markdown, collection and tags. The current version is saved first; URL and sharing settings stay unchanged.
                     </p>
-                    <div className="mt-3 flex gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
                         disabled={restoring}
                         onClick={() => void restore()}
-                        className="inline-flex min-h-9 items-center bg-[var(--accent)] px-3 text-[12px] font-medium text-[var(--accent-contrast)] hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                        className="inline-flex min-h-11 sm:min-h-9 items-center bg-[var(--accent)] px-3 text-[12px] font-medium text-[var(--accent-contrast)] hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       >
                         {restoring ? "Restoring…" : "Confirm restore"}
                       </button>
@@ -246,7 +246,7 @@ export function KnowledgeHistory({
                         type="button"
                         disabled={restoring}
                         onClick={() => setConfirmRestore(false)}
-                        className="inline-flex min-h-9 items-center px-3 text-[12px] font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                        className="inline-flex min-h-11 sm:min-h-9 items-center px-3 text-[12px] font-medium text-[var(--text-muted)] hover:text-[var(--text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
                       >
                         Cancel
                       </button>
@@ -272,7 +272,7 @@ export function KnowledgeHistory({
                 Select a revision to preview it.
               </p>
             )}
-          </main>
+          </section>
         </div>
       )}
     </div>

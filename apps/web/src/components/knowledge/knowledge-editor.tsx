@@ -43,7 +43,7 @@ const emptyDraft: KnowledgeDraft = {
 };
 
 const fieldLabelClassName =
-  "text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--text-subtle)]";
+  "text-[12px] font-medium text-[var(--text-subtle)]";
 
 function editableFields(knowledge: KnowledgeData): KnowledgeDraft {
   return {
@@ -366,20 +366,22 @@ export function KnowledgeEditor({
 
   return (
     <div className="mx-auto w-full max-w-[1160px] px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+      <h1 className="sr-only">{mode === "edit" ? "Edit note" : "New note"}</h1>
       <div className="mb-7 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] pb-4">
         <Link
           href={mode === "edit" && initialKnowledge ? `/knowledge/${initialKnowledge.slug}` : "/"}
-          className="inline-flex min-h-9 items-center text-[14px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
+          className="inline-flex min-h-11 sm:min-h-9 items-center text-[14px] font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--accent-strong)] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
         >
           ← {mode === "edit" ? "Reading" : "All notes"}
         </Link>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {mode === "edit" ? (
             <>
               <span
                 className={`mr-1 text-[12px] ${statusClassName(saveStatus)}`}
                 aria-live="polite"
+                aria-atomic="true"
               >
                 {saveStatus === "saved"
                   ? "Saved"
@@ -389,7 +391,7 @@ export function KnowledgeEditor({
               </span>
               <Link
                 href={`/knowledge/${initialKnowledge?.slug}`}
-                className="inline-flex min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
+                className="inline-flex min-h-11 sm:min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
               >
                 Preview
               </Link>
@@ -397,7 +399,7 @@ export function KnowledgeEditor({
                 type="button"
                 disabled={openingHistory}
                 onClick={() => void openHistory()}
-                className="inline-flex min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
+                className="inline-flex min-h-11 sm:min-h-9 items-center px-2 text-[14px] font-medium text-[var(--text-muted)] transition-colors hover:text-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] sm:text-[13px]"
               >
                 {openingHistory ? "Opening…" : "History"}
               </button>
@@ -417,7 +419,7 @@ export function KnowledgeEditor({
               type="button"
               disabled={creating}
               onClick={() => void createNote()}
-              className="inline-flex min-h-9 items-center border border-[var(--accent)] bg-[var(--accent)] px-3 text-[13px] font-medium text-[var(--accent-contrast)] transition-colors hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+              className="inline-flex min-h-11 sm:min-h-9 items-center border border-[var(--accent)] bg-[var(--accent)] px-3 text-[13px] font-medium text-[var(--accent-contrast)] transition-colors hover:bg-[var(--accent-strong)] disabled:cursor-wait disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
             >
               {creating ? "Creating…" : "Create"}
             </button>
@@ -426,14 +428,14 @@ export function KnowledgeEditor({
       </div>
 
       {saveError && (
-        <p className="mb-5 border-l-2 border-[var(--danger)] pl-3 text-[12px] leading-5 text-[var(--danger)]" role="alert">
+        <p id="knowledge-save-error" className="mb-5 break-words border-l-2 border-[var(--danger)] pl-3 text-[12px] leading-5 text-[var(--danger)]" role="alert">
           {saveError.fieldErrors.title ?? saveError.message}
         </p>
       )}
 
       <div className="xl:grid xl:grid-cols-[minmax(0,760px)_240px] xl:gap-12">
-        <main className="min-w-0">
-          <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--accent)]">
+        <div className="min-w-0">
+          <p className="mb-5 text-[12px] font-medium text-[var(--accent)]">
             {draft.collection ?? "Unfiled"} / {mode === "edit" ? "Editing" : "New note"}
           </p>
 
@@ -448,6 +450,7 @@ export function KnowledgeEditor({
                 changeDraft((current) => ({ ...current, title: event.target.value }))
               }
               aria-invalid={Boolean(saveError?.fieldErrors.title)}
+              aria-describedby={saveError?.fieldErrors.title ? "knowledge-save-error" : undefined}
               placeholder="A clear, durable title"
               className="mt-2 w-full border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[28px] font-semibold leading-[1.15] tracking-[-0.025em] text-[var(--text)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] sm:text-[30px]"
             />
@@ -464,7 +467,7 @@ export function KnowledgeEditor({
                 changeDraft((current) => ({ ...current, summary: event.target.value }))
               }
               placeholder="What should you remember about this note?"
-              className="mt-2 w-full resize-y border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[15px] leading-7 text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+              className="mt-2 w-full resize-y border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-[16px] leading-7 text-[var(--text-muted)] outline-none transition-colors placeholder:text-[var(--text-subtle)] hover:border-[var(--border-strong)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] sm:text-[15px]"
             />
           </label>
 
@@ -474,9 +477,9 @@ export function KnowledgeEditor({
           <ArticleSettings compact {...settingsProps} />
 
           <section className="mt-7" aria-labelledby="content-label">
-            <div className="flex items-end justify-between gap-4">
-              <p id="content-label" className={fieldLabelClassName}>Content</p>
-              <p className="text-[11px] text-[var(--text-subtle)]">
+            <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+              <h2 id="content-label" className={fieldLabelClassName}>Content</h2>
+              <p className="text-[12px] text-[var(--text-subtle)]">
                 {mode === "edit"
                   ? "Markdown · type / for blocks and images"
                   : "Markdown · create the note before adding images"}
@@ -490,9 +493,9 @@ export function KnowledgeEditor({
                 knowledgeId={initialKnowledge?.id}
               />
             </div>
-            <p className="mt-2 text-[11px] text-[var(--text-subtle)]">Link to another note with its stable slug: <code>[[note-slug]]</code>.</p>
+            <p className="mt-2 text-[12px] text-[var(--text-subtle)]">Link to another note with its stable slug: <code>[[note-slug]]</code>.</p>
           </section>
-        </main>
+        </div>
 
         <ArticleSettings {...settingsProps} />
       </div>

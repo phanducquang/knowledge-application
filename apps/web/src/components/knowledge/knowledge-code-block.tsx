@@ -25,7 +25,7 @@ function renderHighlightedNode(node: RootContent, key: string): ReactNode {
 export function KnowledgeCodeBlock({ children }: { children?: ReactNode }) {
   const code = Children.only(children);
   if (!isValidElement<{ className?: string; children?: ReactNode }>(code)) {
-    return <pre className="my-5 max-w-full overflow-x-auto border-y border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-4 text-[13px] leading-6 text-[var(--text)]">{children}</pre>;
+    return <pre tabIndex={0} aria-label="Code block" className="my-5 max-w-full overflow-x-auto border-y border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-4 text-[13px] leading-6 text-[var(--text)]">{children}</pre>;
   }
 
   const source = sourceText(code.props.children);
@@ -36,7 +36,7 @@ export function KnowledgeCodeBlock({ children }: { children?: ReactNode }) {
   const tree = highlightCode(source, code.props.className);
 
   return (
-    <pre className="my-5 max-w-full overflow-x-auto border-y border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-4 text-[13px] leading-6 text-[var(--text)]">
+    <pre tabIndex={0} aria-label="Code block" className="my-5 max-w-full overflow-x-auto border-y border-[var(--border-strong)] bg-[var(--surface-muted)] px-4 py-4 text-[13px] leading-6 text-[var(--text)]">
       <code className={tree ? `hljs ${code.props.className ?? ""}`.trim() : code.props.className}>
         {tree
           ? tree.children.map((node, index) => renderHighlightedNode(node, `token-${index}`))

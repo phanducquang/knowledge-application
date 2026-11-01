@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
 import { QuickSearchOverlay } from "@/components/search/quick-search-overlay";
@@ -34,6 +34,7 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [quickSearchOpen, setQuickSearchOpen] = useState(false);
+  const navigationRef = useRef<HTMLDivElement>(null);
 
   const openQuickSearch = useCallback(() => {
     setMobileNavOpen(false);
@@ -46,6 +47,43 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
       document.body.style.overflow = "";
     };
   }, [mobileNavOpen, quickSearchOpen]);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const navigation = navigationRef.current;
+    const focusable = () => Array.from(navigation?.querySelectorAll<HTMLElement>(
+      'a[href], button:not(:disabled), input:not(:disabled), [tabindex="0"]',
+    ) ?? []);
+    navigation?.querySelector<HTMLElement>('[aria-label="Close navigation"]')?.focus();
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileNavOpen(false);
+      }
+      if (event.key !== "Tab") return;
+      const controls = focusable();
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const handleResize = () => { if (desktop.matches) setMobileNavOpen(false); };
+    document.addEventListener("keydown", handleKey);
+    desktop.addEventListener("change", handleResize);
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      desktop.removeEventListener("change", handleResize);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, [mobileNavOpen]);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -65,7 +103,8 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
-      <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-[236px] lg:border-r lg:border-[var(--border)]">
+      <a href="#main-content" className="skip-link" inert={mobileNavOpen || quickSearchOpen}>Skip to content</a>
+      <div inert={mobileNavOpen || quickSearchOpen} className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:block lg:w-[236px] lg:border-r lg:border-[var(--border)]">
         <Sidebar
           collections={collections}
           currentPath={pathname}
@@ -74,7 +113,7 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
         />
       </div>
 
-      <header className="sticky top-0 z-20 grid h-14 grid-cols-[1fr_auto_1fr] items-center border-b border-[var(--border)] bg-[var(--background)] px-5 lg:hidden">
+      <header inert={mobileNavOpen || quickSearchOpen} className="sticky top-0 z-20 flex min-h-14 items-center justify-between gap-2 border-b border-[var(--border)] bg-[var(--background)] px-4 lg:hidden">
         <button
           type="button"
           onClick={() => setMobileNavOpen(true)}
@@ -96,7 +135,7 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
           >
             <SearchIcon />
           </button>
-          <Link href="/knowledge/new" className="text-[13px] font-medium text-[var(--accent)]">
+          <Link href="/knowledge/new" className="inline-flex min-h-11 items-center whitespace-nowrap px-1 text-[13px] font-medium text-[var(--accent)]">
             New note
           </Link>
         </div>
@@ -107,10 +146,11 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
           <button
             type="button"
             aria-label="Close navigation"
-            className="absolute inset-0 bg-black/20"
+            tabIndex={-1}
+            className="absolute inset-0 bg-[var(--overlay-backdrop)]"
             onClick={() => setMobileNavOpen(false)}
           />
-          <div id="mobile-navigation" className="relative h-full w-[min(82vw,300px)] border-r border-[var(--border)]">
+          <div ref={navigationRef} id="mobile-navigation" className="relative h-dvh w-[min(88%,320px)] border-r border-[var(--border)]">
             <Sidebar
               collections={collections}
               currentPath={pathname}
@@ -129,7 +169,7 @@ export function WorkspaceShellClient({ children, items, collections, currentUser
         onClose={() => setQuickSearchOpen(false)}
       />
 
-      <main className="lg:pl-[236px]">{children}</main>
+      <main id="main-content" tabIndex={-1} inert={mobileNavOpen || quickSearchOpen} className="min-w-0 lg:pl-[236px]">{children}</main>
     </div>
   );
 }
