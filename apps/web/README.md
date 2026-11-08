@@ -34,6 +34,7 @@ Next.js application for the Knowledge Application workspace.
 - one persisted Share Dialog shared by Reading/Edit, with real PUBLIC links and backend-managed UNLISTED link retrieval/confirmed rotation
 - protected `/knowledge/{slug}/history` with paginated checkpoints, selected full-Markdown preview and confirmed restore
 - persisted Crepe Edit mode with secure image upload and stable `attachment://<UUID>` references rendered in owner, PUBLIC, UNLISTED and History contexts
+- Content paste recognizes Markdown source before rich HTML/VS Code fallbacks: headings (including `#` H1), lists, quotes, emphasis and fences use the existing Milkdown parser and remain canonical Markdown. Paste inside code blocks, non-Markdown VS Code snippets, images/files and ordinary rich text retain native behavior; a Markdown paste is undoable as one operation.
 - shared fenced-code syntax highlighting for private, PUBLIC, UNLISTED and History rendering
 - lazy browser-side Mermaid rendering for explicit `mermaid` fences through the same shared Markdown renderer
 

@@ -54,8 +54,9 @@ export function KnowledgeMarkdownEditor({
 
     const mountEditor = async () => {
       try {
-        const [{ Crepe }, { HighlightStyle, syntaxHighlighting }, { tags }] = await Promise.all([
+        const [{ Crepe }, { HighlightStyle, syntaxHighlighting }, { tags }, { editorViewOptionsCtx, parserCtx }, { createMarkdownPasteHandler }] = await Promise.all([
           import("@milkdown/crepe"), import("@codemirror/language"), import("@lezer/highlight"),
+          import("@milkdown/kit/core"), import("@/lib/markdown-paste"),
         ]);
         const codeTheme = syntaxHighlighting(HighlightStyle.define([
           { tag: tags.keyword, color: "var(--accent-strong)" },
@@ -139,6 +140,16 @@ export function KnowledgeMarkdownEditor({
                 }
               : {}),
           },
+        });
+
+        instance.editor.config((ctx) => {
+          ctx.update(editorViewOptionsCtx, (previous) => ({
+            ...previous,
+            handlePaste(view, event, slice) {
+              const handled = createMarkdownPasteHandler(ctx.get(parserCtx))(view, event);
+              return handled || previous.handlePaste?.(view, event, slice) || false;
+            },
+          }));
         });
 
         instance.on((listener) => {

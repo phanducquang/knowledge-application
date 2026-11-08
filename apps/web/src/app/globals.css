@@ -262,10 +262,11 @@ samp {
   visibility: hidden;
 }
 
-.knowledge-markdown-editor .milkdown .editor :is(h2, h3, h4) {
+.knowledge-markdown-editor .milkdown .editor :is(h1, h2, h3, h4) {
   line-height: 1.4;
 }
 
+.knowledge-markdown-editor .milkdown .editor h1 { font-size: 28px; }
 .knowledge-markdown-editor .milkdown .editor h2 { font-size: 22px; }
 .knowledge-markdown-editor .milkdown .editor h3 { font-size: 18px; }
 .knowledge-markdown-editor .milkdown .editor h4 { font-size: 16px; }
