@@ -136,9 +136,12 @@ class MetadataResumeTest {
         var file=dir.resolve("oversized.json"); Files.writeString(file,"x".repeat(2_000_001));
         assertThatThrownBy(()->MetadataResume.load(file,corpus,identity)).isInstanceOf(MetadataUnavailableException.class);
     }
-    @Test void checkedInV1FixtureIsSyntheticAndCompatible() throws Exception {
+    @Test void checkedInV1FixtureRequiresItsHistoricalPromptAndCannotResumeV2() throws Exception {
         try(var stream=getClass().getResourceAsStream("/metadata-eval/resume-v1.json")) {
-            assertThat(stream).isNotNull(); var plan=MetadataResume.parse(new String(stream.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8),corpus,identity);
+            assertThat(stream).isNotNull(); var text=new String(stream.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);
+            assertThatThrownBy(()->MetadataResume.parse(text,corpus,identity)).isInstanceOf(MetadataUnavailableException.class);
+            var historical=identity.withPrompt("metadata-prompt-v1",MetadataCalibration.LEGACY_PROMPT_FINGERPRINT);
+            var plan=MetadataResume.parse(text,corpus,historical);
             assertThat(plan.reused()).containsOnlyKeys("spring-health");
             assertThat(plan.reused().get("spring-health").suggestion().summary()).isEqualTo("health endpoint; readiness; private; automatic restart");
         }

@@ -47,3 +47,4 @@ data/
 /apps/api/bin/
 /.agents/
 /.hallmark/
+/graphify-out/

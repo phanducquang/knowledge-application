@@ -12,6 +12,11 @@ final class MetadataEvaluation {
     record Identity(String reportVersion,String metricsVersion,String corpusVersion,String corpusFingerprint,String provider,String model,String sdkVersion,
             String promptVersion,String promptFingerprint,String schemaVersion,String schemaFingerprint,String inputStrategyVersion,int contentLimit,int summaryLimit,
             int tagCountLimit,int tagLengthLimit,int maxOutputTokens,String evaluatedAt) {
+        Identity withPrompt(String version,String fingerprint) {
+            return new Identity(reportVersion,metricsVersion,corpusVersion,corpusFingerprint,provider,model,sdkVersion,
+                    version,fingerprint,schemaVersion,schemaFingerprint,inputStrategyVersion,contentLimit,summaryLimit,
+                    tagCountLimit,tagLengthLimit,maxOutputTokens,evaluatedAt);
+        }
         static Identity create(MetadataCorpus corpus,String provider,String model,int limit,int output,Instant now) {
             return new Identity(REPORT_VERSION,METRICS_VERSION,corpus.version(),corpus.fingerprint(),provider,model,"1.75.0",
                     MetadataGenerationContract.PROMPT_VERSION,GeminiKnowledgeMetadataSuggestionClient.promptFingerprint(),

@@ -23,6 +23,19 @@ class MetadataCalibrationTest {
         return MetadataReportWriter.json(MetadataEvaluation.run(v1,MetadataEvaluation.fake(v1,32000),identity,quota,c->{},false,20,150000));
     }
     MetadataCalibration.Report evaluate() { return MetadataCalibration.evaluate(MetadataCalibration.parse(fakeReport()),overlay); }
+    @Test void historicalPromptBaselineRemainsReadableOfflineButCannotResumeCurrentGeneration() {
+        var root=MetadataCalibrationCorpus.JSON.readTree(fakeReport());
+        var identity=(tools.jackson.databind.node.ObjectNode)root.path("identity");
+        identity.put("promptVersion","metadata-prompt-v1");
+        identity.put("promptFingerprint",MetadataCalibration.LEGACY_PROMPT_FINGERPRINT);
+        var frozen=MetadataCalibration.parse(root.toString());
+        assertThat(frozen.generationIdentity().promptVersion()).isEqualTo("metadata-prompt-v1");
+        assertThat(MetadataCalibration.evaluate(frozen,overlay).providerCalls()).isZero();
+        var current=MetadataEvaluation.Identity.create(v1,"gemini","gemini-3.5-flash-lite",32000,600,Instant.EPOCH);
+        assertThatThrownBy(()->MetadataResume.parse(root.toString(),v1,current)).isInstanceOf(MetadataUnavailableException.class);
+        identity.put("promptFingerprint",current.promptFingerprint());
+        assertThatThrownBy(()->MetadataCalibration.parse(root.toString())).isInstanceOf(IllegalArgumentException.class);
+    }
     @Test void v1FingerprintIsFrozenAndV2IdentityIsSeparate() {
         assertThat(v1.fingerprint()).isEqualTo(MetadataCalibrationCorpus.V1_FINGERPRINT);
         assertThat(v2.version()).isEqualTo("metadata-eval-v2"); assertThat(v2.fingerprint()).isNotEqualTo(v1.fingerprint());

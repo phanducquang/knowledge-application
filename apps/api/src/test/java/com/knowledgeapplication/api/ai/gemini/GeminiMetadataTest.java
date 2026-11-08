@@ -5,6 +5,8 @@ import com.knowledgeapplication.api.ai.quota.*;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import java.net.InetSocketAddress;
 import java.time.*;
@@ -48,6 +50,37 @@ class GeminiMetadataTest {
         when(limiter.reserve(any(),any(),anyLong())).thenReturn(false);
         try(var client=client(2000)) { assertThatThrownBy(()->client.suggest(input())).isInstanceOf(MetadataUnavailableException.class).hasNoCause(); }
         assertThat(calls.get()).isZero();
+    }
+    static java.util.stream.Stream<Arguments> summaryLanguages() {
+        return java.util.stream.Stream.of(
+                Arguments.of("Next.js deployment", "Deploy the application with PM2.",
+                        "Nội dung hướng dẫn triển khai Next.js bằng PM2. Kiểm tra health endpoint trước khi chuyển traffic.",
+                        "Hướng dẫn triển khai Next.js bằng PM2 và kiểm tra health endpoint trước khi chuyển traffic."),
+                Arguments.of("WebClient timeout", "Configure the HTTP client.",
+                        "Cấu hình WebClient với connect timeout và response timeout để giới hạn thời gian chờ.\n\n"
+                                +"```java\n// Configure the HTTP client and set a response timeout.\nvar client = HttpClient.create();\n```",
+                        "Cấu hình connect timeout và response timeout cho WebClient để giới hạn thời gian chờ."),
+                Arguments.of("Triển khai ứng dụng", "Hướng dẫn triển khai và kiểm tra dịch vụ.",
+                        "Deploy the Next.js application with PM2. Verify the health endpoint before switching traffic.",
+                        "Deploy Next.js with PM2 and verify the health endpoint before switching traffic."));
+    }
+    @ParameterizedTest @MethodSource("summaryLanguages")
+    void contentLanguagePolicyReachesSystemInstructionDespiteConflictingMetadata(String title,String previousSummary,String content,String summary) {
+        var input=new KnowledgeMetadataSuggestionClient.Request(title,previousSummary,content,List.of("Existing","Next.js"),false);
+        text=new ObjectMapper().writeValueAsString(Map.of("summary",summary,"tags",List.of("PM2")));
+        try(var client=client(2000)) { assertThat(client.suggest(input)).isEqualTo(new MetadataSuggestion(summary,List.of("PM2"))); }
+        var body=new ObjectMapper().readTree(request);
+        var policy=body.path("systemInstruction").path("parts").get(0).path("text").asString();
+        assertThat(policy).contains("primary natural language of the content's explanatory prose",
+                "not from this English prompt, the title, existing summary or currentTags",
+                "Ignore code blocks, commands, identifiers and quoted examples",
+                "Vietnamese summary", "English prose requires an English summary", "Preserve technical names and terms")
+                .doesNotContain("where practical",content,previousSummary);
+        var sentInput=new ObjectMapper().readTree(body.path("contents").get(0).path("parts").get(0).path("text").asString());
+        assertThat(sentInput.path("content").asString()).isEqualTo(content);
+        assertThat(sentInput.path("summary").asString()).isEqualTo(previousSummary);
+        assertThat(calls.get()).isEqualTo(1);
+        verify(limiter).reserve(eq(AiQuotaLimiter.Purpose.METADATA),any(),eq(GeminiKnowledgeMetadataSuggestionClient.estimatedInputChars(input)));
     }
     @ParameterizedTest @ValueSource(ints={429,500,503,401}) void providerFailuresNeverRetryOrLeak(int code) {
         status=code; try(var client=client(2000)) { assertThatThrownBy(()->client.suggest(input())).isInstanceOf(MetadataUnavailableException.class).hasNoCause(); }

@@ -15,6 +15,10 @@ been checked locally; they have not been applied to the VPS.
 deployment lock and explicit recovery/rollback. Existing PostgreSQL/RustFS
 services are not restarted, backed up or restored by these scripts.
 
+The [Nginx vhost for knowledge.ducquang.io.vn](nginx/README.md) proxies Web on port
+3211 and Google OAuth on Java port 8080. Apply it manually and add HTTPS using
+the existing certificate setup; the deployment scripts do not change Nginx.
+
 ## Local development services
 
 `docker/compose.yml` provides local-development PostgreSQL plus S3-compatible MinIO. A one-shot `minio-init` service creates the `knowledge-images` bucket and explicitly keeps anonymous access disabled.

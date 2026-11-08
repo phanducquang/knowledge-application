@@ -8,6 +8,8 @@ import tools.jackson.databind.SerializationFeature;
 
 /** Pure offline re-scoring. No provider, credentials, Spring context or database can be constructed here. */
 final class MetadataCalibration {
+    // Historical baseline identity is independent of the current production prompt.
+    static final String LEGACY_PROMPT_FINGERPRINT="e9dc6c7eb1cf12a937ed973ce6b7fe625a26c9b42efdd25e992fa706f8ed204c";
     static final String SCORER_SEMANTICS="calibration-scorer-v2;strict=explicit-canonical-or-alias;unique-concept-credit;NFKC-root-fold;"
             +"macro-means;visible-N/A-excluded;generic=exact-list;tiers=case-explicit-evidence;unknown=unsupported;human=null";
     record Frozen(MetadataEvaluation.Identity generationIdentity,boolean composite,String sourceReportFingerprint,
@@ -42,6 +44,8 @@ final class MetadataCalibration {
             if(text.length()>2_000_000) throw new IllegalArgumentException();
             var root=MetadataCalibrationCorpus.JSON.readTree(text); var base=MetadataCorpus.load();
             var target=MetadataEvaluation.Identity.create(base,"gemini","gemini-3.5-flash-lite",32000,600,Instant.EPOCH);
+            if("metadata-prompt-v1".equals(root.path("identity").path("promptVersion").asString("")))
+                target=target.withPrompt("metadata-prompt-v1",LEGACY_PROMPT_FINGERPRINT);
             var reused=MetadataResume.parse(text,base,target);
             if(!"COMPLETE".equals(root.path("status").asString("")) || root.path("cases").size()!=20 || reused.reused().size()!=20
                     || root.path("cases").valueStream().anyMatch(c->!"VALID".equals(c.path("status").asString("")))) throw new IllegalArgumentException();

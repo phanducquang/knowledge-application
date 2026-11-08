@@ -112,7 +112,7 @@ class MetadataEvaluationTest {
     }
     @Test void identityRecordsConfiguredModelAndImmutableContracts() {
         var id=identity("candidate-model"); assertThat(id.model()).isEqualTo("candidate-model"); assertThat(id.sdkVersion()).isEqualTo("1.75.0");
-        assertThat(id.promptVersion()).isEqualTo("metadata-prompt-v1"); assertThat(id.schemaVersion()).isEqualTo("metadata-schema-v1");
+        assertThat(id.promptVersion()).isEqualTo("metadata-prompt-v2"); assertThat(id.schemaVersion()).isEqualTo("metadata-schema-v1");
         assertThat(id.inputStrategyVersion()).isEqualTo("prefix-32000-v1"); assertThat(id.corpusVersion()).isEqualTo("metadata-eval-v1");
     }
     @Test void stableSerializationReportRubricGroupsAndFakeCallCounts(@TempDir Path directory) throws Exception {

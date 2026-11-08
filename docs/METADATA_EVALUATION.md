@@ -1,6 +1,8 @@
 # Metadata suggestion quality evaluation
 
-Developer/operator benchmark, not background enrichment or an evaluation UI. Uses synthetic notes only; never reads application Knowledge, revisions, attachments, sessions or owner identifiers. Production SDK stays **1.75.0**. Suggest remains explicit, disabled by default and user-applied. No migration, model switch, prompt tuning, input-strategy tuning, LLM judge, tools, search or retries.
+Developer/operator benchmark, not background enrichment or an evaluation UI. Uses synthetic notes only; never reads application Knowledge, revisions, attachments, sessions or owner identifiers. Production SDK stays **1.75.0**. Suggest remains explicit, disabled by default and user-applied. The original benchmark milestones introduced no migration, model switch, prompt tuning, input-strategy tuning, LLM judge, tools, search or retries.
+
+Current production generation uses **metadata-prompt-v2**, which requires summary language to follow the content's explanatory prose, including Vietnamese prose with English technical terms. The historical live baseline and calibration results below used **metadata-prompt-v1** and do not measure the v2 language fix. Offline calibration accepts that exact historical prompt fingerprint; live resume still requires the current prompt version and fingerprint, so v1 outputs cannot be mixed into a v2 generation run. Schema, model defaults and prefix input strategy are unchanged. The fix is covered by loopback request-contract tests, not a new live Gemini quality evaluation.
 
 ## Corpus and ground truth
 
@@ -14,7 +16,7 @@ Short is ≤800 UTF-16 units; medium 801–32000; long >32000. Four long cases u
 
 `MetadataSuggestionInputBuilder` is the same pure Unicode-safe prefix/tag sorting component used by the production snapshot loader and benchmark. Evaluator receives the full synthetic note to score it, but sends only the prepared prefix. The actual production `GeminiKnowledgeMetadataSuggestionClient` handles native schema, unchanged instructions, output validation, current-tag removal, timeout, no-retry transport and quota reservation.
 
-Identity records report/metrics/corpus versions, corpus fingerprint, provider/model/SDK, **metadata-prompt-v1**, **metadata-schema-v1**, prompt/schema fingerprints, **prefix-32000-v1** (configured limit reflected in its identity), content/summary/tag/output limits and timestamp. Fingerprints are of public synthetic corpus/prompt/schema only, never secrets. Bump explicit versions if semantics change. A compatible model change requires configuration only, not corpus/code edits.
+Identity records report/metrics/corpus versions, corpus fingerprint, provider/model/SDK, the current prompt version (**metadata-prompt-v2**; historical baseline **metadata-prompt-v1**), **metadata-schema-v1**, prompt/schema fingerprints, **prefix-32000-v1** (configured limit reflected in its identity), content/summary/tag/output limits and timestamp. Fingerprints are of public synthetic corpus/prompt/schema only, never secrets. Bump explicit versions if semantics change. A compatible model change requires configuration only, not corpus/code edits.
 
 ## Transparent metrics
 
